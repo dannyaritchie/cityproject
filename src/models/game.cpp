@@ -238,7 +238,7 @@ void Game::writeClosestPlayers(int game){
 		}
 	}
 	for(auto playerit = playersGame.begin();playerit<playersGame.end();++playerit){
-		std::string filename = "playerclosestdist/" + std::to_string(game) + "_" + std::to_string((*playerit)->getTeam()) + "-" + std::to_string((*playerit)->getNum()) +".txt";
+		std::string filename = "../../data/playerclosestdist/" + std::to_string(game) + "_" + std::to_string((*playerit)->getTeam()) + "-" + std::to_string((*playerit)->getNum()) +".txt";
 		std::ofstream os;
 		os.open(filename);
 		os << "Frame" << "\t" << "Closesplayer" << std::endl;
@@ -252,7 +252,7 @@ void Game::writeClosestPlayers(int game){
 			}
 			catch (std::out_of_range& e){
 							stop = false;
-						}
+				
 		}
 		os.close();
 	}
