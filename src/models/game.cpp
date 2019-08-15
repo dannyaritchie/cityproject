@@ -176,10 +176,6 @@ void Game::setClosestPlayers(){
 }
 void Game::writeClosestPlayers(int game){
 	for(auto frameit = frames.begin();frameit<frames.end();++frameit){
-		if( (*frameit)->getFid()== 33787){
-			int poo;
-			poo ++;
-		}
 		const std::vector<Player*>&	playersFrame = (*frameit)->getPlayers();
 		for(auto playerit = playersFrame.begin();playerit<playersFrame.end();++playerit){
 			std::array<double,2> tinfo;
@@ -238,7 +234,7 @@ void Game::writeClosestPlayers(int game){
 		}
 	}
 	for(auto playerit = playersGame.begin();playerit<playersGame.end();++playerit){
-		std::string filename = "../../data/playerclosestdist/" + std::to_string(game) + "_" + std::to_string((*playerit)->getTeam()) + "-" + std::to_string((*playerit)->getNum()) +".txt";
+		std::string filename = "../data/playerclosestdist/" + std::to_string(game) + "_" + std::to_string((*playerit)->getTeam()) + "-" + std::to_string((*playerit)->getNum()) +".txt";
 		std::ofstream os;
 		os.open(filename);
 		os << "Frame" << "\t" << "Closesplayer" << std::endl;
@@ -247,14 +243,14 @@ void Game::writeClosestPlayers(int game){
 		while (stop){
 			try{
 				(*playerit)->getClosestDistance(i);
-				os << (*playerit)->getClosestDistance(i)[0] << "\t" << (*playerit)->getClosestDistance(i)[1] << std::endl;
+				os  << (*playerit)->getClosestDistance(i)[0] << "\t" << (*playerit)->getClosestDistance(i)[1] << std::endl;
 				i++;
 			}
 			catch (std::out_of_range& e){
-							stop = false;
-				
+				stop = false;				
+			}
 		}
-		os.close();
+	os.close();
 	}
 }
 void Game::storeMdata(){

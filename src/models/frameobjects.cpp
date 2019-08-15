@@ -11,7 +11,5 @@ const std::array<double,2> FrameObjects::getPos() {
 	pos[1] = y;
 	return pos;
 }
-FrameObjects::~FrameObjects(){
-	std::cout << "why" << std::endl;
-}
 
+FrameObjects::~FrameObjects(){}

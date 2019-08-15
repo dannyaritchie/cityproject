@@ -19,6 +19,9 @@ class WholePlayer{
 	int getTeam();
 	void addDist(std::array<double,2>);
 	std::array<double,2> getClosestDistance(int);
+	int tsize(){
+		return closestDistance.size();
+	}
 };
 
 
