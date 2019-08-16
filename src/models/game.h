@@ -35,6 +35,8 @@ class Game {
 		//splits frames into two vectors, one for home in possession and one for attack in possession
 		//Issue:possesion file frame id
 		void getScalar();
+        std::vector<Frame*>::iterator getFrameit();
+        int getHome();
 
 };
 #endif

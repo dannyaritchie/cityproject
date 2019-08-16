@@ -17,3 +17,7 @@ int PossessionFileLine::getTid(){
 	return tid;
 }
 
+std::array<int,2> PossessionFileLine::getFrameRange(){
+    std::array<int,2> frameRange = {startFid, endFid};
+    return frameRange;
+}

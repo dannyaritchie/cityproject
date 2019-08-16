@@ -12,7 +12,7 @@ private:
 	Ball* ball;
 	int fid;
 	bool firstFrame;
-	int attacking;
+	double anglePotential[720] = {0};
 public:
 	Frame();
 	~Frame();
@@ -35,6 +35,12 @@ public:
 	double getVoronoi(double pitchx,double pitchy);
 	//***ANGULAR PASSING***///
 	void computeScalar(int possessionTid);
+    //computes a value for every 0.5 degrees around ball and stores in
+    //anglepotential
+    //value is sum of gaussians for every ally player i centred on theta i with
+    //width ri
+    bool writeScalar(std::ostream & os);
+    //write team id on line one followed by anglepotential[i] on line i+1
 
 };
 #endif

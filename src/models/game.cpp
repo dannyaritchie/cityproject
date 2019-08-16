@@ -255,7 +255,8 @@ void Game::writeClosestPlayers(int game){
 }
 void Game::storeMdata(){
 	std::ifstream inFile;
-	inFile.open("987715.mdata");
+    std::string filename = "../idata/mdata/" + std::to_string(mid) + ".mdata";
+	inFile.open(filename);
 	if (!inFile) {
 		std::cout << "Unable to open file";
 		return;
@@ -319,4 +320,10 @@ void Game::getScalar(){
 	for (auto frameit = frames.begin();frameit<frames.end();++frameit){
 		(*frameit)->computeScalar(0);
 	}
+}
+std::vector<Frame*>::iterator Game::getFrameit(){
+    return frames.begin();
+}
+int Game::getHome(){
+    return homeNum;
 }

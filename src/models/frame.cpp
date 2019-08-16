@@ -102,14 +102,14 @@ double Frame::getVoronoi(double pitchx, double pitchy){
 	return home/away;
 }
 
-void Frame::computeScalar(int possessionTid){
+void Frame::computeScalar(int posid){
 	//put ball at (0,0)
 	//centred attack
 
 	std::vector<std::array<double,2>> centredAttack;
 	std::array<double,2> ballPos = ball->getPos();
 	for(auto playerit = players.begin(); playerit < players.end();++playerit){
-		if ((*playerit)->getTeam()==possessionTid){
+		if ((*playerit)->getTeam()==posid){
 			std::array<double, 2> tpos;
 			for (int i =0; i< 1;i++){
 				tpos[i] = (*playerit)->getPos()[i] - ballPos[i];
@@ -125,7 +125,6 @@ void Frame::computeScalar(int possessionTid){
 		(*playerit)[1] = r;
 	}
 	//add gaussian
-	double anglePotential[720] = {0};
 	for(int i = 0;i<720;i++){
 		for(auto playerit = centredAttack.begin(); playerit < centredAttack.end();++playerit){
 			anglePotential[i] += exp(-(pow(i/2-(*playerit)[0],2)/(2*pow((*playerit)[1],2))));
@@ -133,3 +132,11 @@ void Frame::computeScalar(int possessionTid){
 
 	}
 }
+bool Frame::writeScalar(std::ostream & os){
+    for(int i=0;i<720;i++){
+        os <<anglePotential[i] << "\t";
+    }
+    os << std::endl;
+    return true;
+}
+

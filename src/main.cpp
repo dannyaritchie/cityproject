@@ -2,14 +2,16 @@
 #include"models/possessionfilereader/possessionfilemaker.h"
 #include <iostream>
 #include <fstream>
+#include"models/angmod/computeangle.h"
 int main() {
 	//std::ofstream os;
 	//os.open("velocities.txt");
-
-	PossessionFileMaker * files = new PossessionFileMaker();
+    computeAngle();
+/*	PossessionFileMaker * files = new PossessionFileMaker();
 	files->fileLoader();
 	std::cout << "yay" << std::endl;
-	files->fileWriter();
+	files->fileWriter();*/
+
 /*	for (int i = 803161;i< 1049290;i++){
 		Game* testgame = new Game(i);
 		if (testgame->readFile() == true){
