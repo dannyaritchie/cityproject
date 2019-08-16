@@ -46,7 +46,9 @@ void computeAngle(){
             os.close();
             }
         }
+        delete tgame;
     }
+    delete maker;
 }
 
 

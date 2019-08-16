@@ -19,7 +19,7 @@ class Game {
 		~Game();
 		void addFrame(Frame*);
 		bool readFile();
-		void storeMdata();
+        bool storeMdata();
 		//reads in Mdata for a game
 		void writeFile(std::ofstream & os,int type);
 		void findPhases();

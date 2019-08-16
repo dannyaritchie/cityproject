@@ -60,11 +60,8 @@ void PossessionFileMaker::fileLoader(){
 	PossessionFileLine * lineSave;
 	bool lineSaveBool{true};
     int matchStart;
-    int test =0;
     int i=0;
 	while(inFile){
-        std::cout<< test << std::endl;
-        test++;
 		bool sameMid{true};
 		std::vector<PossessionFileLine*> tlines;
 		while(sameMid){
@@ -85,10 +82,6 @@ void PossessionFileMaker::fileLoader(){
 					std::stringstream sline(pline);
 					sline >> mid >> charbin >> intbin >> charbin >> intbin >> charbin >> intbin;
 					sline >> charbin >> tid >> charbin >> startFid >> charbin >>endFid;
-                    matchStart = findMatchStart(mid);
-                    if(i<100){
-                        std::cout << matchStart << std::endl;
-                    }
                     i++;
                     if (matchStart == -1){
                         std::cout << "Error - could not offset frames for game: " << mid << std::endl;
