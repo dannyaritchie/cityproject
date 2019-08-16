@@ -253,16 +253,17 @@ void Game::writeClosestPlayers(int game){
 	os.close();
 	}
 }
-void Game::storeMdata(){
+bool Game::storeMdata(){
 	std::ifstream inFile;
-    std::string filename = "../idata/mdata/" + std::to_string(mid) + ".mdata";
+    std::string filename = "/pc2014-data1/lah/data/data_files/" + std::to_string(mid) + ".mdata";
 	inFile.open(filename);
 	if (!inFile) {
 		std::cout << "Unable to open file";
-		return;
+		return false;
 	}
 	int bin;
 	inFile >> bin >> pitchx >>pitchy >> homeNum >> awayNum;
+    return true;
 }
 std::vector<double> Game::calcVoronoi(){
 	std::vector<double> ratios;

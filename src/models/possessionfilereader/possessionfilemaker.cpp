@@ -48,7 +48,7 @@ void PossessionFileMaker::fileLoader(){
 	std::ifstream inFile;
 	inFile.open("../idata/teampossessions.csv");
 	if (!inFile) {
-			std::cout << "Unable to open file";
+			std::cout << "Unable to open possession file";
 			exit(1);// terminate with error
 		}
 	std::string bin;
