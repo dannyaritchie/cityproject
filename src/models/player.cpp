@@ -35,5 +35,7 @@ Player* Player::getClosestPlay(){
 const double& Player::getClosestDist(){
 	return closestDist;
 }
-
+int Player::getPid(){
+	return 100*home + num;
+}
 

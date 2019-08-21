@@ -17,14 +17,14 @@ Game::~Game(){
 		delete frames[i];
 	}
 }
-Game::Game(int pmid): mid{pmid}{};
+Game::Game(int pmid, std::string pfilename): filename{pfilename}, mid{pmid}{};
 void Game::addFrame(Frame* pframe){
 	frames.push_back(pframe);
 }
 bool Game::readFile(){
 	std::ifstream inFile;
-	std::string filename = "/pc2014-data1/lah/data/data_files/" + std::to_string(mid) + ".csv";
-	inFile.open(filename);
+	std::string csvfile = filename + std::to_string(mid) + ".csv";
+	inFile.open(csvfie);
 	if (!inFile) {
 		std::cout << "Unable to open file" << std::endl;
 		return false;
@@ -255,8 +255,8 @@ void Game::writeClosestPlayers(int game){
 }
 bool Game::storeMdata(){
 	std::ifstream inFile;
-    std::string filename = "/pc2014-data1/lah/data/data_files/" + std::to_string(mid) + ".mdata";
-	inFile.open(filename);
+    	std::string mdatafile = filename + std::to_string(mid) + ".mdata";
+	inFile.open(mdatafile);
 	if (!inFile) {
 		std::cout << "Unable to open file";
 		return false;
@@ -322,8 +322,8 @@ void Game::getScalar(){
 		(*frameit)->computeScalar(0);
 	}
 }
-std::vector<Frame*>::iterator Game::getFrameit(){
-    return frames.begin();
+std::vector<Frame*>& Game::getFrames(){
+    return frames;
 }
 int Game::getHome(){
     return homeNum;

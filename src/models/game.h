@@ -10,6 +10,7 @@ class Game {
 		std::vector<Frame*> frames;
 		std::vector<Frame*> homeFrames;
 		std::vector<Frame*> awayFrames;
+		std::string filename;
 		//std::string filepath;
 		double pitchx, pitchy;
 		int homeNum, awayNum, mid;
@@ -19,7 +20,7 @@ class Game {
 		~Game();
 		void addFrame(Frame*);
 		bool readFile();
-        bool storeMdata();
+	        bool storeMdata();
 		//reads in Mdata for a game
 		void writeFile(std::ofstream & os,int type);
 		void findPhases();
@@ -35,8 +36,8 @@ class Game {
 		//splits frames into two vectors, one for home in possession and one for attack in possession
 		//Issue:possesion file frame id
 		void getScalar();
-        std::vector<Frame*>::iterator getFrameit();
-        int getHome();
+      		std::vector<Frame*>& getFrames();
+        	int getHome();
 
 };
 #endif

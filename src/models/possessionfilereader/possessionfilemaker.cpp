@@ -43,8 +43,9 @@ void PossessionFileMaker::gameFrameMap(){
 }
  
 
-void PossessionFileMaker::fileLoader(){
-    gameFrameMap();
+
+bool PossessionFileMaker::readFile(){
+     gameFrameMap();
 	std::ifstream inFile;
 	inFile.open("../idata/teampossessions.csv");
 	if (!inFile) {
@@ -110,7 +111,7 @@ void PossessionFileMaker::fileLoader(){
 			//possessionFiles.push_back(tpossessionFile);
 		}
 	}
-
+	return true;
 }
 void PossessionFileMaker::fileWriter(){
 	for(auto fileit = possessionFiles.begin(); fileit<possessionFiles.end();++fileit){
@@ -138,6 +139,6 @@ int PossessionFileMaker::findMatchStart(int mid){
     }
     return -1;
 }
-std::vector<PossessionFile*> PossessionFileMaker::getPossessions(){
-    return possessionFiles;
+std::vector<PossessionFile*>& PossessionFileMaker::getPosFiles(){
+    return possessionFiles
 }

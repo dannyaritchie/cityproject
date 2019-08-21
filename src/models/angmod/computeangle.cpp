@@ -6,16 +6,15 @@
 void computeAngle(){
     PossessionFileMaker * maker = new PossessionFileMaker();
     maker->fileLoader();
-    maker->gameFrameMap();
     std::vector<PossessionFile*> possessionFiles = maker->getPossessions();
     int fid;
     std::ofstream os;
     std::string filename;
     for(auto posFilit = possessionFiles.begin(); posFilit<possessionFiles.end();posFilit++){
-         Game * tgame = new Game((*posFilit)->getMid());
+         Game * tgame = new Game((*posFilit)->getMid(),"../idata/");
          if (tgame->readFile() == true){
-            std::cout<<(*posFilit)->getMid();
             if( tgame->storeMdata() == true){
+            	std::cout<<(*posFilit)->getMid()<<std::endl;
                 int home = tgame->getHome();
                 std::vector<Frame*>::iterator frameit = tgame->getFrameit();
                 filename = "../data/angdata/" + std::to_string((*posFilit)->getMid()) + ".txt"; 

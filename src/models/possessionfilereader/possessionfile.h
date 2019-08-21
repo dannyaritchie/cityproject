@@ -17,7 +17,7 @@ private:
 public:
 	PossessionFile(int pmid, std::vector<PossessionFileLine*> plines);
 	int getMid();
-    std::vector<PossessionFileLine*> getPosFilLin();
+	std::vector<PossessionFileLine*>& getPosFilLin();
 	void osLines(std::ostream & os);
 };
 

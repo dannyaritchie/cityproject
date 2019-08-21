@@ -14,6 +14,6 @@ void PossessionFile::osLines(std::ostream & os){
 		(*lineit)->infoToFile(os);
 	}
 }
-std::vector<PossessionFileLine*> PossessionFile::getPosFilLin(){
+std::vector<PossessionFileLine*>& PossessionFile::getPosFilLin(){
     return lines;
 }

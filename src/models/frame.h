@@ -25,7 +25,7 @@ public:
 	bool getFirstFrame();
 	int getFid();
 	Ball* getBall();
-	const std::vector<Player*>& getPlayers();
+	std::vector<Player*>& getPlayers();
 	Player* findNum(int num, int team);//returns pointer to player with number
 	void evalSquares(int xsquare,int ysquare);
 	//split pitch into xsquare*ysquare
