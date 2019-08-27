@@ -322,7 +322,7 @@ void Game::getScalar(){
 		(*frameit)->computeScalar(0);
 	}
 }
-std::vector<Frame*>& Game::getFrames(){
+std::vector<Frame*> Game::getFrames(){
     return frames;
 }
 int Game::getHome(){

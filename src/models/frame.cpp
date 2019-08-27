@@ -39,7 +39,7 @@ int Frame::getFid() {
 Ball* Frame::getBall() {
 	return ball;
 }
-std::vector<Player*>& Frame::getPlayers() {
+std::vector<Player*> Frame::getPlayers() {
 	return players;
 }
 Player* Frame::findNum(int num, int team) {

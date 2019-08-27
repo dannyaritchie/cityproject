@@ -1,33 +1,25 @@
 #include "infogroupa.h"
-bool ingoGroupA::loadData(){
-	int home, mid, tid, fid;
-	Game* tgame;
-	std::vector<Frame*> frames;
-	std::vector<PossessionFileLine*> lines;
-	std::vector<PossessionFileLine*>::iterator lineit;
-	std::vector<PossessionFileLine*>::iterator lineend;
-	std::vector<PossessionFile*> posFiles;
-	bool loopPosFilLin;
+bool InfoGroupA::loadData(){
 	PossessionFileMaker * tposFiles= new PossessionFileMaker();
 	if(tposFiles->readFile()==true){
-		posFiles = tposFiles->getPosFiles();
-		loopPosFiles = true;
+		std::vector<PossessionFile*> posFiles = tposFiles->getPosFiles();
 		for(auto fileit = posFiles.begin();fileit<posFiles.end();fileit++){
-			mid = tposFiles->getMid();
+			int mid = tposFiles->getMid();
 			Game * tgame = new Game(mid,"../idata/"); 
 			if(tgame->readFile()==true&&tgame->storeMdata()==true){
-				frames = tgame->getFrames();
-				lines = (*posFilit)->getPosFilLin();
-				lineit = lines.begin();
-				lineend = lines.end();
+				std::vector<Frame*> frames = tgame->getFrames();
+				std::vector<PossessionFileLine*> lines = (*fileit)->getPosFilLin();
+				std::vector<PossessionFileLine*>::iterator lineit = lines.begin();
+				std::vector<PossessionFileLine*>::iterator lineend = lines.end();
 				int prevFid;
+				int fid;
 				bool prevFidBool;
 				std::array<std::array<std::array<double,5>,35>,2> prevPlayerstat;
 				for(auto frameit = frames.begin;frameit<frames.end;frames++){
-					loopPosFilLin = true;
-					fid = (*frameit)->getFid();					
+					bool loopPosFilLin = true;
+					int fid = (*frameit)->getFid();					
 					while(loopPosFilLin){
-						frameRange= (*lineit)->getFrameRange();
+						std::array<int, 2> frameRange= (*lineit)->getFrameRange();
 						if(fid>=frameRange[0]){
 							if(fid<=frameRange[1]){
 								loopPosFilLin = false;
@@ -51,7 +43,7 @@ bool ingoGroupA::loadData(){
 						}
 					}
 				}
-				std::vector<Plater*> players = (*frameit)->getPlayers();
+				std::vector<Player*> players = (*frameit)->getPlayers();
 				closestPlayers(players);
 				std::array<std::array<std::array<double,5>,35>,2> playerstat;
 				std::array<double,3> tinfo;
@@ -79,11 +71,13 @@ bool ingoGroupA::loadData(){
 					}
 					playerstats[team][num].push_back(prevPlayerstat[team][num]);
 					prevPlayerstat = playerstat;	
+					write(mid);
 				}
 			}
 			else{
 				std::cout << "could not read game data for" << mid << std::endl;
-			}		//calculate frame metrics
+			}		
+		delete tgame;
 		}	
 	}
 	else{
@@ -92,7 +86,7 @@ bool ingoGroupA::loadData(){
 	}
 }
 
-void infoGroupA::closestPlayers(std::vector<Player*> & players){
+void InfoGroupA::closestPlayers(std::vector<Player*> & players){
 		for (auto playerita = players.begin(); playerita < players.end();++playerita){
 			double closestDist = 1000;
 			Player* closestPlay;
@@ -109,9 +103,27 @@ void infoGroupA::closestPlayers(std::vector<Player*> & players){
 			(*playerita)->setClosestPlay(closestPlay);
 		}
 }
-double infoGroupA::velocity(int team, int num){
+double InfoGroupA::velocity(int team, int num){
 		return distance(dtdata[team][num][0][0],dtdata[team][num][2][0],dtdata[team][num][0][1],dtdata[team][num][2][1])/0.2;
 }
-double infoGroupB::closestVelocity(int team, int num){
+double InfoGroupA::closestVelocity(int team, int num){
 	return (dtdata[team][num][2][2] - dtdata[team][num][0][2])/0.2;
+}
+void InfoGroupA::write(int mid){
+	for (int i=0;i<2;i++){
+		for (int j=0;j<35;j++){
+			if(playerstats[i][j].size()>0){
+				std::string filename = "../data/infogroupa/" + std::to_string(mid) + "-" + std::to_string(i) + "_" + std::to_string(j) +".txt"
+				ofstream os;
+				os.open(filename);
+				for (auto it = playerstats[i][j].begin(); it< playerstats[i][j].end(); ++it){
+					for(int k=0;k<5;k++){
+       						os << (*it)[k] << "\t";						
+					}
+					os << std::endl;
+				}
+				os.close();
+			}
+		}
+	}
 }

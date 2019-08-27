@@ -139,6 +139,6 @@ int PossessionFileMaker::findMatchStart(int mid){
     }
     return -1;
 }
-std::vector<PossessionFile*>& PossessionFileMaker::getPosFiles(){
+std::vector<PossessionFile*> PossessionFileMaker::getPosFiles(){
     return possessionFiles
 }

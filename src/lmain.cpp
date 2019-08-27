@@ -2,11 +2,13 @@
 #include"models/possessionfilereader/possessionfilemaker.h"
 #include <iostream>
 #include <fstream>
-#include"models/angmod/computeangle.h"
+//#include"models/angmod/computeangle.h"
+#include "models/infogroupa.h"
 int main() {
 	//std::ofstream os;
+	InfoGroupA* test = new IngoGroupA();
+	test->loadData();
 	//os.open("velocities.txt");
-    computeAngle();
 /*	PossessionFileMaker * files = new PossessionFileMaker();
 	files->fileLoader();
 	std::cout << "yay" << std::endl;
