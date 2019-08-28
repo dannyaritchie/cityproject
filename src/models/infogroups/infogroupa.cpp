@@ -46,17 +46,30 @@ bool InfoGroupA::loadData(){
 						}
 					}*/
 					std::vector<Player*> players = (*frameit)->getPlayers();
+					Ball* ball =(*frameit)->getBall();
 					closestPlayers(players);
+					int home = teamPossession(players, ball);
 					std::array<std::array<std::array<double,5>,70>,2> playerstat;
 					std::array<double,3> tinfo;
 					std::array<double,3> dtinfo;
 					int team, num;
 					for(auto playerit = players.begin();playerit<players.end();++playerit){
 						team = (*playerit)->getTeam();
+						int possession;
+						if(team == home){
+							possession =1;
+						}
+						else { possession = 0;}
+						if(home == -1){
+							possession = -1;
+						}
+						if(home== -2){
+							possession = -2;
+						}
 						num = (*playerit)->getNum();
 						playerstat[team][num][0] = fid;
 						playerstat[team][num][1] = (*playerit)->getClosestDist();
-				//		playerstat[team][num][4] = home;
+						playerstat[team][num][4] = possession;
 						dtinfo[0] = (*playerit)->getPos()[0];
 						dtinfo[1] = (*playerit)->getPos()[1];
 						dtinfo[2] = (*playerit)->getClosestDist();
@@ -132,4 +145,42 @@ void InfoGroupA::write(int mid){
 			}
 		}
 	}
+}
+int InfoGroupA::teamPossession(std::vector<Player*>& players, Ball* ball){
+	int contested;
+	Player* closestHomePlay;
+	Player* closestAwayPlay;
+	double homedist = 200;
+	double awaydist = 200;
+	int ballx = ball->getPos()[0];
+	int bally = ball->getPos()[1];
+	for(auto playerit = players.begin();playerit<players.end();++playerit){
+		if ((*playerit)->getTeam()==0){
+			double tdist = distance(ballx,(*playerit)->getPos()[0],bally,(*playerit)->getPos()[1]);
+			if(tdist<homedist){
+				homedist = tdist;
+				closestHomePlay = *playerit;
+			}
+		}
+		else{
+			double tdist = distance(ballx,(*playerit)->getPos()[0],bally,(*playerit)->getPos()[1]);
+			if(tdist<awaydist){
+				awaydist = tdist;
+				closestAwayPlay = *playerit;
+			}
+		}
+	}
+	if (homedist < 2){
+		if (awaydist < 2){
+			contested = -1;
+		}
+		else{contested = 0;}
+	}
+	else{
+		if(awaydist < 2){
+			contested = 1;
+		}
+		else{contested = -2;}
+	}
+	return contested;
 }

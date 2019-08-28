@@ -19,5 +19,6 @@ class InfoGroupA {
 		double velocity (int team, int num);
 		double closestVelocity(int team, int num);
 		void closestPlayers(std::vector<Player*> & players);
+		int teamPossession(std::vector<Player*> & players, Ball * ball);
 };
 #endif

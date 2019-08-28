@@ -15,7 +15,7 @@ add_executable(Project src/main.cpp
     	src/models/possessionfilereader/possessionfileline.cpp
     	src/models/possessionfilereader/possessionfile.cpp 
     	src/models/possessionfilereader/possessionfilemaker.cpp
-	src/models/infogroupa.cpp
+	src/models/infogroups/infogroupa.cpp
 	#src/models/wholeplayer.cpp 
     	#src/models/angmod/computeangle.cpp
 	)
