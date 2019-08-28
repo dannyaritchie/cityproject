@@ -1,3 +1,4 @@
+
 #include "game.h"
 #include <stdlib.h>
 #include "frame.h"
@@ -24,7 +25,7 @@ void Game::addFrame(Frame* pframe){
 bool Game::readFile(){
 	std::ifstream inFile;
 	std::string csvfile = filename + std::to_string(mid) + ".csv";
-	inFile.open(csvfie);
+	inFile.open(csvfile);
 	if (!inFile) {
 		std::cout << "Unable to open file" << std::endl;
 		return false;
@@ -56,7 +57,6 @@ bool Game::readFile(){
 				sline >> bin;
 			}
 			sline >> ballx >> bally;
-
 			Ball* tball = new Ball(ballx, bally, 0);
 			tframe->addBall(tball);
 			while (corFrame) {
@@ -169,7 +169,7 @@ void Game::addVelocities(){
 	}
 
 }
-void Game::setClosestPlayers(){
+/*void Game::setClosestPlayers(){
 	for(auto frameit = frames.begin();frameit<frames.end();++frameit){
 		(*frameit)->closestPlayers();
 	}
@@ -252,7 +252,7 @@ void Game::writeClosestPlayers(int game){
 		}
 	os.close();
 	}
-}
+}*/
 bool Game::storeMdata(){
 	std::ifstream inFile;
     	std::string mdatafile = filename + std::to_string(mid) + ".mdata";

@@ -1,5 +1,5 @@
 #ifndef GAME_H_
-#define GAME_H
+#define GAME_H_
 #include <vector>
 #include "frame.h"
 #include"wholeplayer.h"
@@ -16,7 +16,7 @@ class Game {
 		int homeNum, awayNum, mid;
 
 	public:
-		Game(int);
+		Game(int, std::string);
 		~Game();
 		void addFrame(Frame*);
 		bool readFile();

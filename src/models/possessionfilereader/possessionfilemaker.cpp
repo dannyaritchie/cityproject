@@ -49,7 +49,7 @@ bool PossessionFileMaker::readFile(){
 	std::ifstream inFile;
 	inFile.open("../idata/teampossessions.csv");
 	if (!inFile) {
-			std::cout << "Unable to open possession file";
+			std::cout << "Unable to open possession file" << std::endl;
 			exit(1);// terminate with error
 		}
 	std::string bin;
@@ -140,5 +140,5 @@ int PossessionFileMaker::findMatchStart(int mid){
     return -1;
 }
 std::vector<PossessionFile*> PossessionFileMaker::getPosFiles(){
-    return possessionFiles
+    return possessionFiles;
 }
