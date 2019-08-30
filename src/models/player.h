@@ -7,6 +7,8 @@ class Player : public FrameObjects{
 		int home;
 		Player* closestPlay;
 		double closestDist;
+		std::array<double,2> ballCentredPolar;
+		int angControlScore;
 		//static int maxAcceleration;
 	//	static int maxDeceleration;
 	//	static int maxVelocity;
@@ -20,5 +22,9 @@ class Player : public FrameObjects{
 		void setClosestDist(double);
 		Player* getClosestPlay();
 		const double& getClosestDist();
+		void setBallCentredPolar(std::array<double,2> tpol);
+		std::array<double,2> getBallCentredPolar();
+		void plusAngScore();
+		int getAngScore();
 };
 #endif

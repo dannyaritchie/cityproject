@@ -16,7 +16,7 @@ bool InfoGroupA::loadData(){
 				int fid;
 		//		int home;
 				bool prevFidBool;
-				std::array<std::array<std::array<double,5>,70>,2> prevPlayerstat;
+				std::array<std::array<std::array<double,6>,70>,2> prevPlayerstat;
 				for(auto frameit = frames.begin();frameit<frames.end();++frameit){
 				//	bool loopPosFilLin = true;
 					int fid = (*frameit)->getFid();					
@@ -49,8 +49,10 @@ bool InfoGroupA::loadData(){
 					Ball* ball =(*frameit)->getBall();
 					closestPlayers(players);
 					int home = teamPossession(players, ball);
-					std::array<std::array<std::array<double,5>,70>,2> playerstat;
-					std::array<double,3> tinfo;
+					if (home == 0 || home == 1){
+						computeScalar(players, ball, home);
+					}
+					std::array<std::array<std::array<double,6>,70>,2> playerstat;
 					std::array<double,3> dtinfo;
 					int team, num;
 					for(auto playerit = players.begin();playerit<players.end();++playerit){
@@ -70,6 +72,7 @@ bool InfoGroupA::loadData(){
 						playerstat[team][num][0] = fid;
 						playerstat[team][num][1] = (*playerit)->getClosestDist();
 						playerstat[team][num][4] = possession;
+						playerstat[team][num][5] = (*playerit)->getAngScore();
 						dtinfo[0] = (*playerit)->getPos()[0];
 						dtinfo[1] = (*playerit)->getPos()[1];
 						dtinfo[2] = (*playerit)->getClosestDist();
@@ -95,6 +98,7 @@ bool InfoGroupA::loadData(){
 				std::cout << "could not read game data for" << mid << std::endl;
 			}		
 			delete tgame;
+
 		}	
 //		delete tposfiles;
 		return true;
@@ -135,12 +139,15 @@ void InfoGroupA::write(int mid){
 				std::string filename = "../data/infogroupa/" + std::to_string(mid) + "-" + std::to_string(i) + "_" + std::to_string(j) +".txt";
 				std::ofstream os;
 				os.open(filename);
+				os.precision(3);
+				os << std::fixed;
 				for (auto it = playerstats[i][j].begin(); it< playerstats[i][j].end(); ++it){
-					for(int k=0;k<5;k++){
+					for(int k=0;k<6;k++){
        						os << (*it)[k] << "\t";						
 					}
 					os << std::endl;
 				}
+				playerstats[i][j].clear();
 				os.close();
 			}
 		}
@@ -170,17 +177,65 @@ int InfoGroupA::teamPossession(std::vector<Player*>& players, Ball* ball){
 			}
 		}
 	}
-	if (homedist < 2){
-		if (awaydist < 2){
+	if (homedist < 1.5){
+		if (awaydist < 1.5){
 			contested = -1;
 		}
 		else{contested = 0;}
 	}
 	else{
-		if(awaydist < 2){
+		if(awaydist < 1.5){
 			contested = 1;
 		}
 		else{contested = -2;}
 	}
 	return contested;
+}
+void InfoGroupA::computeScalar(std::vector<Player*> & players, Ball* ball, int posid){
+	double pi = 3.14;
+	std::vector<std::array<double,2>> centredAttack;
+	std::vector<std::array<double,2>> centredDefense;
+	std::array<double,2> ballPos = ball->getPos();
+	for(auto playerit = players.begin(); playerit < players.end();++playerit){
+		std::array<double, 2> tpos;
+		for (int i =0; i< 2;i++){
+			tpos[i] = (*playerit)->getPos()[i] - ballPos[i];
+		}
+		double theta = atan2(tpos[1],tpos[0]);
+		double r = pow(pow(tpos[0],2)+pow(tpos[1],2),0.5);
+		std::array<double,2> playPol;
+		playPol[0] = theta;
+		playPol[1] = r;
+		if ((*playerit)->getTeam()==posid){
+			centredAttack.push_back(playPol);
+		}else{	(*playerit)->setBallCentredPolar(playPol);}
+	}
+	for(auto playerdit = players.begin(); playerdit<players.end();++playerdit){
+		if((*playerdit)->getTeam()!=posid){
+			std::array<double, 2> tpos = (*playerdit)->getBallCentredPolar();
+			if (tpos[1]<20){
+				for(auto playerait = centredAttack.begin(); playerait<centredAttack.end();++playerait){
+					if ((*playerait)[1]>tpos[1]&&(*playerait)[1]<25){
+						if (tpos[0]>0.2-pi&&tpos[0]<pi-0.2){
+							if((*playerait)[0] > tpos[0] - 0.2&&(*playerait)[0]<tpos[0]+0.2){
+								(*playerdit)->plusAngScore();
+							}
+						}
+						else{
+							if(tpos[0]<=0.2-pi){
+								if((*playerait)[0] < tpos[0]+0.2||(*playerait)[0]>-tpos[0]-0.2){
+									(*playerdit)->plusAngScore();
+								}
+							}
+							else{
+								if((*playerait)[0] > tpos[0]-0.2||(*playerait)[0]<-tpos[0]+0.2){
+									(*playerdit)->plusAngScore();
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
