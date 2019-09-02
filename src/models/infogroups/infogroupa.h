@@ -12,8 +12,8 @@
 #include "../../helpers/functions.h"
 class InfoGroupA {
 	private:
-		std::array<std::array<std::vector<std::array<double,3>>,70>,2> dtdata;
-		std::array<std::array<std::vector<std::array<double,6>>,70>,2> playerstats;
+		std::array<std::array<std::vector<std::array<double,3>>,100>,2> dtdata;
+		std::array<std::array<std::vector<std::array<double,6>>,100>,2> playerstats;
 	public:
 		bool loadData();
 		void write(int mid);

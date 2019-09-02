@@ -6,7 +6,7 @@ bool InfoGroupA::loadData(){
 //		for(auto fileit = posFiles.begin();fileit<posFiles.end();fileit++){
 		for(int mid = 800000;mid<1100000;mid++){
 		//	int mid = (*fileit)->getMid();
-			Game * tgame = new Game(mid,"../idata/"); 
+			Game * tgame = new Game(mid,"/pc2014-data1/lah/data/data_files/"); 
 			if(tgame->readFile()==true&&tgame->storeMdata()==true){
 				std::vector<Frame*> frames = tgame->getFrames();
 		//		std::vector<PossessionFileLine*> lines = (*fileit)->getPosFilLin();
@@ -16,11 +16,13 @@ bool InfoGroupA::loadData(){
 				int fid;
 		//		int home;
 				bool prevFidBool;
-				std::array<std::array<std::array<double,6>,70>,2> prevPlayerstat;
+				std::array<std::array<std::array<double,6>,100>,2> prevPlayerstat;
 				for(auto frameit = frames.begin();frameit<frames.end();++frameit){
+					if(mid==803199){
+						std::cout << (*frameit)->getFid()<< std::endl;
+					}
 				//	bool loopPosFilLin = true;
 					int fid = (*frameit)->getFid();					
-					std::cout << fid << std::endl;
 				/*	while(loopPosFilLin){
 						std::array<int, 2> frameRange= (*lineit)->getFrameRange();
 						if(fid>=frameRange[0]){
@@ -52,7 +54,7 @@ bool InfoGroupA::loadData(){
 					if (home == 0 || home == 1){
 						computeScalar(players, ball, home);
 					}
-					std::array<std::array<std::array<double,6>,70>,2> playerstat;
+					std::array<std::array<std::array<double,6>,100>,2> playerstat;
 					std::array<double,3> dtinfo;
 					int team, num;
 					for(auto playerit = players.begin();playerit<players.end();++playerit){
@@ -69,6 +71,9 @@ bool InfoGroupA::loadData(){
 							possession = -2;
 						}
 						num = (*playerit)->getNum();
+						if (num>75){
+							std::cout << "error: player number is too high" <<std::endl;
+						}
 						playerstat[team][num][0] = fid;
 						playerstat[team][num][1] = (*playerit)->getClosestDist();
 						playerstat[team][num][4] = possession;
@@ -134,7 +139,7 @@ double InfoGroupA::closestVelocity(int team, int num){
 }
 void InfoGroupA::write(int mid){
 	for (int i=0;i<2;i++){
-		for (int j=0;j<70;j++){
+		for (int j=0;j<75;j++){
 			if(playerstats[i][j].size()>0){
 				std::string filename = "../data/infogroupa/" + std::to_string(mid) + "-" + std::to_string(i) + "_" + std::to_string(j) +".txt";
 				std::ofstream os;
