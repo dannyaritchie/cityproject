@@ -52,7 +52,7 @@ bool Game::readFile(){
 			//ball line so create frame
 			double ballx, bally;
 			sline >> bin >> fid;
-			tframe->addFid(fid);
+			tframe->addFid(5*fid);
 			for (int i = 0; i < 4; i++) {
 				sline >> bin;
 			}
@@ -327,4 +327,10 @@ std::vector<Frame*> Game::getFrames(){
 }
 int Game::getHome(){
     return homeNum;
+}
+int Game::getX(){
+	return pitchx;
+}
+int Game::getY(){
+	return pitchy;
 }

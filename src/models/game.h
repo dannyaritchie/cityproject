@@ -38,6 +38,9 @@ class Game {
 		void getScalar();
       		std::vector<Frame*> getFrames();
         	int getHome();
+		int getX();
+		int getY();
 
 };
 #endif
+

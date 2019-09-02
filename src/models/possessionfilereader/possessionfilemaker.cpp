@@ -39,13 +39,12 @@ void PossessionFileMaker::gameFrameMap(){
         }
     }
     inFile.close();
-    std::cout << matchStarts.size() << std::endl;
 }
  
 
 
 bool PossessionFileMaker::readFile(){
-     gameFrameMap();
+     	gameFrameMap();
 	std::ifstream inFile;
 	inFile.open("../idata/teampossessions.csv");
 	if (!inFile) {
@@ -83,12 +82,13 @@ bool PossessionFileMaker::readFile(){
 					std::stringstream sline(pline);
 					sline >> mid >> charbin >> intbin >> charbin >> intbin >> charbin >> intbin;
 					sline >> charbin >> tid >> charbin >> startFid >> charbin >>endFid;
-                    i++;
-                    if (matchStart == -1){
-                        std::cout << "Error - could not offset frames for game: " << mid << std::endl;
-                    }
-                    startFid = startFid - matchStart;
-                    endFid = endFid - matchStart;
+                   			 i++;
+					 matchStart = findMatchStart(mid);
+                 			   if (matchStart == -1){
+                 		       std::cout << "Error - could not offset frames for game: " << mid << std::endl;
+                    			}
+                   			 startFid = startFid - matchStart;
+                  			  endFid = endFid - matchStart;
 					PossessionFileLine * ttpossessionFileLine = new PossessionFileLine(tid,startFid,endFid);
 					tpossessionFileLine = ttpossessionFileLine;
 				}
