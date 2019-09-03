@@ -8,6 +8,8 @@
 #ifndef FUNCTIONS_H_
 #define FUNCTIONS_H_
 #include <array>
+#include<vector>
+#include"../models/game.h"
 double distance(double xa,double xb,double,double);
 //returns distance between two points
 double magnitude(std::array<double,2> vec);
@@ -18,6 +20,7 @@ double ballTime(double velInitial, double distance);
 //assumes constant velocity
 double distanceToMaxVel(double velMax, double accMax);
 std::array<double,2> ballPos(std::array<double,2> initial, std::array<double,2> final,double time,double velInitial);
+void closestPlayers(std::vector<Player*> & player);
 //returns position of ball after a time t given its end point, start point, initial velocity.
 //uses ballDist
 /*double timePlayerToBall(std::array<double,2> initial, std::array<double,2> final,double velInitial,double velMax, double accMax,double deaccMax);

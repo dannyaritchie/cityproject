@@ -11,13 +11,17 @@ Phase::Phase(int pframeLength, std::vector<Frame*>::iterator pframe, int phome, 
 	else{goalx = pitchx/2;}
 	goaly= pitchy/2;
 	int frames = 0;
-	while(frames<pframeLength-75){
+	while(frames<pframeLength-175){
 		FrameMetric tempMetric;
 		//get five closest attackersto goal
 		//set cumalitve marked
 		std::vector<PlayerWithDist> closestFivePlayerWith;
 		int marked = 0;
-		for(auto playerit = (*pframe)->getPlayers().begin();playerit<(*pframe)->getPlayers().end();++playerit){
+		std::vector<Player*> players = (*pframe)->getPlayers();
+		closestPlayers(players);
+		tempMetric.marked = 0;
+		for(auto playerit = players.begin();playerit<players.end();++playerit){
+			std::cout<<(*playerit)->getTeam() << ":" <<phome <<std::endl;
 			if((*playerit)->getTeam() == phome){
 				double dtoG = distance((*playerit)->getPos()[0],goalx,(*playerit)->getPos()[1],goaly);
 				if(closestFivePlayerWith.size()<5){
@@ -45,20 +49,30 @@ Phase::Phase(int pframeLength, std::vector<Frame*>::iterator pframe, int phome, 
 			}
 		}
 		//set their cumilative closest playerdist				
+		tempMetric.cumClosestFive = 0;
 		for(auto cplayerit = closestFivePlayerWith.begin(); cplayerit < closestFivePlayerWith.end();++cplayerit){
-			tempMetric.cumClosestFive+=(*cplayerit).player->getClosestDist();
+			Player* tplayer = (*cplayerit).player;
+			double dist = tplayer->getClosestDist();
+			std::cout <<"N"<< dist <<std::endl;
+			tempMetric.cumClosestFive+=dist;
 		}
 		tempMetric.ballGoalDist =	distance((*pframe)->getBall()->getPos()[0],goalx,(*pframe)->getBall()->getPos()[1],goaly);
-		auto pv = std::next(pframe, 15);
+		std::vector<Frame*>::iterator pv = std::next(pframe, 15);
+		Ball* ball= (*pv)->getBall();
+		int u = ball->getPos()[0];
 		tempMetric.forwardBallGoalDist = distance((*pv)->getBall()->getPos()[0],goalx,(*pv)->getBall()->getPos()[1],goaly)-tempMetric.ballGoalDist;
+		tempMetric.ballGoalDist =	distance((*pframe)->getBall()->getPos()[0],goalx,(*pframe)->getBall()->getPos()[1],goaly);
+		tempMetric.timeToEnd = pframeLength- frames;
+		if(tempMetric.ballGoalDist<40){
 		frameMetrics.push_back(tempMetric);
-		frames++;
+		}
+		frames=frames+5;
 		++pframe;
 	}
 }
 
 void Phase::writeCumClosest(std::ostream & os){
 	for (auto it = frameMetrics.begin();it<frameMetrics.end();++it){
-		os << (*it).ballGoalDist <<"\t"<< (*it).forwardBallGoalDist << "\t" <<(*it).cumClosestFive << std::endl;
+		os << (*it).marked <<"\t"<< (*it).forwardBallGoalDist << "\t" <<(*it).cumClosestFive << std::endl;
 	}
 }

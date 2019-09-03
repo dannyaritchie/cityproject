@@ -29,6 +29,24 @@ std::array<double,2> ballPos(std::array<double,2> initial, std::array<double,2> 
 	finalPos[0] = initial[0]+grad*finalPos[1];
 	return finalPos;
 }
+void closestPlayers(std::vector<Player*> & players) {
+	for (auto playerita = players.begin(); playerita < players.end();++playerita){
+			double closestDist = 1000;
+			Player* closestPlay;
+			for (auto playeritb = players.begin() ; playeritb < players.end();++playeritb){
+				if((*playeritb)->getTeam()!=(*playerita)->getTeam()){
+					double tdistance = distance((*playerita)->getPos()[0],(*playeritb)->getPos()[0],(*playerita)->getPos()[1],(*playeritb)->getPos()[1]);
+					if(tdistance<closestDist){
+						closestDist = tdistance;
+						closestPlay = *playeritb;
+					}
+				}
+			}
+			(*playerita)->setClosestDist(closestDist);
+			(*playerita)->setClosestPlay(closestPlay);
+		}
+}
+
 /*double timePlayerToBall(std::array<double,2> initial, std::array<double,2> final,std::array<double,2> velInitial,double velMax, double accMax,double deaccMax){
 	std::array<double,2> stopPos;
 	double velInitialMag = pow(pow(velInitial[0],2)+pow(velInitial[1],2),0.5);

@@ -6,10 +6,12 @@
 #include <fstream>
 #include <iostream>
 #include "../game.h"
+#include "infogroupa.h"
 struct FrameMetric {
 	double ballGoalDist, forwardBallGoalDist;
 	int marked;
 	double cumClosestFive;
+	double timeToEnd;
 };
 struct PlayerWithDist{
 	double dist;

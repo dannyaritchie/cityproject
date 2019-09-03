@@ -28,8 +28,8 @@ bool InfoGroupA::loadData(){
 								if(fid<=frameRange[1]){
 									loopPosFilLin = false;
 									if((*lineit)->getTid() == tgame->getHome()){
-										home = 1;
-									}else{home =-1;}
+										home = 0;
+									}else{home =1;}
 								}
 								else{
 									if(lineit<lineend){
@@ -93,7 +93,7 @@ bool InfoGroupA::loadData(){
 						}
 						prevFid = fid;
 					}
-					writeb((*fileit)->getPosFilLin(),tgame->getFrames(),tgame->getHome(),tgame->getX(),tgame->getY(),of);
+					writeb((*fileit)->getPosFilLin(),tgame->getFrames(),home,tgame->getX(),tgame->getY(),of);
 					//write(mid);
 					return true;
 				}
@@ -104,6 +104,7 @@ bool InfoGroupA::loadData(){
 
 			}	
 		}
+		of.close();
 //		delete tposfiles;
 		return true;
 	}
@@ -111,23 +112,6 @@ bool InfoGroupA::loadData(){
 //			std::cout << "could not open possession file" << std::endl;
 //			return false;
 //		}
-}
-void InfoGroupA::closestPlayers(std::vector<Player*> & players) {
-	for (auto playerita = players.begin(); playerita < players.end();++playerita){
-			double closestDist = 1000;
-			Player* closestPlay;
-			for (auto playeritb = players.begin() ; playeritb < players.end();++playeritb){
-				if((*playeritb)->getTeam()!=(*playerita)->getTeam()){
-					double tdistance = distance((*playerita)->getPos()[0],(*playeritb)->getPos()[0],(*playerita)->getPos()[1],(*playeritb)->getPos()[1]);
-					if(tdistance<closestDist){
-						closestDist = tdistance;
-						closestPlay = *playeritb;
-					}
-				}
-			}
-			(*playerita)->setClosestDist(closestDist);
-			(*playerita)->setClosestPlay(closestPlay);
-		}
 }
 double InfoGroupA::velocity(int team, int num){
 		return distance(dtdata[team][num][0][0],dtdata[team][num][2][0],dtdata[team][num][0][1],dtdata[team][num][2][1])/0.2;
@@ -245,29 +229,29 @@ void InfoGroupA::computeScalar(std::vector<Player*> & players, Ball* ball, int p
 void InfoGroupA::writeb(std::vector<PossessionFileLine*>  lines, std::vector<Frame*> frames, int homeNum, int pitchX,int pitchY,std::ostream & os){
 	std::vector<Frame*>::iterator frameStart = frames.begin();
 	std::vector<Frame*>::iterator frameEnd = frames.end();
+	int i = 0;
 	for (auto lineit = lines.begin();lineit<lines.end();++lineit){
-		if (frameStart<frameEnd-100){
+		std::array<int,2> frameRange = (*lineit)->getFrameRange();
 		bool inRange{true};
-			while(inRange){
-				std::cout << "poo" << std::endl;
-				std::array<int,2> frameRange = (*lineit)->getFrameRange();
-				int fid = (*frameStart)->getFid();
+		while(inRange){
+			int fid = (*frameStart)->getFid();
+	//		if(fid<(*frameEnd)->getFid()){
 				if (fid < frameRange[0]){
-					std::cout << fid << std::endl;
 					++frameStart;
 				}
-				if(fid=frameRange[0]){
-					std::cout<<fid<<std::endl;
+				if(fid==frameRange[0]){
 					Phase * tphase =new Phase(frameRange[1]-frameRange[0],frameStart,homeNum,pitchX,pitchY);
 					tphase->writeCumClosest(os);
 					inRange = false;
+					delete tphase;
+				}	
+				if(fid>frameRange[0]){
+					inRange =false;
 				}
-				if(fid>frameRange[1]){
-					inRange = false;
-				}
-
-			}
+	//		}
+	//		else{inRange = false;}
 		}
+
 	}
 	std::cout<< pitchX << std::endl;
 	return;
