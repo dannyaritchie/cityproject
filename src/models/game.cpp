@@ -22,7 +22,7 @@ Game::Game(int pmid, std::string pfilename): filename{pfilename}, mid{pmid}{};
 void Game::addFrame(Frame* pframe){
 	frames.push_back(pframe);
 }
-bool Game::readFile(){
+bool Game::readFile(bool mapped){
 	std::ifstream inFile;
 	std::string csvfile = filename + std::to_string(mid) + ".csv";
 	inFile.open(csvfile);
@@ -77,7 +77,12 @@ bool Game::readFile(){
 							home = 1;
 						}
 						else { home = 0; }
-						Player* tplayer = new Player(num, playx, playy, home);
+						if(!mapped){
+							Player* tplayer = new Player(num, playx, playy, home);
+						}
+						if(mapped){
+							std::array<double,2> playid;
+
 						tframe->addPlayer(tplayer);
 
 					}

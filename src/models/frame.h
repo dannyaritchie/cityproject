@@ -16,7 +16,7 @@ private:
 public:
 	Frame();
 	~Frame();
-
+	void getPlayersSplit(std::vector<Player*>& attackPlay,std::vector<Player*>& defensePlay);
 	void addPlayer(Player*);
 	void addBall(Ball* pball);
 	void objectInfo(std::ostream & os,int type);

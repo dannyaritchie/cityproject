@@ -63,9 +63,10 @@ Phase::Phase(int pframeLength, std::vector<Frame*>::iterator pframe, int phome, 
 		tempMetric.forwardBallGoalDist = distance((*pv)->getBall()->getPos()[0],goalx,(*pv)->getBall()->getPos()[1],goaly)-tempMetric.ballGoalDist;
 		tempMetric.ballGoalDist =	distance((*pframe)->getBall()->getPos()[0],goalx,(*pframe)->getBall()->getPos()[1],goaly);
 		tempMetric.timeToEnd = pframeLength- frames;
-		if(tempMetric.ballGoalDist<40){
+	//	if(tempMetric.ballGoalDist<80){
 		frameMetrics.push_back(tempMetric);
-		}
+	//:w
+	//	}
 		frames=frames+5;
 		++pframe;
 	}

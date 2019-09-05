@@ -10,6 +10,13 @@ Frame::~Frame(){
 	}
 	delete ball;
 }
+void Frame::getPlayersSplit(std::vector<Player*>& attackPlay,std::vector<Player*>& defensePlay) {
+	for(auto playerit = players.begin();playerit<players.end();++playerit){
+		if((*playerit)->getTeam()==0){
+			attackPlay.push_back(*playerit);
+		}else{defensePlay.push_back(*playerit);}
+	}
+}	
 void Frame::addPlayer(Player* player){
 	players.push_back(player);
 }
