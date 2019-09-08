@@ -9,7 +9,6 @@
 #include<sstream>
 #include<string>
 #include<array>
-
 //Game::Game(){
 //	filepath = "/pc2014-data1/lah/data/data_files/987881";
 //}
@@ -22,7 +21,7 @@ Game::Game(int pmid, std::string pfilename): filename{pfilename}, mid{pmid}{};
 void Game::addFrame(Frame* pframe){
 	frames.push_back(pframe);
 }
-bool Game::readFile(bool mapped){
+bool Game::readFile(bool mapped, Idmap& idmapd){
 	std::ifstream inFile;
 	std::string csvfile = filename + std::to_string(mid) + ".csv";
 	inFile.open(csvfile);
@@ -77,14 +76,12 @@ bool Game::readFile(bool mapped){
 							home = 1;
 						}
 						else { home = 0; }
-						if(!mapped){
-							Player* tplayer = new Player(num, playx, playy, home);
-						}
 						if(mapped){
-							std::array<double,2> playid;
-
+							std::array<int,2> playid={num, home};
+							num = idmapd.findid(playid);
+						}
+						Player* tplayer = new Player(num, playx, playy, home);
 						tframe->addPlayer(tplayer);
-
 					}
 					else {
 						lineSave = pline;

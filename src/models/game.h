@@ -3,7 +3,7 @@
 #include <vector>
 #include "frame.h"
 #include"wholeplayer.h"
-
+#include "idmap.h"
 class Game {
 	private:
 		std::vector<WholePlayer*> playersGame;
@@ -14,12 +14,11 @@ class Game {
 		//std::string filepath;
 		double pitchx, pitchy;
 		int homeNum, awayNum, mid;
-
 	public:
 		Game(int, std::string);
 		~Game();
 		void addFrame(Frame*);
-		bool readFile();
+		bool readFile(bool, Idmap&);
 	        bool storeMdata();
 		//reads in Mdata for a game
 		void writeFile(std::ofstream & os,int type);

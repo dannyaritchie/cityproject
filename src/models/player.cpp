@@ -35,8 +35,8 @@ Player* Player::getClosestPlay(){
 const double& Player::getClosestDist(){
 	return closestDist;
 }
-int Player::getPid(){
-	return 100*home + num;
+int Player::getMappedPid(){
+	return num;
 }
 void Player::setBallCentredPolar(std::array<double,2> tpol){
 	ballCentredPolar = tpol;

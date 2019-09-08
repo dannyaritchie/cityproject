@@ -17,7 +17,7 @@ class Player : public FrameObjects{
 		void infoToText(std::ostream & os, int type);
 		int getTeam();
 		int getNum();
-		int getPid();
+		int getMappedPid();
 		void setClosestPlay(Player*);
 		void setClosestDist(double);
 		Player* getClosestPlay();
