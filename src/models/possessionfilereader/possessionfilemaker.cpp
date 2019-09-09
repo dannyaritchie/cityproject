@@ -66,7 +66,7 @@ bool PossessionFileMaker::readFile(){
 		std::vector<PossessionFileLine*> tlines;
 		while(sameMid){
 			if(!inFile){
-				sameMid = false;
+				return true;
 			}
 			else{
 				int mid, tid, startFid, endFid;

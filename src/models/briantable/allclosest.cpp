@@ -5,6 +5,21 @@
 #include <fstream>
 #include <iostream>
 #include "../idmap.h"
+
+void findiftro::addDist(double tdistance,int pid){
+	if(closest[pid].size()==3){
+		closest[pid].erase(closest[pid].begin());
+ 	}
+	closest[pid].push_back(tdistance);
+}
+std::array<double,2> findiftro::passPair(int pid){
+	std::array<double,2> temp;
+	if(consecutive[pid] > 2){
+		temp ={closest[pid][1], (closest[pid][0]-closest[pid][2])/0.4};
+	}else{temp = {closest[pid][1],0};}
+	return temp;
+}
+
 std::array<double,2> closeplayer::pullPair(int pid){
 	std::array<double,2> temp = trolley.passPair(pid);
 	tempInfo.framePlayerPressures.push_back(temp); 	
@@ -18,19 +33,8 @@ std::array<double,2> closeplayer::pullWritePassPair(int pid){
 void closeplayer::writePair(std::array<double,2> temp){
 	playerPressures << temp[0] << "\t" << temp[1] << ",\t";
 }
-void findiftro::addDist(double tdistance,int pid){
-	if(closest[pid].size()==3){
-		closest[pid].erase(closest[pid].begin());
- 	}
-	closest[pid].push_back(tdistance);
-}
-std::array<double,2> findiftro::passPair(int pid){
-	std::array<double,2> temp;
-	if(consecutive[pid] > 2){
-		temp ={closest[pid][1], closest[pid][0]-closest[pid][2]};
-	}else{temp = {closest[pid][1],0};}
-	return temp;
-}
+
+AllClosest::AllClosest(int pdist): distanceThreshold{pdist}{}
 void AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previousFid,int prevAttackingTeam){
 //***
 //a member function to add player distances below a set threshhold to a container of 2-arrays
@@ -45,17 +49,17 @@ void AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previousF
 	}
 	for (auto playerit = homePlayers.begin() ; playerit < homePlayers.end();++playerit){
 		int pid = (*playerit)->getMappedPid();
-		double closestDist = 15;
 		for (auto playeritb = awayPlayers.begin();playeritb < awayPlayers.end();++playeritb){
 			double tdistance = distance((*playerit)->getPos()[0],(*playeritb)->getPos()[0],(*playerit)->getPos()[1],(*playeritb)->getPos()[1]);
-			if(tdistance<closestDist){
-				int pidb = (*playeritb)->getMappedPid();
+			int pidb = (*playeritb)->getMappedPid();
+			if(tdistance<distanceThreshold){
 				allPlayers[pid].trolley.addDist(tdistance, pidb);
 				if(consec){
 					allPlayers[pid].trolley.consecutive[pidb] +=1;
 				}else{allPlayers[pid].trolley.consecutive[pidb] = 0;}
 				allPlayers[pidb].writePair(allPlayers[pid].pullWritePassPair(pidb));
 			}
+			else{allPlayers[pid].trolley.consecutive[pidb] = 0;}
 		}
 	}
 	for (auto allPlayerit = allPlayers.begin();allPlayerit < allPlayers.end();++allPlayerit){

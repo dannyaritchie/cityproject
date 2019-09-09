@@ -13,19 +13,25 @@ int main() {
 	test->loadData();
 	std::cout<<"yay" << std::endl;
 	return 0;*/
+	int distanceThreshold = 15;
 	PossessionFileMaker * tposFiles= new PossessionFileMaker();
+	std::vector<PossessionFileLine*> linesa;
+	std::vector<PossessionFileLine*> linesb;
+	bool done = true;
 	if(tposFiles->readFile()==true){
 		std::vector<PossessionFile*> posFiles = tposFiles->getPosFiles();
+		tposFiles->fileWriter();
 		for(auto fileit = posFiles.begin();fileit<posFiles.end();fileit++){
 			if((*fileit)->getMid() == 914033){	
 				int mid = (*fileit)->getMid();
 				Idmap idmapd;
 				Game * tgame = new Game(mid,"../idata/"); 
 				if(tgame->readFile(true,idmapd)==true&&tgame->storeMdata()==true){
-					AllClosest * tallClosest = new AllClosest();	
+					AllClosest * tallClosest = new AllClosest(distanceThreshold);	
 					tallClosest->openStreams(mid,idmapd);
 					std::vector<Frame*> frames = tgame->getFrames();
 					std::vector<PossessionFileLine*> lines = (*fileit)->getPosFilLin();
+					std::cout << lines.size()<<std::endl;
 					std::vector<PossessionFileLine*>::iterator lineit = lines.begin();
 					std::vector<PossessionFileLine*>::iterator lineend = lines.end();
 					int prevFid;
@@ -37,7 +43,6 @@ int main() {
 					for(auto frameit = frames.begin();frameit<frames.end();++frameit){
 						bool loopPosFilLin = true;
 						int fid = (*frameit)->getFid();					
-	std::cout << fid<< std::endl;
 						while(loopPosFilLin){
 							std::array<int, 2> frameRange= (*lineit)->getFrameRange();
 							if(fid>=frameRange[0]){
@@ -64,6 +69,7 @@ int main() {
 						}
 						tallClosest->addPlayers(frameit, prevFid, prevAttackingTeam);
 						prevAttackingTeam = attackingTeam;
+						prevFid = fid;
 					}
 					tallClosest->closeStreams();
 					delete tallClosest;
