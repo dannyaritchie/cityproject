@@ -15,7 +15,10 @@ add_executable(Project src/main.cpp
     	src/models/possessionfilereader/possessionfileline.cpp
     	src/models/possessionfilereader/possessionfile.cpp 
     	src/models/possessionfilereader/possessionfilemaker.cpp
-	src/models/infogroups/infogroupa.cpp
+	#src/models/infogroups/infogroupa.cpp
+	#src/models/infogroups/phase.cpp
+	src/models/briantable/allclosest.cpp
+	src/models/idmap.cpp
 	#src/models/wholeplayer.cpp 
     	#src/models/angmod/computeangle.cpp
 	)
