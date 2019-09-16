@@ -10,9 +10,9 @@
 struct findiftro {
 	//finite difference calculator.
 	//there is one of these for every player
-	std::array<std::vector<double>,28> closest;
+	std::array<std::vector<double>,45> closest;
 	//closest is an array for every player, with each point having a vector that stores the last three distances to that player
-	std::array<int,28> consecutive;
+	std::array<int,45> consecutive;
 	//consecutive is an integer that keeps track of how long its been since a frame break
 	//if it is less that 3 frames since a frame break then the velocity as calculated will be meaningless. consecutive provides 
 	//this information so velocity can be set to 0.it also catches cases where a player was not inside radius the frames before
@@ -49,7 +49,7 @@ class AllClosest {
 //Note:: playerid here is a mappedplayer id where each player gets assigned a unique lowest possible integer (actually just gets placed in vector and player id is vector place)
 	private:
 		int distanceThreshold;
-		std::array<closeplayer,28> allPlayers;
+		std::array<closeplayer,45> allPlayers;
 		std::vector<Player*> homePlayers;
 		std::vector<Player*> awayPlayers;	
 	public:
