@@ -35,7 +35,9 @@ void closeplayer::writePair(std::array<double,2> temp){
 	playerPressures << temp[0] << " " << temp[1] << ",\t";
 }
 
-AllClosest::AllClosest(int pdist): distanceThreshold{pdist}{}
+AllClosest::AllClosest(int pdist, int playerSize): distanceThreshold{pdist}{
+	allPlayers.resize(playerSize);
+}
 void AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previousFid,int prevAttackingTeam){
 //***
 //a member function to add player distances below a set threshhold to a container of 2-arrays
@@ -46,7 +48,7 @@ void AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previousF
 	}else{consec== false;}
 	(*frameit)->getPlayersSplit(homePlayers, awayPlayers);
 	for (auto allPlayerit = allPlayers.begin();allPlayerit < allPlayers.end();++allPlayerit){
-		(*allPlayerit).playerPressures << previousFid<<" " << prevAttackingTeam << ":\t";	
+		(*allPlayerit).playerPressures << previousFid<<"\t|" << prevAttackingTeam << "\t|";	
 	}
 	for (auto playerit = homePlayers.begin() ; playerit < homePlayers.end();++playerit){
 		int pid = (*playerit)->getMappedPid();
@@ -74,6 +76,7 @@ void AllClosest::openStreams(int mid, Idmap idmapd){
 		std::string filename = "../data/allplayerdistances/" + std::to_string(mid) + "_" + pid + ".txt";
 		(*playerit).playerPressures.open(filename);
 		(*playerit).playerPressures << std::setprecision(2)<<std::fixed;
+		(*playerit).playerPressures << "FrameID" << "\t|" << "PosID" << "\t|" << "Distance_to_playeri Rate_of_change, ..." << std::endl;
 	}
 }
 void AllClosest::closeStreams(){

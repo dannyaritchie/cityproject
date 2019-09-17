@@ -23,27 +23,27 @@ int main() {
 		tposFiles->fileWriter();
 		for(auto fileit = posFiles.begin();fileit<posFiles.end();fileit++){
 			int mid = (*fileit)->getMid();
-		if(mid == 987715 ||mid == 855443){
+		if(mid == 803271){
+			std::cout << mid << std::endl;
 			Idmap idmapd;
 			Game * tgame = new Game(mid,"/pc2014-data1/lah/data/data_files/"); 
 			if(tgame->readFile(true,idmapd)==true&&tgame->storeMdata()==true){
-				
-				AllClosest * tallClosest = new AllClosest(distanceThreshold);	
+				AllClosest * tallClosest = new AllClosest(distanceThreshold,idmapd.getSize());	
 				tallClosest->openStreams(mid,idmapd);
 				std::vector<Frame*> frames = tgame->getFrames();
 				std::vector<PossessionFileLine*> lines = (*fileit)->getPosFilLin();
-				std::cout << lines.size()<<std::endl;
 				std::vector<PossessionFileLine*>::iterator lineit = lines.begin();
 				std::vector<PossessionFileLine*>::iterator lineend = lines.end();
-				int prevFid;
+				int prevFid = -1;
 				int fid;
-				int prevAttackingTeam;
+				int prevAttackingTeam = -1;
 				int attackingTeam;
 				bool prevFidBool;
 				std::array<std::array<std::array<double,6>,100>,2> prevPlayerstat;
 				for(auto frameit = frames.begin();frameit<frames.end();++frameit){
 					bool loopPosFilLin = true;
 					int fid = (*frameit)->getFid();					
+					std::cout<< fid <<std::endl;
 					while(loopPosFilLin){
 						std::array<int, 2> frameRange= (*lineit)->getFrameRange();
 						if(fid>=frameRange[0]){
@@ -68,7 +68,9 @@ int main() {
 							attackingTeam = -1;
 						}
 					}
+					std::cout<<"here" << std::endl;
 					tallClosest->addPlayers(frameit, prevFid, prevAttackingTeam);
+					std::cout<<"here" << std::endl;
 					prevAttackingTeam = attackingTeam;
 					prevFid = fid;
 				}
@@ -76,6 +78,7 @@ int main() {
 				delete tallClosest;
 			}
 			delete tgame;
+			std::cout << "done" << std::endl;
 			}
 		}
 	}
