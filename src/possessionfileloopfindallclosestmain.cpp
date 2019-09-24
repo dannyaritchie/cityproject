@@ -2,6 +2,7 @@
 #include <vector>
 #include <array>
 #include <iterator>
+#include <string>
 #include "models/game.h"
 #include "models/possessionfilereader/possessionfilemaker.h"
 #include "models/briantable/allclosest.h"
@@ -23,21 +24,25 @@ int main() {
 //		tposFiles->fileWriter();
 //		for(auto fileit = posFiles.begin();fileit<posFiles.end();fileit++){
 		PossessionFile * posFile = tposFiles->fileSpecificReader(855206); 
-			int mid = (*fileit)->getMid();
-		if(mid == 803271){
+		int mid = (*posFile->getMid();
+		if(mid == 855206){
 			std::cout << mid << std::endl;
 			Idmap idmapd;
-			Game * tgame = new Game(mid,"/pc2014-data1/lah/data/data_files/"); 
+			Game * tgame = new Game(mid,"../idata/"); 
 			if(tgame->readFile(true,idmapd)==true&&tgame->storeMdata()==true){
 				AllClosest * tallClosest = new AllClosest(distanceThreshold,idmapd.getSize());	
-				tallClosest->openStreams(mid,idmapd);
+				std::ofstream os;
+				std::string filename = "../data/pressuredata/" + std::to_string(mid) + ".txt";
+				os.open(filename)
+				os << "pressure,time_till_possession_change" << std::endl;
 				std::vector<Frame*> frames = tgame->getFrames();
-				std::vector<PossessionFileLine*> lines = (*fileit)->getPosFilLin();
+				std::vector<PossessionFileLine*> lines = posFile->getPosFilLin();
 				std::vector<PossessionFileLine*>::iterator lineit = lines.begin();
 				std::vector<PossessionFileLine*>::iterator lineend = lines.end();
 				int prevFid = -1;
 				int fid;
 				int prevAttackingTeam = -1;
+				int prevTimeTillPosChange = 0;
 				int attackingTeam;
 				bool prevFidBool;
 				std::array<std::array<std::array<double,6>,100>,2> prevPlayerstat;
@@ -45,6 +50,7 @@ int main() {
 					bool loopPosFilLin = true;
 					int fid = (*frameit)->getFid();					
 					std::cout<< fid <<std::endl;
+					double timeTillPosChange;
 					while(loopPosFilLin){
 						std::array<int, 2> frameRange= (*lineit)->getFrameRange();
 						if(fid>=frameRange[0]){
@@ -53,6 +59,7 @@ int main() {
 								if((*lineit)->getTid() == tgame->getHome()){
 									attackingTeam = 0;
 								}else{attackingTeam =1;}
+								timeTillPosChange = (frameRange[1]-fid)*0.2;
 							}
 							else{
 								if(lineit<lineend){
@@ -69,13 +76,13 @@ int main() {
 							attackingTeam = -1;
 						}
 					}
-					std::cout<<"here" << std::endl;
-					tallClosest->addPlayers(frameit, prevFid, prevAttackingTeam);
-					std::cout<<"here" << std::endl;
+					double framePressure = tallClosest->addPlayers(frameit, prevFid, prevAttackingTeam);
+					os << framePressure << prevTimeTillPosChange << std::endl;
 					prevAttackingTeam = attackingTeam;
 					prevFid = fid;
+					prevTimeTillPosChange = timeTillPosChange;
 				}
-				tallClosest->closeStreams();
+				os.close();
 				delete tallClosest;
 			}
 			delete tgame;
