@@ -41,8 +41,15 @@ struct closeplayer {
 	//pulls info from trolley of distance to player with pid, writes this for its info file 
 	//and also returns info so it can bewritten to other players info file	
 	void writePair(std::array<double,2> info_pair);
+	void passPair(std::array<double,2> info_pair);
 	//writes info_pair to players output stream
 };
+
+struct pressurersum {
+	pressuresum();
+	int pressure;
+	void addPressure(std::array<double,2>);
+}		
 class AllClosest {
 //class to find closest player distance and rate of change. should be created outside a frame loop. openstreams should be called before frame loop and close streams
 //after frameloop. needs to be a passed a frame iterator,previous frame id, previous attacking team id and distance threshold. previous because so it can write the velocity it is always writing information for the previous frame.
@@ -54,7 +61,7 @@ class AllClosest {
 		std::vector<Player*> awayPlayers;	
 	public:
 		AllClosest(int distanceThreshold, int numberOfPlayers);
-		void addPlayers(std::vector<Frame*>::iterator currentFrameit,int previousFid, int prevAttackingTeamid);
+		std::array<double,2> addPlayers(std::vector<Frame*>::iterator currentFrameit,int previousFid, int prevAttackingTeamid);
 		//gets home and away player vectors for given frame
 		//calculates all distances and if less than distance Threshold adds information to players trolley
 		//this is so rate of change can be calculated in same loop 

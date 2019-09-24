@@ -13,33 +13,34 @@
 #include<sstream>
 
 void PossessionFileMaker::gameFrameMap(){
-    std::string filename = "../idata/matchstartandend.csv";
-    std::ifstream inFile;
-    inFile.open(filename);
-    if(!inFile){
-        std::cout << "no matchstart file";
-    }
-    char charbin;
-    int intbin;
-    int startFrame;
-    int mid;
-    std::string line;
-    std::getline(inFile, line);
-    while(inFile){
-        for (int i =0;i<4;i++){
-            std::getline(inFile, line);
-            if(i==0){
-                std::stringstream lineStream(line);
-                lineStream>>mid>>charbin>>intbin>>charbin>>startFrame;
-                std::array<int,2> temp;
-                temp[0] = mid;
-                temp[1] = startFrame;
-                matchStarts.push_back(temp);
-            }
-        }
-    }
-    inFile.close();
+	std::string filename = "../idata/matchstartandend.csv";
+   	std::ifstream inFile;
+   inFile.open(filename);
+   if(!inFile){
+       std::cout << "no matchstart file";
+   }
+   char charbin;
+   int intbin;
+   int startFrame;
+   int mid;
+   std::string line;
+   std::getline(inFile, line);
+   while(inFile){
+       for (int i =0;i<4;i++){
+           std::getline(inFile, line);
+           if(i==0){
+               std::stringstream lineStream(line);
+               lineStream>>mid>>charbin>>intbin>>charbin>>startFrame;
+               std::array<int,2> temp;
+               temp[0] = mid;
+               temp[1] = startFrame;
+               matchStarts.push_back(temp);
+           }
+       }
+   }
+   inFile.close();
 }
+
  
 
 
@@ -113,6 +114,27 @@ bool PossessionFileMaker::readFile(){
 	}
 	return true;
 }
+PossessionFile * PossessionFileMaker::fileSpecificReader(int mid){
+	std::string filename = "../idata/pos_" + std::to_string(mid) + ".txt";
+	std::ifstream inFile;
+	inFile.open(filename);
+	if(!inFile){
+		std::cout << "no matchstart file";
+	}
+	std::vector<PossessionFileLine*> tlines;
+	while(inFile){
+		std::string pline;
+		std::getline(inFile,pline);
+		std::stringstream sline(pline);
+		int tid, frameStart, frameEnd;
+		sline >>  tid >> frameStart >> frameEnd;
+		PossessionFileLine * tpossessionFileLine = new PossessionFileLine(tid, frameStart, frameEnd);
+		tlines.push_back(tpossessionFileLine);
+	}
+	PossessionFile * tpossessionFile = new PossessionFile(mid, tlines);
+	return tpossessionFile;		
+}
+
 void PossessionFileMaker::fileWriter(){
 	for(auto fileit = possessionFiles.begin(); fileit<possessionFiles.end();++fileit){
 		std::string filename = "../data/posdata/" + std::to_string((*fileit)->getMid()) + ".txt";
@@ -121,6 +143,19 @@ void PossessionFileMaker::fileWriter(){
 		(*fileit)->osLines(os);
 		os.close();
 	}
+}
+void PossessionFileMaker::fileSpecificWriter(int  mid){
+	for(auto fileit = possessionFiles.begin(); fileit<possessionFiles.end();++fileit){
+		if((*fileit)->getMid() == mid){
+			std::string filename = "../idata/pos_" + std::to_string((*fileit)->getMid()) + ".txt";
+			std::ofstream os;
+			os.open(filename);
+			(*fileit)->osLines(os);
+			os.close();
+			return;
+		}
+	}
+	std::cout << "could not find match";
 }
 
 int PossessionFileMaker::findMatchStart(int mid){

@@ -28,21 +28,34 @@ std::array<double,2> closeplayer::pullPair(int pid){
 }
 std::array<double,2> closeplayer::pullWritePassPair(int pid){
 	std::array<double,2> temp = trolley.passPair(pid);
-	playerPressures << temp[0] << " " << temp[1] << ",\t";
+//	playerPressures << temp[0] << " " << temp[1] << ",\t";
 	return temp;
 }
 void closeplayer::writePair(std::array<double,2> temp){
 	playerPressures << temp[0] << " " << temp[1] << ",\t";
 }
+void closeplayer::passPair(std::array<double,2> temp){
+	tempInfo.framePlayerPressures.push_back(temp);
+}
+
+pressuresum::pressuresum(){
+	pressure = 0;
+}
+void pressuresum::addPressure(std::array<double,2> temp){
+	if (temp[1] > 0){
+		pressure += temp[1]/temp[0];
+	}
+}
 
 AllClosest::AllClosest(int pdist, int playerSize): distanceThreshold{pdist}{
 	allPlayers.resize(playerSize);
 }
-void AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previousFid,int prevAttackingTeam){
+std::array<double,2> AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previousFid,int prevAttackingTeam){
 //***
 //a member function to add player distances below a set threshhold to a container of 2-arrays
 //also creates a differential class
 	bool consec;
+	pressuresum pressureCalc();
 	if((*frameit)->getFid()==previousFid + 5){
 		consec = true;
 	}else{consec== false;}
@@ -60,7 +73,8 @@ void AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previousF
 				if(consec){
 					allPlayers[pid].trolley.consecutive[pidb] +=1;
 				}else{allPlayers[pid].trolley.consecutive[pidb] = 0;}
-				allPlayers[pidb].writePair(allPlayers[pid].pullWritePassPair(pidb));
+			//	allPlayers[pidb].writePair(allPlayers[pid].pullWritePassPair(pidb));
+				pressureCalc.addPressure(allPlayers[pid].pullWritePassPair(pidb));	
 			}
 			else{allPlayers[pid].trolley.consecutive[pidb] = 0;}
 		}

@@ -260,7 +260,7 @@ bool Game::storeMdata(){
     	std::string mdatafile = filename + std::to_string(mid) + ".mdata";
 	inFile.open(mdatafile);
 	if (!inFile) {
-		std::cout << "Unable to open file";
+		std::cout << "Unable to open Mdata file";
 		return false;
 	}
 	int bin;
