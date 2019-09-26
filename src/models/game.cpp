@@ -330,9 +330,9 @@ std::vector<Frame*> Game::getFrames(){
 int Game::getHome(){
     return homeNum;
 }
-int Game::getX(){
+double Game::getX(){
 	return pitchx;
 }
-int Game::getY(){
+double Game::getY(){
 	return pitchy;
 }

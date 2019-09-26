@@ -49,10 +49,13 @@ struct closeplayer {
 
 struct pressuresum {
 	pressuresum();
-	double pressure;
+	std::array<double, 100> pressure;
 	void addPressurea(std::array<double,2>);
 	void addPressureb(std::array<double,2>);
 	void addPressurec(std::array<double,2>, double);
+	void addPressured(std::array<double,2>);
+	void addPressures(std::array<double,2>);
+
 };		
 
 class AllClosest {
@@ -64,9 +67,12 @@ class AllClosest {
 		std::vector<closeplayer> allPlayers;
 		std::vector<Player*> homePlayers;
 		std::vector<Player*> awayPlayers;	
+		double goaly, agoalx, hgoalx;
 	public:
 		AllClosest(int distanceThreshold, int numberOfPlayers);
-		double addPlayers(std::vector<Frame*>::iterator currentFrameit,int previousFid, int prevAttackingTeamid);
+		//alternative constructor for goal position
+		AllClosest(int distanceThreshold, int numberOfPlayers, double pitchx, double pitchy);
+		std::array<double,100> addPlayers(std::vector<Frame*>::iterator currentFrameit,int previousFid, int prevAttackingTeamid);
 		//gets home and away player vectors for given frame
 		//calculates all distances and if less than distance Threshold adds information to players trolley
 		//this is so rate of change can be calculated in same loop 

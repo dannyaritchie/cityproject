@@ -32,12 +32,14 @@ int main() {
 			Idmap idmapd;
 			Game * tgame = new Game(mid,"../idata/"); 
 			if(tgame->readFile(true,idmapd)==true&&tgame->storeMdata()==true){
-				AllClosest * tallClosest = new AllClosest(distanceThreshold,idmapd.getSize());	
-				std::ofstream os;
-				std::string filename = "../data/pressuredata/" + std::to_string(mid) + ".txt";
-				os.open(filename);
-				os << "pressure,time_till_possession_change" << std::endl;
-				os << std::setprecision(2)<<std::fixed;
+				AllClosest * tallClosest = new AllClosest(distanceThreshold,idmapd.getSize(), tgame->getX(), tgame->getY());	
+				std::ofstream os[100];
+				for(int i = 0; i<100;i++){
+					std::string filename = "../data/pressuredata/" + std::to_string(mid) + "_" + std::to_string(i) + ".txt";
+					os[i].open(filename);
+					os[i] << "pressure,time_till_possession_change" << std::endl;
+					os[i] << std::setprecision(2)<<std::fixed;
+				}
 				std::vector<Frame*> frames = tgame->getFrames();
 				std::vector<PossessionFileLine*> lines = posFile->getPosFilLin();
 				std::vector<PossessionFileLine*>::iterator lineit = lines.begin();
@@ -52,7 +54,6 @@ int main() {
 				for(auto frameit = frames.begin();frameit<frames.end();++frameit){
 					bool loopPosFilLin = true;
 					int fid = (*frameit)->getFid();					
-					std::cout<< fid <<std::endl;
 					double timeTillPosChange;
 					while(loopPosFilLin){
 						std::array<int, 2> frameRange= (*lineit)->getFrameRange();
@@ -79,13 +80,17 @@ int main() {
 							attackingTeam = -1;
 						}
 					}
-					double framePressure = tallClosest->addPlayers(frameit, prevFid, prevAttackingTeam);
-					os << framePressure << "," << prevTimeTillPosChange << std::endl;
+					std::array<double,100> framePressure = tallClosest->addPlayers(frameit, prevFid, prevAttackingTeam);
+					for(int i = 0;i<100;i++){
+						os[i] << framePressure[i] << "," << prevTimeTillPosChange << std::endl;
+					}
 					prevAttackingTeam = attackingTeam;
 					prevFid = fid;
 					prevTimeTillPosChange = timeTillPosChange;
 				}
-				os.close();
+				for(int i= 0;i<100;i++){
+					os[i].close();
+				}
 				delete tallClosest;
 			}
 			delete tgame;

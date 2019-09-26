@@ -48,41 +48,75 @@ void closeplayer::passPair(std::array<double,2> temp){
 }
 
 pressuresum::pressuresum(){
-	pressure = 0;
+	for(int i = 0;i<100;i++){
+		pressure[i] = 0;
+	}
 }
 void pressuresum::addPressurea(std::array<double,2> temp){
 	if (temp[1] > 0){
-		pressure += temp[1]/temp[0];
+		pressure[0] += temp[1]/temp[0];
+	}
+}
+void pressuresum::addPressures(std::array<double,2> temp){
+	if (temp[1] <= 0){
+		if(temp[0] < 2){
+			pressure[0]+=0.5;
+		}
+	}
+	else{
+		pressure[0]+=temp[1]/temp[0];
 	}
 }
 void pressuresum::addPressureb(std::array<double,2> temp){
 	if (temp[1] <= 0){
 		if (temp[0] < 2){
-			pressure += 2.5;
+			for(int i = 0; i<100; i++){
+				pressure[i] += i*0.02;
+			}
 		}
 	}
 	else{
-		pressure += temp[1]/temp[0];
+		for(int i = 0; i<100; i++){
+			pressure[i] += temp[1]/temp[0];
+		}
 	}
 }
 void pressuresum::addPressurec(std::array<double,2> temp, double ballDist){
-	double ballMult;
-	if (ballDist>1){
+	double ballMult = ballDist;
+	if (ballDist>0.01){
 		ballMult = 1/ballDist;
-	}else{ballMult = 1;}
+	}else{ballMult = 100;}
 	if (temp[1] <= 0){
 		if (temp[0] < 2){
-			pressure += 2.5*ballMult;
+			pressure[0] += 1.5*ballMult;
 		}
 	}
 	else{
-		pressure += ballMult*temp[1]/temp[0];
+		pressure[0] += ballMult*temp[1]/temp[0];
 	}
 }
+void pressuresum::addPressured(std::array<double,2> temp){
+	if (temp[0] < 2){
+		pressure[0] += 1.5;
+	}
+	else{
+		if(temp[1] >= 0){
+			pressure[0] += temp[1]/temp[0];
+		}
+	}
+}
+
 AllClosest::AllClosest(int pdist, int playerSize): distanceThreshold{pdist}{
 	allPlayers.resize(playerSize);
 }
-double AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previousFid,int prevAttackingTeam){
+AllClosest::AllClosest(int pdist, int playerSize, double pitchx, double pitchy): distanceThreshold{pdist}{
+	allPlayers.resize(playerSize);
+	goaly = pitchy/2;
+	agoalx = pitchx/2;
+	hgoalx = -pitchx/2;
+	std::cout << agoalx << "<" << hgoalx << "<" << goaly << std::endl;
+}
+std::array<double, 100> AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previousFid,int prevAttackingTeam){
 //***
 //a member function to add player distances below a set threshhold to a container of 2-arrays
 //also creates a differential class
@@ -105,21 +139,26 @@ double AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previou
 				//find distancebetween attacking player and ball
 				int attackingPid;
 				Player * attackingPlayer;
+				double goalx;
 				if (prevAttackingTeam == 0){
 					attackingPid = pid;
 					attackingPlayer = (*playerit);
+					goalx = hgoalx;
 				}
 				else{
 					attackingPid = pidb;
 					attackingPlayer = (*playeritb);
+					goalx = agoalx;
 				}
-				double distToBall = distance(attackingPlayer->getPos()[0],ball->getPos()[0],attackingPlayer->getPos()[1],ball->getPos()[1]);
+			//distancetoball	double distToBall = distance(attackingPlayer->getPos()[0],,attackingPlayer->getPos()[1],ball->getPos()[1]);
+			//distancetogoal
+				double distToBall = distance(attackingPlayer->getPos()[0],goalx,attackingPlayer->getPos()[1],goaly);
 				allPlayers[pid].trolley.addDist(tdistance,distToBall, pidb);
 				if(consec){
 					allPlayers[pid].trolley.consecutive[pidb] +=1;
 				}else{allPlayers[pid].trolley.consecutive[pidb] = 0;}
 			//	allPlayers[pidb].writePair(allPlayers[pid].pullWritePassPair(pidb));
-				pressureCalc.addPressurec(allPlayers[pid].pullWritePassPair(pidb),allPlayers[pid].pullWritePassBallDist(pidb));	
+				pressureCalc.addPressures(allPlayers[pid].pullWritePassPair(pidb));	
 			}
 			else{allPlayers[pid].trolley.consecutive[pidb] = 0;}
 		}
