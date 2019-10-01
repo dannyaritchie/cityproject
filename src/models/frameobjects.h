@@ -7,14 +7,14 @@
 class FrameObjects{
 	protected:
 		double x, y;
-		int num,u;
-		std::string data;
+		int num;
 		std::array<double,2> velocity;
 		bool velocityBool;
 	public:
 		virtual ~FrameObjects();
 		void setVelocity(std::array<double,2> tvel);
 		void setVelBool();
+		double getVelocity();
 		const std::array<double,2> getPos();
 };
 #endif

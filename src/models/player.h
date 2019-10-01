@@ -5,6 +5,7 @@
 class Player : public FrameObjects{
 	private:
 		int home;
+		double mnum;
 		Player* closestPlay;
 		double closestDist;
 		std::array<double,2> ballCentredPolar;
@@ -13,7 +14,8 @@ class Player : public FrameObjects{
 	//	static int maxDeceleration;
 	//	static int maxVelocity;
 	public:
-		Player(int, double, double, int);
+//		Player(int, double, double, int);
+		Player(int, double, double, int, int);
 		void infoToText(std::ostream & os, int type);
 		int getTeam();
 		int getNum();

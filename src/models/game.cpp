@@ -21,7 +21,7 @@ Game::Game(int pmid, std::string pfilename): filename{pfilename}, mid{pmid}{};
 void Game::addFrame(Frame* pframe){
 	frames.push_back(pframe);
 }
-bool Game::readFile(bool mapped, Idmap& idmapd){
+bool Game::readFile(bool mapped){
 	std::ifstream inFile;
 	std::string csvfile = filename + std::to_string(mid) + ".csv";
 	inFile.open(csvfile);
@@ -65,7 +65,7 @@ bool Game::readFile(bool mapped, Idmap& idmapd){
 					std::size_t found = pline.find("Ball");
 					if (found == std::string::npos) {
 						double playx, playy;
-						int num, home;
+						int mnum, num, home;
 						for (int i = 0; i < 5; i++) {
 							sline >> bin;
 						}
@@ -78,9 +78,12 @@ bool Game::readFile(bool mapped, Idmap& idmapd){
 						else { home = 0; }
 						if(mapped){
 							std::array<int,2> playid={num, home};
-							num = idmapd.findid(playid);
+							mnum = idmapd.findid(playid);
+							if (mnum < 0){
+								std::cout << mnum <<std::endl;
+							}
 						}
-						Player* tplayer = new Player(num, playx, playy, home);
+						Player* tplayer = new Player(num, playx, playy, home, mnum);
 						tframe->addPlayer(tplayer);
 					}
 					else {
@@ -121,55 +124,48 @@ void Game::findPhases() {
 		previousFid = ((*frameit)->getFid());
 	}
 }
-
+int Game::getMapLength(){
+	return idmapd.getLength();
+}
 void Game::addVelocities(){
 	//add velocity data to frames
 	//uses current +-2 frames so does not use frames close to new phases
-	std::array<std::array<std::vector<std::array<double,2>>,50>,2> positions;
+	std::vector<std::vector<std::array<double,2>>> positions;
+	std::cout << idmapd.getLength() << std::endl;
+	positions.resize(idmapd.getLength());
 	//for each team for each player a vector of 2-array co-ordinates
+	int previousFid=-1;
 	for (std::vector<Frame*>::iterator frameit = frames.begin(); frameit < frames.end(); ++frameit) {
-		if ((*frameit)->getFirstFrame() == true) {
-			for (int i = 0; i < 50; i++) {
-				for(int k=0;k<2;k++){
-					positions[k][i].clear();
-				}
+		if ((*frameit)->getFid() != previousFid + 5) {
+			for (int i = 0; i < positions.size(); i++) {
+					positions[i].clear();
 			}
 		}
-		positions[0][0].push_back((*frameit)->getBall()->getPos());
-		if (positions[0][0].size() > 5) {
-			positions[0][0].erase(positions[0][0].begin());
-		}
-		if (positions[0][0].size() == 5) {
-			std::array<double,2> velocity;
-			for (int j = 0; j < 2; j++) {
-				velocity[j] = ((positions[0][0][0][j]) - 8 * (positions[0][0][1][j])
-					+ 8 * (positions[0][0][3][j]) - (positions[0][0][4][j])) / (12 * 0.2);
-			}
-			(*(frameit - 2))->getBall()->setVelocity(velocity);
-		}
-		for (auto playerit = ((*frameit)->getPlayers()).begin(); playerit < ((*frameit)->getPlayers()).end();
+		std::vector<Player*> players = (*frameit)->getPlayers();
+		for (auto playerit = players.begin(); playerit < players.end();
 			++playerit) {
-			if((*playerit)->getNum()>34){
-				std::cout << "Error player number higher than 34" << std::endl;
-			}
-			int teamb = (*playerit)->getTeam();
-			int numb = (*playerit)->getNum();
+			int pid = (*playerit)->getMappedPid();
 			std::array<double,2> posb = (*playerit)->getPos();
-			positions[teamb][numb].push_back(posb);
-			if (positions[teamb][numb].size() > 5) {
-				positions[teamb][numb].erase(positions[teamb][numb].begin());
+			positions[pid].push_back( posb);
+			if (positions[pid].size() > 5) {
+				positions[pid].erase(positions[pid].begin());
 			}
-			if (positions[teamb][numb].size() == 5) {
+			if (positions[pid].size() == 5) {
 				std::array<double,2> velocity;
 				for (int j = 0; j < 2; j++) {
-					velocity[j] = ((positions[teamb][numb][0][j]) - 8 * (positions[teamb][numb][1][j])
-						+ 8 * (positions[teamb][numb][3][j]) - (positions[teamb][numb][4][j])) / (12 * 0.2);
+					velocity[j] = ((positions[pid][0][j]) - 8 * (positions[pid][1][j])
+						+ 8 * (positions[pid][3][j]) - (positions[pid][4][j])) / (12 * 0.2);
 				}
-				(*(frameit - 2))->findNum(numb,teamb)->setVelocity(velocity);
+				(*(frameit - 2))->findPid(pid)->setVelocity(velocity);
 			}
 		}
+	previousFid = (*frameit)->getFid();
 	}
+	std::cout << "done" <<std::endl;
 
+}
+Idmap Game::getMap(){
+	return idmapd;
 }
 /*void Game::setClosestPlayers(){
 	for(auto frameit = frames.begin();frameit<frames.end();++frameit){

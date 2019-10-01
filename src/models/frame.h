@@ -26,7 +26,7 @@ public:
 	int getFid();
 	Ball* getBall();
 	std::vector<Player*> getPlayers();
-	Player* findNum(int num, int team);//returns pointer to player with number
+	Player* findPid(int pid);//returns pointer to player with number
 	void evalSquares(int xsquare,int ysquare);
 	//split pitch into xsquare*ysquare
 	//for each square

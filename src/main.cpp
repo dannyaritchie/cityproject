@@ -15,33 +15,33 @@ int main() {
 	return 0;*/
 	int distanceThreshold = 15;
 	PossessionFileMaker * tposFiles= new PossessionFileMaker();
-	std::vector<PossessionFileLine*> linesa;
-	std::vector<PossessionFileLine*> linesb;
+//	std::vector<PossessionFileLine*> linesa;
+//	std::vector<PossessionFileLine*> linesb;
 	bool done = true;
-	if(tposFiles->readFile()==true){
-		std::vector<PossessionFile*> posFiles = tposFiles->getPosFiles();
-		tposFiles->fileWriter();
-		for(auto fileit = posFiles.begin();fileit<posFiles.end();fileit++){
-			if((*fileit)->getMid() == 914033){	
-				int mid = (*fileit)->getMid();
-				Idmap idmapd;
+//	if(tposFiles->readFile()==true){
+		PossessionFile * posFile = tposFiles->fileSpecificReader(855206);
+//		std::vector<PossessionFile*> posFiles = tposFiles->getPosFiles();
+//		tposFiles->fileWriter();
+//		for(auto fileit = posFiles.begin();fileit<posFiles.end();fileit++){
+//			if((*posFile->getMid() == 855206){	
+				int mid = posFile->getMid();
 				Game * tgame = new Game(mid,"../idata/"); 
-				if(tgame->readFile(true,idmapd)==true&&tgame->storeMdata()==true){
-					AllClosest * tallClosest = new AllClosest(distanceThreshold);	
-					tallClosest->openStreams(mid,idmapd);
+				if(tgame->readFile(true)==true&&tgame->storeMdata()==true){
+					tgame->addVelocities();
+				AllClosest * tallClosest = new AllClosest(distanceThreshold, tgame->getMap(), tgame->getMapLength());	
+					tallClosest->openStreams(mid,tgame->getMap());
 					std::vector<Frame*> frames = tgame->getFrames();
-					std::vector<PossessionFileLine*> lines = (*fileit)->getPosFilLin();
-					std::cout << lines.size()<<std::endl;
+					std::vector<PossessionFileLine*> lines = posFile->getPosFilLin();
 					std::vector<PossessionFileLine*>::iterator lineit = lines.begin();
 					std::vector<PossessionFileLine*>::iterator lineend = lines.end();
-					int prevFid;
+					int prevFid= -1;
 					int fid;
 					int prevAttackingTeam;
 					int attackingTeam;
 					bool prevFidBool;
 					std::array<std::array<std::array<double,6>,100>,2> prevPlayerstat;
 					for(auto frameit = frames.begin();frameit<frames.end();++frameit){
-						bool loopPosFilLin = true;
+	bool loopPosFilLin = true;
 						int fid = (*frameit)->getFid();					
 						while(loopPosFilLin){
 							std::array<int, 2> frameRange= (*lineit)->getFrameRange();
@@ -75,8 +75,8 @@ int main() {
 					delete tallClosest;
 				}
 				delete tgame;
-			}
-		}
-	}
+		//	}
+	//	}
+//	}
 	delete tposFiles;
 }

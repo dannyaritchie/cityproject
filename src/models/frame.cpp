@@ -14,6 +14,7 @@ void Frame::getPlayersSplit(std::vector<Player*>& attackPlay,std::vector<Player*
 	attackPlay.clear();
 	defensePlay.clear();
 	for(auto playerit = players.begin();playerit<players.end();++playerit){
+//		std::cout << (*playerit)->getNum();
 		if((*playerit)->getTeam()==0){
 			attackPlay.push_back(*playerit);
 		}else{defensePlay.push_back(*playerit);}
@@ -51,11 +52,11 @@ Ball* Frame::getBall() {
 std::vector<Player*> Frame::getPlayers() {
 	return players;
 }
-Player* Frame::findNum(int num, int team) {
+Player* Frame::findPid(int pid) {
 	bool foundNum{ true };
 	int j = 0;
 	while (foundNum && j < players.size()) {
-		if (players[j]->getNum() == num&&players[j]->getTeam()==team) {
+		if (players[j]->getMappedPid() == pid) {
 			return players[j];
 		}
 		else j++;

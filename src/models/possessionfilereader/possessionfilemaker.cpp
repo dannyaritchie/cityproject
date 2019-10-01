@@ -113,6 +113,26 @@ bool PossessionFileMaker::readFile(){
 	}
 	return true;
 }
+PossessionFile * PossessionFileMaker::fileSpecificReader(int mid){
+        std::string filename = "../idata/pos_" + std::to_string(mid) + ".txt";
+        std::ifstream inFile;
+        inFile.open(filename);
+        if(!inFile){
+                std::cout << "no matchstart file";
+        }
+        std::vector<PossessionFileLine*> tlines;
+        while(inFile){
+                std::string pline;
+                std::getline(inFile,pline);
+                std::stringstream sline(pline);
+                int tid, frameStart, frameEnd;
+                sline >>  tid >> frameStart >> frameEnd;
+                PossessionFileLine * tpossessionFileLine = new PossessionFileLine(tid, frameStart, frameEnd);
+                tlines.push_back(tpossessionFileLine);
+        }
+        PossessionFile * tpossessionFile = new PossessionFile(mid, tlines);
+ 	return tpossessionFile;
+}
 void PossessionFileMaker::fileWriter(){
 	for(auto fileit = possessionFiles.begin(); fileit<possessionFiles.end();++fileit){
 		std::string filename = "../data/posdata/" + std::to_string((*fileit)->getMid()) + ".txt";

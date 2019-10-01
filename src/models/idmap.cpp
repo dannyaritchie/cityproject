@@ -9,7 +9,9 @@ int Idmap::findid(std::array<int,2> playnum) {
 	return theMaps.size()-1;
 }
 std::string Idmap::getid(int i){
-	std::string pid = std::to_string(theMaps[i][0])+ "_" + std::to_string(theMaps[i][1]);
+	std::string pid = std::to_string(theMaps[i][1])+ "_" + std::to_string(theMaps[i][0]);
 	return pid;
 }
-
+int Idmap::getLength(){
+	return theMaps.size();
+}

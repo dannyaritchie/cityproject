@@ -14,11 +14,12 @@ class Game {
 		//std::string filepath;
 		double pitchx, pitchy;
 		int homeNum, awayNum, mid;
+		Idmap idmapd;
 	public:
 		Game(int, std::string);
 		~Game();
 		void addFrame(Frame*);
-		bool readFile(bool, Idmap&);
+		bool readFile(bool);
 	        bool storeMdata();
 		//reads in Mdata for a game
 		void writeFile(std::ofstream & os,int type);
@@ -39,6 +40,8 @@ class Game {
         	int getHome();
 		int getX();
 		int getY();
+		int getMapLength();
+		Idmap getMap();
 
 };
 #endif

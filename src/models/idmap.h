@@ -13,5 +13,6 @@ class Idmap {
 	public:
 		int findid(std::array<int,2>);
 		std::string getid(int);
+		int getLength();
 };
 #endif

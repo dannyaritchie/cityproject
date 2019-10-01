@@ -1,10 +1,19 @@
 #include  "player.h"
-Player::Player(int pnum, double px, double py, int phome) : home(phome) {
+/*Player::Player(int pnum, double px, double py, int phome) : home(phome) {
 	x = px;
 	num = pnum;
 	y = py;
 	velocityBool = false;
 	angControlScore = 0;
+};*/
+Player::Player(int pnum, double px, double py, int phome, int pmnum) : home(phome) {
+	x = px;
+	num = pnum;
+	y = py;
+	velocityBool = false;
+	angControlScore = 0;
+	mnum = pmnum;
+	velocity = {0,0};
 };
 
 int Player::getTeam(){
@@ -36,7 +45,7 @@ const double& Player::getClosestDist(){
 	return closestDist;
 }
 int Player::getMappedPid(){
-	return num;
+	return mnum;
 }
 void Player::setBallCentredPolar(std::array<double,2> tpol){
 	ballCentredPolar = tpol;

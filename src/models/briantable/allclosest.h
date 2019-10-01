@@ -10,22 +10,22 @@
 struct findiftro {
 	//finite difference calculator.
 	//there is one of these for every player
-	std::array<std::vector<double>,28> closest;
+	std::array<std::vector<std::array<double,3>>,28> closest;
 	//closest is an array for every player, with each point having a vector that stores the last three distances to that player
 	std::array<int,28> consecutive;
 	//consecutive is an integer that keeps track of how long its been since a frame break
 	//if it is less that 3 frames since a frame break then the velocity as calculated will be meaningless. consecutive provides 
 	//this information so velocity can be set to 0.it also catches cases where a player was not inside radius the frames before
-	void addDist(double temporary_distance, int pid);
+	void addInfo(std::array<double,3> temporary_info, int pid);
 	//addDis takes distance provided by external function and adds to closest
-	std::array<double,2> passPair(int pid);
+	std::array<double,4> passPair(int pid);
 	//returns an array of {dist, change in distance} for given player id
 };
 //not implementd, used for storing data(current implementation writes straight away)
 struct frameInfo {
 	int fid;
 	int attacking;
-	std::vector<std::array<double,2>> framePlayerPressures;
+	std::vector<std::array<double,4>> framePlayerPressures;
 };
 
 struct closeplayer {
@@ -35,12 +35,12 @@ struct closeplayer {
 	findiftro  trolley;
 	frameInfo tempInfo;
 	//not implemented
-	std::array<double,2> pullPair(int pid);
+	std::array<double,4> pullPair(int pid);
 	//not implemented
-	std::array<double,2> pullWritePassPair(int pid);
+	std::array<double,4> pullWritePassPair(int pid);
 	//pulls info from trolley of distance to player with pid, writes this for its info file 
 	//and also returns info so it can bewritten to other players info file	
-	void writePair(std::array<double,2> info_pair);
+	void writePair(std::array<double,4> info_pair);
 	//writes info_pair to players output stream
 };
 class AllClosest {
@@ -49,11 +49,12 @@ class AllClosest {
 //Note:: playerid here is a mappedplayer id where each player gets assigned a unique lowest possible integer (actually just gets placed in vector and player id is vector place)
 	private:
 		int distanceThreshold;
-		std::array<closeplayer,28> allPlayers;
+		std::vector<closeplayer> allPlayers;
 		std::vector<Player*> homePlayers;
 		std::vector<Player*> awayPlayers;	
+		Idmap mappedIds;
 	public:
-		AllClosest(int pdistanceThreshold);
+		AllClosest(int pdistanceThreshold, Idmap tidmap, int number_of_players);
 		void addPlayers(std::vector<Frame*>::iterator currentFrameit,int previousFid, int prevAttackingTeamid);
 		//gets home and away player vectors for given frame
 		//calculates all distances and if less than distance Threshold adds information to players trolley
