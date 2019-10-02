@@ -23,6 +23,9 @@ void Frame::getPlayersSplit(std::vector<Player*>& attackPlay,std::vector<Player*
 void Frame::addPlayer(Player* player){
 	players.push_back(player);
 }
+void Frame::addPossession(int tpossession){
+	possession = tpossession;
+}
 void Frame::addBall(Ball* pball){
 	ball = pball;
 }
@@ -45,6 +48,9 @@ bool Frame::getFirstFrame() {
 }
 int Frame::getFid() {
 	return fid;
+}
+int Frame::getAttacking(){
+	return possession;
 }
 Ball* Frame::getBall() {
 	return ball;

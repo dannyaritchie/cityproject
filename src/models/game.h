@@ -20,6 +20,7 @@ class Game {
 		~Game();
 		void addFrame(Frame*);
 		bool readFile(bool);
+		bool readNewFile();
 	        bool storeMdata();
 		//reads in Mdata for a game
 		void writeFile(std::ofstream & os,int type);
@@ -36,7 +37,7 @@ class Game {
 		//splits frames into two vectors, one for home in possession and one for attack in possession
 		//Issue:possesion file frame id
 		void getScalar();
-      		std::vector<Frame*> getFrames();
+      		std::vector<Frame*>  getFrames();
         	int getHome();
 		int getX();
 		int getY();

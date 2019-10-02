@@ -52,7 +52,7 @@ void AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previousF
 //a member function to add player distances below a set threshhold to a container of 2-arrays
 //also creates a differential class
 	bool consec;
-	if((*frameit)->getFid()==previousFid + 5){
+	if((*frameit)->getFid()==previousFid + 1){
 		consec = true;
 	}else{consec== false;}
 	(*frameit)->getPlayersSplit(homePlayers, awayPlayers);
@@ -74,12 +74,13 @@ void AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previousF
 	for (auto playerit = homePlayers.begin() ; playerit < homePlayers.end();++playerit){
 		int pid = (*playerit)->getMappedPid();
 		for (auto playeritb = awayPlayers.begin();playeritb < awayPlayers.end();++playeritb){
-			double tdistance = distance((*playerit)->getPos()[0],(*playeritb)->getPos()[0],(*playerit)->getPos()[1],(*playeritb)->getPos()[1]);
+			double tdistance = 0.01* distance((*playerit)->getPos()[0],(*playeritb)->getPos()[0],(*playerit)->getPos()[1],(*playeritb)->getPos()[1]);
 			int pidb = (*playeritb)->getMappedPid();
 			if(tdistance<distanceThreshold){
 				double avel, bvel, anum, bnum;
 				anum = (*playerit)->getNum();
 				bnum = (*playeritb)->getNum();
+	//			std::cout << anum << ":" << bnum <<std::endl;
 				std::array<double,3> info = {tdistance,anum,bnum};
 				allPlayers[pid].trolley.addInfo(info, pidb);
 				if(consec){

@@ -13,17 +13,20 @@ private:
 	int fid;
 	bool firstFrame;
 	double anglePotential[720] = {0};
+	int possession;
 public:
 	Frame();
 	~Frame();
 	void getPlayersSplit(std::vector<Player*>& attackPlay,std::vector<Player*>& defensePlay);
 	void addPlayer(Player*);
 	void addBall(Ball* pball);
+	void addPossession(int possession);
 	void objectInfo(std::ostream & os,int type);
 	void addFid(int pfid);
 	void setFirstFrame();
 	bool getFirstFrame();
 	int getFid();
+	int getAttacking();
 	Ball* getBall();
 	std::vector<Player*> getPlayers();
 	Player* findPid(int pid);//returns pointer to player with number
