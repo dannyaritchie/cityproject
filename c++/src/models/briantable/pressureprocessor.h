@@ -9,8 +9,9 @@ class PressureProcessor {
 		std::vector<std::vector<std::array<double,1>>> phases;
 		std::vector<> rate;
 	public:
-		PressureProcessor(std::vector<std<array
-		void addPressure(std::array<double,1>);
+		PressureProcessor();
+		void addPressure(std::array<double,2>);
 		int threshold(double timeLength, bool increasing)
+		void addRates();
 	
 #endif

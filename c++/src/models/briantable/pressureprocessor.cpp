@@ -1,24 +1,26 @@
 #include "pressureprocessor.h"
 
-
-void PressureProcessor::addPressure(std::array<double,1> info){
+PressureProcessor::PressureProcessor(){
+	previousFid = -1;
+}
+void PressureProcessor::addPressure(std::array<double,2> info){
 	if(info[0] != previousFid+1){
 		sections.push_back(section);
 		section.clear();
-		std::array<double,0> temp;
-		for (int i = 1; i < 9; i++){
+		std::array<double,2> temp;
+		for (int i = 1; i < 2; i++){
 			temp[i-1] = info [i];
 		}
-		temp[u] = 0;
+		temp[1] = 0;
 		section.push_back(temp);
 		previousFid = info[0];
 	}
 	else{
-		std::array<double,0> temp;
-		for (int i = 1; i < 9; i++){
+		std::array<double,2> temp;
+		for (int i = 1; i < 2; i++){
 			temp[i-1] = info [i];
 		}
-		temp[u] = 0;
+		temp[1] = 0;
 		section.push_back(temp);
 		previousFid = info[0];
 	}
@@ -38,7 +40,7 @@ int PressureProcessor::lengthThreshold(double timeLength, bool increasing, bool 
 					if(largeEnough == true){
 						number += 1;
 						if(savePhases == true){
-							std::vector<array<double,1> tphase;
+							std::vector<array<double,2> tphase;
 							for(auto dit = sectionit-1-consecutive;dit<sectionit;++dit){
 								tphase.push_back(*sectionit);
 							}
@@ -66,7 +68,7 @@ int PressureProcessor::lengthThreshold(double timeLength, bool increasing, bool 
 					if(largeEnough == true){
 						number += 1;
 						if(savePhases == true){
-							std::vector<array<double,1> tphase;
+							std::vector<array<double,2> tphase;
 							for(auto dit = sectionit-1-consecutive;dit<sectionit;++dit){
 								tphase.push_back(*sectionit);
 							}

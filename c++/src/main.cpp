@@ -78,14 +78,14 @@ int main() {
 		AllClosest * tallClosest = new AllClosest(distanceThreshold, tgame->getMap(),tgame->getMapLength(), tgame->getHomeSide());
 //		tallClosest->openStreams(mid,tgame->getMap());
 		std::ofstream os[100];
-	//	for (int j = 0;j<2;j++){
+	/*	for (int j = 0;j<2;j++){
 			for(int i = 0; i<1;i++){
 				std::string filename = "../data/pressuretimehistory/" + std::to_string(mid) + "_" + std::to_string(i) + ".txt";
 				os[i].open(filename);
 				os[i] << "pressure,time_till_possession_change" << std::endl;
 				os[i] << std::setprecision(4)<<std::fixed;
 			}
-	//	}
+		}*/
 		int previousAttacking = -2;
 		int previousFid = -1;
 		int previousTimeTillPossessionChange = 0;
@@ -94,6 +94,7 @@ int main() {
 		bool found = false;
 		std::vector<Frame*>::iterator it;
 		std::vector<Frame*>::iterator bit;
+		PressureProcessor
 		for(auto frameit = aframes.begin();frameit<aframes.end();++frameit){
 			double time = (*frameit)->getFid()/5;
 			std::vector<Player*> players = (*frameit)->getPlayers();
@@ -104,7 +105,9 @@ int main() {
 			std::array<double,100> framePressure = tallClosest->addPlayers(frameit, previousFid, previousAttacking);
 		//	if(previousAttacking == 0 || previousAttacking == 1){ 
 				for(int i = 0;i<1;i++){
-					os[i] << framePressure[i] << "," << time << "," << previousAttacking << std::endl;
+//					os[i] << framePressure[i] << "," << time << "," << previousAttacking << std::endl;
+					std::array<double,2> temp = {previousFid,framePressure[0]};
+					signalProcess.addPressure(temp);
 				}
 		//	}
 			previousAttacking = (*frameit)->getAttacking();
