@@ -1,6 +1,0 @@
-/home/danny/foot/cityproject/build/CMakeFiles/rebuild_cache.dir
-/home/danny/foot/cityproject/build/CMakeFiles/Project.dir
-/home/danny/foot/cityproject/build/CMakeFiles/edit_cache.dir
-/home/danny/foot/cityproject/build/libraries/mylibrary/CMakeFiles/rebuild_cache.dir
-/home/danny/foot/cityproject/build/libraries/mylibrary/CMakeFiles/mylibrary.dir
-/home/danny/foot/cityproject/build/libraries/mylibrary/CMakeFiles/edit_cache.dir
