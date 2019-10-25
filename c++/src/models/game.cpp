@@ -9,7 +9,7 @@
 #include<sstream>
 #include<string>
 #include<array>
-#include"../FOOTBALL/Football.h"
+#include"../include/FOOTBALL/Football.h"
 //Game::Game(){
 //	filepath = "/pc2014-data1/lah/data/data_files/987881";
 //}
@@ -106,93 +106,95 @@ bool Game::readFile(bool mapped){
 }
 bool Game::readNewFile(){
 	Football::Match ex_match;
-	ex_match.loadFromFile(filename,mid,true);
-	ex_match.remove_dead_frames();
-//	ex_match.mirror_alternate_periods();
-	Football::Frame oneFrame = ex_match.get_frame(0);
-	int leftCount = 0;
-	int rightCount = 0;
-	for(int i=0; i<oneFrame.HOMETEAM.get_playersInTeam().size();i++){
-			Football::Player tplayer = oneFrame.HOMETEAM.get_playersInTeam()[i];
-			double x = tplayer.get_posX();
-			std::cout << x << std::endl;
-			if(x<-200){
-				leftCount ++;
-			}
-			if(x>200){
-				rightCount ++;
-			}
-	}
-		std::cout << leftCount << "<" << rightCount << std::endl;
-	if (leftCount>0&&rightCount ==0){
-		homeSide = 'L';
-	}
-	else{
-		if (rightCount>0&&leftCount==0){
-			homeSide = 'R';
-			}
-		else{std::cout<<"uhoh could not not work out which side of the pitch everyone was on" << std::endl;}
-	}
-	for(int i = 0; i < ex_match.number_of_frames();i++){
-		Football::Frame tframe = ex_match.get_frame(i);
-		Frame * myFrame = new Frame();
-		for(int i=0; i<tframe.HOMETEAM.get_playersInTeam().size();i++){
-			Football::Player tplayer = tframe.HOMETEAM.get_playersInTeam()[i];
-//		for(auto Football:: = tframe.HOMETEAM.get_playersInTeam().begin; nplayerit<tframe.HOMETEAM.get_playersInTeam().end();++nplayerit){
-			double x = tplayer.get_posX();
-			double y = tplayer.get_posY();
-			int num = tplayer.get_shirtNumber();
-			int home = 0;
-			std::array<int,2> playid={num, home};
-			int mnum = idmapd.findid(playid);
-			Player* myPlayer = new Player(num, x, y, home, mnum);
-			myFrame->addPlayer(myPlayer);
+		if(ex_match.loadFromFile(filename,mid,true)== true){
+		ex_match.remove_dead_frames();
+	//	ex_match.mirror_alternate_periods();
+		Football::Frame oneFrame = ex_match.get_frame(0);
+		int leftCount = 0;
+		int rightCount = 0;
+		for(int i=0; i<oneFrame.HOMETEAM.get_playersInTeam().size();i++){
+				Football::Player tplayer = oneFrame.HOMETEAM.get_playersInTeam()[i];
+				double x = tplayer.get_posX();
+				std::cout << x << std::endl;
+				if(x<-200){
+					leftCount ++;
+				}
+				if(x>200){
+					rightCount ++;
+				}
 		}
-		for(int i=0; i<tframe.AWAYTEAM.get_playersInTeam().size();i++){
-	//	for(auto nplayerit = tframe.AWAYTEAM.get_playersInTeam().begin; nplayerit<tframe.AWAYTEAM.get_playersInTeam().end();++nplayerit){
-			Football::Player tplayer = tframe.AWAYTEAM.get_playersInTeam()[i];
-			double x = tplayer.get_posX();
-			double y = tplayer.get_posY();
-			int num = tplayer.get_shirtNumber();
-			int home = 1;
-			std::array<int,2> playid={num, home};
-			int mnum = idmapd.findid(playid);
-			Player* myPlayer = new Player(num, x, y, home, mnum);
-			myFrame->addPlayer(myPlayer);
-		}
-		double x = tframe.BALL.get_posX();
-		double y = tframe.BALL.get_posY();
-		double z = tframe.BALL.get_posZ();
-		Ball* tball = new Ball(x,y,z);
-		myFrame->addBall(tball);
-		myFrame->addFid(tframe.BALL.get_frameId());
-		int possession;
-		if(tframe.BALL.get_owningTeam() == 'H'){
-			possession = 0;
+			std::cout << leftCount << "<" << rightCount << std::endl;
+		if (leftCount>0&&rightCount ==0){
+			homeSide = 'L';
 		}
 		else{
-			if(tframe.BALL.get_owningTeam() == 'A'){
-				possession = 1;
+			if (rightCount>0&&leftCount==0){
+				homeSide = 'R';
+				}
+			else{std::cout<<"uhoh could not not work out which side of the pitch everyone was on" << std::endl;}
+		}
+		for(int i = 0; i < ex_match.number_of_frames();i++){
+			Football::Frame tframe = ex_match.get_frame(i);
+			Frame * myFrame = new Frame();
+			for(int i=0; i<tframe.HOMETEAM.get_playersInTeam().size();i++){
+				Football::Player tplayer = tframe.HOMETEAM.get_playersInTeam()[i];
+	//		for(auto Football:: = tframe.HOMETEAM.get_playersInTeam().begin; nplayerit<tframe.HOMETEAM.get_playersInTeam().end();++nplayerit){
+				double x = tplayer.get_posX();
+				double y = tplayer.get_posY();
+				int num = tplayer.get_shirtNumber();
+				int home = 0;
+				std::array<int,2> playid={num, home};
+				int mnum = idmapd.findid(playid);
+				Player* myPlayer = new Player(num, x, y, home, mnum);
+				myFrame->addPlayer(myPlayer);
 			}
-			else{possession = -1;}
+			for(int i=0; i<tframe.AWAYTEAM.get_playersInTeam().size();i++){
+		//	for(auto nplayerit = tframe.AWAYTEAM.get_playersInTeam().begin; nplayerit<tframe.AWAYTEAM.get_playersInTeam().end();++nplayerit){
+				Football::Player tplayer = tframe.AWAYTEAM.get_playersInTeam()[i];
+				double x = tplayer.get_posX();
+				double y = tplayer.get_posY();
+				int num = tplayer.get_shirtNumber();
+				int home = 1;
+				std::array<int,2> playid={num, home};
+				int mnum = idmapd.findid(playid);
+				Player* myPlayer = new Player(num, x, y, home, mnum);
+				myFrame->addPlayer(myPlayer);
+			}
+			double x = tframe.BALL.get_posX();
+			double y = tframe.BALL.get_posY();
+			double z = tframe.BALL.get_posZ();
+			Ball* tball = new Ball(x,y,z);
+			myFrame->addBall(tball);
+			myFrame->addFid(tframe.BALL.get_frameId());
+			int possession;
+			if(tframe.BALL.get_owningTeam() == 'H'){
+				possession = 0;
+			}
+			else{
+				if(tframe.BALL.get_owningTeam() == 'A'){
+					possession = 1;
+				}
+				else{possession = -1;}
+			}
+			myFrame->addPossession(possession);
+		//	for(auto frameit = frames.begin();frameit<frames.end();++frameit){
+	//			std::vector<Player*> players = (->getPlayers();
+	//			for(auto playerit = players.begin(); playerit < players.end();++playerit){
+	//				std::cout << (*playerit)->getPos()[0]<< std::endl;
+	//			}
+		//	}
+			addFrame(myFrame);
 		}
-		myFrame->addPossession(possession);
-	//	for(auto frameit = frames.begin();frameit<frames.end();++frameit){
-//			std::vector<Player*> players = (->getPlayers();
-//			for(auto playerit = players.begin(); playerit < players.end();++playerit){
-//				std::cout << (*playerit)->getPos()[0]<< std::endl;
-//			}
 	//	}
-		addFrame(myFrame);
-	}
-//	}
-/*	for(auto frameit = frames.begin();frameit<frames.end();++frameit){
-		std::vector<Player*> players = (*frameit)->getPlayers();
-		for(auto playerit = players.begin(); playerit < players.end();++frameit){
-			std::cout << (*playerit)->getPos()[0]<< std::endl;
+	/*	for(auto frameit = frames.begin();frameit<frames.end();++frameit){
+			std::vector<Player*> players = (*frameit)->getPlayers();
+			for(auto playerit = players.begin(); playerit < players.end();++frameit){
+				std::cout << (*playerit)->getPos()[0]<< std::endl;
+			}
+		}*/ 
+		return true;
 		}
-	}*/ 
-	return true;
+		else{return false;}
 }
 
 void Game::writeFile(std::ofstream & os,int type){

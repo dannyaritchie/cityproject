@@ -89,84 +89,95 @@ int main() {
 	int distanceThreshold = 15;
 	PressureProcessor signalProcess;
 	signalProcess.openStreams();
-	for (int mid = 1059703; mid < 1059704;mid++){
-		Game * tgame = new Game(mid, "../idata/TrackingData_MSGPK");
-		tgame->readNewFile();
-		char homeSide = tgame->getHomeSide();
-		std::vector<Frame*> aframes = tgame->getFrames();
-	//	tgame->addVelocities();
-		AllClosest * tallClosest = new AllClosest(distanceThreshold, tgame->getMap(),tgame->getMapLength(), tgame->getHomeSide());
-//		tallClosest->openStreams(mid,tgame->getMap());
-		std::ofstream os[100];
-	/*	for (int j = 0;j<2;j++){
-			for(int i = 0; i<1;i++){
-				std::string filename = "../data/pressuretimehistory/" + std::to_string(mid) + "_" + std::to_string(i) + ".txt";
-				os[i].open(filename);
-				os[i] << "pressure,time_till_possession_change" << std::endl;
-				os[i] << std::setprecision(4)<<std::fixed;
-			}
-		}*/
-		int previousAttacking = -2;
-		int previousFid = -1;
-		int previousTimeTillPossessionChange = 0;
-		double previousDistToGoal;
-//	std::array<double, 100> previousDistToGoal;
-		bool found = false;
-		std::vector<Frame*>::iterator it;
-		std::vector<Frame*>::iterator bit;
-		for(auto frameit = aframes.begin();frameit<aframes.end();++frameit){
-			double fid = (*frameit)->getFid();
-			double time = fid/5;
-			std::vector<Player*> players = (*frameit)->getPlayers();
-		//	for(auto playerit = players.begin(); playerit < players.end();++playerit){
-		//		std::cout << (*playerit)->getPos()[0]<< std::endl;
-		//	}
-		//	std::cout << "A";
-			std::array<double,100> framePressure = tallClosest->addPlayers(frameit, previousFid, previousAttacking);
-			double attacking = previousAttacking;
-			double dfid = previousFid;
-			double gdistance = distanceToGoal(frameit,aframes.end(),tgame->getHomeSide());
-			std::array<double,4> temp = {dfid,framePressure[0],attacking,gdistance};
-			signalProcess.addPressure(temp);
-			previousAttacking = (*frameit)->getAttacking();
-			if(!found){
-				it = frameit;
-				bool finding = true;
-				while(finding){
-					if(it!=aframes.end()-1){	
-						std::advance(it,1);
-						if((*it)->getAttacking()!=previousAttacking){
-							finding = false;
-							previousTimeTillPossessionChange = it-frameit;
-						}
-					}
-					else{finding = false;}
-				}
-				found = true;
-			}
-			else{
-				if(previousTimeTillPossessionChange > 1){
-					previousTimeTillPossessionChange -= 1;
-				}
-				else{found = false;}
-			}
-			previousFid = (*frameit)->getFid();			
-			previousDistToGoal = distanceToGoald(frameit,aframes.end(),tgame->getHomeSide());
-		}
-	//	for (int j=0;j<2;j++){
-		//	for(int i = 0; i < 1; i++){
-		//		os[i].close();
-		//	}
-	//	}
-	//tallClosest->closeStreams();
-		delete tallClosest;
-		delete tgame;
-		signalProcess.addFinalPressure();
-		std::array<int,2> result = signalProcess.lengthThreshold(0,0,true,true,true);
-		std::cout << result[0] << " " << result[1] <<std::endl;
-		signalProcess.calcPressure();
-		signalProcess.clearPhases();
+	std::vector<int> mids;
+	for (auto i = 987592;i<987972;++i){
+		mids.push_back(i);
 	}
+	for (auto i = 918893;i<919273;++i){
+		mids.push_back(i);
+	}
+	for (auto i = 1059702;i<1059782;++i){
+		mids.push_back(i);
+	}
+	for (int mid : mids){
+		Game * tgame = new Game(mid, "../idata/newmsgpk/");
+			if(tgame->readNewFile()==true){
+			char homeSide = tgame->getHomeSide();
+			std::vector<Frame*> aframes = tgame->getFrames();
+		//	tgame->addVelocities();
+			AllClosest * tallClosest = new AllClosest(distanceThreshold, tgame->getMap(),tgame->getMapLength(), tgame->getHomeSide());
+	//		tallClosest->openStreams(mid,tgame->getMap());
+		/*	for (int j = 0;j<2;j++){
+				for(int i = 0; i<1;i++){
+					std::string filename = "../data/pressuretimehistory/" + std::to_string(mid) + "_" + std::to_string(i) + ".txt";
+					os[i].open(filename);
+					os[i] << "pressure,time_till_possession_change" << std::endl;
+					os[i] << std::setprecision(4)<<std::fixed;
+				}
+			}*/
+			int previousAttacking = -2;
+			int previousFid = -1;
+			int previousTimeTillPossessionChange = 0;
+			double previousDistToGoal;
+	//	std::array<double, 100> previousDistToGoal;
+			bool found = false;
+			std::vector<Frame*>::iterator it;
+			std::vector<Frame*>::iterator bit;
+			for(auto frameit = aframes.begin();frameit<aframes.end();++frameit){
+				double fid = (*frameit)->getFid();
+				double time = fid/5;
+				std::vector<Player*> players = (*frameit)->getPlayers();
+			//	for(auto playerit = players.begin(); playerit < players.end();++playerit){
+			//		std::cout << (*playerit)->getPos()[0]<< std::endl;
+			//	}
+			//	std::cout << "A";
+				std::array<double,100> framePressure = tallClosest->addPlayers(frameit, previousFid, previousAttacking);
+				double attacking = previousAttacking;
+				double dfid = previousFid;
+				double gdistance = distanceToGoal(frameit,aframes.end(),tgame->getHomeSide());
+				std::array<double,4> temp = {dfid,framePressure[0],attacking,gdistance};
+				signalProcess.addPressure(temp);
+				previousAttacking = (*frameit)->getAttacking();
+		/*		if(!found){
+					it = frameit;
+					bool finding = true;
+					while(finding){
+						if(it!=aframes.end()-1){	
+							std::advance(it,1);
+							if((*it)->getAttacking()!=previousAttacking){
+								finding = false;
+								previousTimeTillPossessionChange = it-frameit;
+							}
+						}
+						else{finding = false;}
+					}
+					found = true;
+				}
+				else{
+					if(previousTimeTillPossessionChange > 1){
+						previousTimeTillPossessionChange -= 1;
+					}
+					else{found = false;}
+				}*/
+				previousFid = (*frameit)->getFid();			
+				previousDistToGoal = distanceToGoald(frameit,aframes.end(),tgame->getHomeSide());
+			}
+		//	for (int j=0;j<2;j++){
+			//	for(int i = 0; i < 1; i++){
+			//		os[i].close();
+			//	}
+		//	}
+		//tallClosest->closeStreams();
+			delete tallClosest;
+			delete tgame;
+			signalProcess.addFinalPressure();
+			std::array<int,2> result = signalProcess.lengthThreshold(0,0,true,true,true);
+			std::cout << result[0] << " " << result[1] <<std::endl;
+			signalProcess.calcPressure();
+			signalProcess.clearPhases();
+			}
+			else{std::cout << "stinky" << std::endl;}
+		}
 	signalProcess.closeStreams();
 	return 0;
 }
