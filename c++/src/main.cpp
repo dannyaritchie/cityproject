@@ -90,18 +90,21 @@ int main() {
 	PressureProcessor signalProcess;
 	signalProcess.openStreams();
 	std::vector<int> mids;
+/*	
 	for (auto i = 987592;i<987972;++i){
 		mids.push_back(i);
 	}
 	for (auto i = 918893;i<919273;++i){
 		mids.push_back(i);
 	}
-	for (auto i = 1059702;i<1059782;++i){
+	for (auto i = 1059702;i<1059760;++i){
 		mids.push_back(i);
-	}
+	}*/
+	mids.push_back(1059702);
+	std::string rempath = "/pc2014-data1/lah/data_msgpk/";
 	for (int mid : mids){
 		Game * tgame = new Game(mid, "../idata/newmsgpk/");
-			if(tgame->readNewFile()==true){
+		if(tgame->readNewFile()==true){
 			char homeSide = tgame->getHomeSide();
 			std::vector<Frame*> aframes = tgame->getFrames();
 		//	tgame->addVelocities();
@@ -171,7 +174,7 @@ int main() {
 			delete tallClosest;
 			delete tgame;
 			signalProcess.addFinalPressure();
-			std::array<int,2> result = signalProcess.lengthThreshold(0,0,true,true,true);
+			std::array<int,2> result = signalProcess.lengthThreshold(4,0,true,true,true);
 			std::cout << result[0] << " " << result[1] <<std::endl;
 			signalProcess.calcPressure();
 			signalProcess.clearPhases();

@@ -43,6 +43,40 @@ std::array<double,6> findiftro::passPair(int pidv, int dead){
 	}
 	return temp;
 }
+void AllClosest::addDWeights(){
+	std::array<std::vector<std::array<double,2>>,28> sorter;
+	for(auto homeit  = attackPlayers.begin();homeit<attackPlayers.end();++homeit){
+		double homepid = (*homeit)->getMappedPid();
+		double awayIndex = 0;
+		std::array<std::vector<int>,28>::iterator consecMarker = allPlayers[homepid].trolley.consecutive.begin();
+		for(auto awayit = allPlayers[homepid].trolley.closest.begin();awayit<allPlayers[homepid].trolley.closest.end();++awayit){
+			if((*consecMarker)[(*consecMarker).size() - 1]==1){
+				double d = (*awayit)[(*awayit).size()-1][0];
+				std::array<double,2> temp  = {homepid,d};
+				sorter[awayIndex].push_back(temp);
+			}
+			++consecMarker;
+			awayIndex++;
+		}
+	}
+	for(int i = 0;i<28;i++){
+		std::sort(sorter[i].begin(),sorter[i].end(), [](const std::array<double,2> &a,const std::array<double,2> &b)
+		{
+			return a[1] < b[1];
+		});
+	}
+	int u = 0;
+	for(auto it  = attackPlayers.begin();it<attackPlayers.end();++it){
+		int homepid = (*it)->getMappedPid();
+		for(int awayit = 0;awayit<allPlayers[homepid].trolley.closest.size();++awayit){
+			for(int distanceRank = 0;distanceRank<sorter[awayit].size();distanceRank++){
+				if( sorter[awayit][distanceRank][0] == homepid){
+				       allPlayers[homepid].trolley.closest[awayit][allPlayers[homepid].trolley.closest[awayit].size()-1][3] = distanceRank;	
+				}
+			}
+		}
+	}
+}
 void findiftro::addWeights(){
 	std::vector<std::array<double,2>> sorter;
 	double i = 0;
@@ -215,11 +249,12 @@ void pressuresum::addPressureU(std::array<double,6> temp, int pos){
 	double ballDist = temp[3];
 	std::array<double,6> notgg = {-1,-1,-1,-1,-1,-1};
 	if (temp!=notgg){
+		std::cout << temp[4] << "<" << temp[0];
 		if(temp[1] < 0){
 			temp[1] = 0;
 		}
 		for(int i = 0;i<1;i++){
-pressure[0] += pow(pow(ballDist,1.5) + 1,-1)*pow(pow(goalDist,0) + 1,-1)*(pow( pow(10,0)*pow(temp[0],5) +1, -1) + pow(temp[0]+1,-1)*pow(temp[1],2))/(1);
+pressure[0] += pow(pow(ballDist,1.5) + 1,-1)*pow(pow(goalDist,0) + 1,-1)*(pow( pow(10,0)*pow(temp[0],5) +1, -1) + pow(temp[0]+1,-1)*pow(temp[1],2))/(1+temp[4]);
 		}
 	}
 
@@ -400,17 +435,28 @@ i	} */
 			}
 		}
 	}
+	if (prevAttackingTeam == 0){
+		for(auto it  = attackPlayers.begin();it<attackPlayers.end();++it){
+			int pid = (*it)->getMappedPid();
+			allPlayers[pid].trolley.addWeights();
+		}
+	}
+	else{
+		addDWeights();
+	}
 	for(auto it  = attackPlayers.begin();it<attackPlayers.end();++it){
 		int pid = (*it)->getMappedPid();
-		allPlayers[pid].trolley.addWeights();
 		//allPlayers[pid].trolley.sortBall();
 		//allPlayers[pid].trolley.addWeights();
 		for (auto itb = defensePlayers.begin();itb < defensePlayers.end();++itb){
 			int pidb = (*itb)->getMappedPid();
 			std::vector<int> pressureTypes = {8};
+			std::cout << pidb << ":";
 			pressureCalc.callPresures(pressureTypes,allPlayers[pid].pullPassInfo(pidb,dead_before));
+			std::cout << std::endl;
 		}
 	}
+	std::cout << std::endl;
 //	if(previousFid!=-1){
 //		for (auto allPlayerit = allPlayers.begin();allPlayerit < allPlayers.end();++allPlayerit){
 //			(*allPlayerit).playerPressures << std::endl;

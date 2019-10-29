@@ -89,5 +89,6 @@ class AllClosest {
 		void openStreams(int matchid, Idmap id_mappings);
 		double getBallDist(std::vector<Frame*>::iterator frameit, std::array<double,2> playerPos);
 		double getGoalDist(std::array<double,2> playerPos, int attacking);
+		void addDWeights();
 };
 #endif
