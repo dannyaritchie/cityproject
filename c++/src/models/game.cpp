@@ -115,15 +115,13 @@ bool Game::readNewFile(){
 		for(int i=0; i<oneFrame.HOMETEAM.get_playersInTeam().size();i++){
 				Football::Player tplayer = oneFrame.HOMETEAM.get_playersInTeam()[i];
 				double x = tplayer.get_posX();
-				std::cout << x << std::endl;
-				if(x<-200){
+				if(x<-500){
 					leftCount ++;
 				}
-				if(x>200){
+				if(x>500){
 					rightCount ++;
 				}
 		}
-			std::cout << leftCount << "<" << rightCount << std::endl;
 		if (leftCount>0&&rightCount ==0){
 			homeSide = 'L';
 		}

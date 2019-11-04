@@ -87,8 +87,11 @@ std::array<double,100> distanceToGoalda(std::vector<Frame*>::iterator frameit,st
 }
 int main() {
 	int distanceThreshold = 15;
+	std::fstream results;
+	results.open("../data/results.txt",std::fstream::out|std::fstream::app);
 	PressureProcessor signalProcess;
-	signalProcess.openStreams();
+	signalProcess.setBins();
+//	signalProcess.openStreams();
 	std::vector<int> mids;
 /*	
 	for (auto i = 987592;i<987972;++i){
@@ -96,14 +99,14 @@ int main() {
 	}
 	for (auto i = 918893;i<919273;++i){
 		mids.push_back(i);
-	}
-	for (auto i = 1059702;i<1059760;++i){
-		mids.push_back(i);
 	}*/
-	mids.push_back(1059702);
+	for (auto i = 1059730;i<1059780;++i){
+		mids.push_back(i);
+	}
+	//mids.push_back(1059702);
 	std::string rempath = "/pc2014-data1/lah/data_msgpk/";
 	for (int mid : mids){
-		Game * tgame = new Game(mid, "../idata/newmsgpk/");
+		Game * tgame = new Game(mid, "../idata/");
 		if(tgame->readNewFile()==true){
 			char homeSide = tgame->getHomeSide();
 			std::vector<Frame*> aframes = tgame->getFrames();
@@ -176,12 +179,21 @@ int main() {
 			signalProcess.addFinalPressure();
 			std::array<int,2> result = signalProcess.lengthThreshold(4,0,true,true,true);
 			std::cout << result[0] << " " << result[1] <<std::endl;
-			signalProcess.calcPressure();
+			signalProcess.calcPressure(false,false,true);
 			signalProcess.clearPhases();
 			}
 			else{std::cout << "stinky" << std::endl;}
 		}
-	signalProcess.closeStreams();
+	signalProcess.autoBins(5);
+	signalProcess.printBinSize();
+	std::vector<std::array<double,6>> stats = signalProcess.getStats();
+	results << mids.size();
+	for(auto i = stats.begin();i<stats.end();++i){
+		for (int j = 0; j< 6;j++){
+			results <<  (*i)[j] << ",";
+		}
+		results << std::endl;
+	}
 	return 0;
 }
 

@@ -249,7 +249,6 @@ void pressuresum::addPressureU(std::array<double,6> temp, int pos){
 	double ballDist = temp[3];
 	std::array<double,6> notgg = {-1,-1,-1,-1,-1,-1};
 	if (temp!=notgg){
-		std::cout << temp[4] << "<" << temp[0];
 		if(temp[1] < 0){
 			temp[1] = 0;
 		}
@@ -451,12 +450,9 @@ i	} */
 		for (auto itb = defensePlayers.begin();itb < defensePlayers.end();++itb){
 			int pidb = (*itb)->getMappedPid();
 			std::vector<int> pressureTypes = {8};
-			std::cout << pidb << ":";
 			pressureCalc.callPresures(pressureTypes,allPlayers[pid].pullPassInfo(pidb,dead_before));
-			std::cout << std::endl;
 		}
 	}
-	std::cout << std::endl;
 //	if(previousFid!=-1){
 //		for (auto allPlayerit = allPlayers.begin();allPlayerit < allPlayers.end();++allPlayerit){
 //			(*allPlayerit).playerPressures << std::endl;

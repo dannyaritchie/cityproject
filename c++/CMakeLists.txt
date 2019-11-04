@@ -20,6 +20,7 @@ add_executable(Project src/main.cpp
 	src/models/briantable/allclosest.cpp
 	src/models/briantable/pressureprocessor.cpp
 	src/models/idmap.cpp
+	src/STATS/runningstats.cpp
 	#src/models/wholeplayer.cpp 
     	#src/models/angmod/computeangle.cpp
 	)

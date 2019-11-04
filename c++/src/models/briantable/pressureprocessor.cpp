@@ -1,6 +1,8 @@
+#include<algorithm>
 #include "pressureprocessor.h"
 #include <iostream>
 #include <iterator>
+#include "../../STATS/runningstats.h"
 
 PressureProcessor::PressureProcessor(){
 	previousFid = -1;
@@ -127,21 +129,57 @@ void PressureProcessor::addRates(){
 		}
 	}
 }
-void PressureProcessor::calcPressure(){
-	for (auto phaseit = sPhases.begin();phaseit<sPhases.end();++phaseit){
-		std::array<double,10> summedPressure;
-		for(int i = 0;i<10;i++){
-			summedPressure[i] = 0;
-		}
-		int count = (*phaseit).size();
-		for (auto pointit = (*phaseit).begin();pointit<(*phaseit).end();++pointit){
-			for(int i = 0;i<10;i++){
-				summedPressure[i] += (*pointit)[1]/count + i;
+void PressureProcessor::calcPressure(bool write, bool success, bool usuccess){
+	if(!write){
+		goalDistributions.clear();
+		goalDistributions.resize(bins.size());
+	}
+	if(usuccess){
+		for (auto phaseit = uPhases.begin();phaseit<uPhases.end();++phaseit){
+			std::array<double,2> summedPressure;
+			for(int i = 0;i<2;i++){
+				summedPressure[i] = 0;
 			}
-			count --;
+			int count = (*phaseit).size();
+			for (auto pointit = (*phaseit).begin();pointit<(*phaseit).end();++pointit){
+				for(int i = 0;i<2;i++){
+					summedPressure[i] += (*pointit)[1]/count + i;
+				}
+				count --;
+			}
+			if(write){
+				for(int i = 0;i<2;i++){
+					os[i] << summedPressure[i] << "," << (*phaseit)[(*phaseit).size()-1][3] << ",0" << std::endl;
+				}
+			}
+			else{
+				std::array<double,2> info = {summedPressure[0], (*phaseit)[(*phaseit).size()-1][3]};
+				getInTheBin(info);
+			}
 		}
-		for(int i = 0;i<10;i++){
-			os[i] << summedPressure[i] << "," << (*phaseit)[(*phaseit).size()-1][3] << std::endl;
+	}
+	if(success){
+		for (auto phaseit = sPhases.begin();phaseit<sPhases.end();++phaseit){
+			std::array<double,2> summedPressure;
+			for(int i = 0;i<2;i++){
+				summedPressure[i] = 0;
+			}
+			int count = (*phaseit).size();
+			for (auto pointit = (*phaseit).begin();pointit<(*phaseit).end();++pointit){
+				for(int i = 0;i<2;i++){
+					summedPressure[i] += (*pointit)[1]/count + i;
+				}
+				count --;
+			}
+			if(write){
+				for(int i = 0;i<2;i++){
+					os[i] << summedPressure[i] << "," << (*phaseit)[(*phaseit).size()-1][3] << ",0" << std::endl;
+				}
+			}
+			else{
+				std::array<double,2> info = {summedPressure[0], (*phaseit)[(*phaseit).size()-1][3]};
+				getInTheBin(info);
+			}
 		}
 	}
 }
@@ -161,3 +199,81 @@ void PressureProcessor::clearPhases(){
 	sections.clear();
 	section.clear();	
 }
+
+void PressureProcessor::getInTheBin(std::array<double,2> rubbish){
+	if(goalDistributions.size()!=bins.size()){
+		goalDistributions.resize(bins.size());
+	}
+	std::vector<std::vector<double>>::iterator distrit = goalDistributions.begin();
+	bool stop{true};
+	int count = 0;
+	if(bins[1]!=99999999){
+		for (auto binit = bins.begin();binit<bins.end();++binit){
+			if (rubbish[0]<(*binit)){
+				(*distrit).push_back(rubbish[1]);
+				return;
+			}
+			else{++distrit;}
+		}
+		std::cout << "value higher than top bin" << std::endl;
+		return;
+	}
+	else{distrSorter.push_back(rubbish);}
+}
+
+void PressureProcessor::setBins(std::vector<double> tbins){
+	bins = tbins;
+	return;
+}
+void PressureProcessor::setBins(){
+	bins = {0,99999999};
+	return;
+}
+
+std::vector<std::array<double,6>> PressureProcessor::getStats(){
+	std::vector<double>::iterator binit = bins.begin();
+	std::vector<std::array<double,6>> info;
+	for (auto distrit = goalDistributions.begin();distrit<goalDistributions.end();++distrit){
+		std::cout <<"P <  " << (*binit) << ": ";
+		RunningStats statcalc;
+		for (auto rubbishit = (*distrit).begin(); rubbishit<(*distrit).end();++rubbishit){
+			statcalc.Push((*rubbishit));
+		}		
+		std::cout << "me: "<< statcalc.Mean() << ",";
+		std::cout << "std: " << statcalc.StandardDeviation() << ",";
+		std::cout << "kurt: "<< statcalc.Kurtosis() << "," ;
+		std::cout << "sk: "<< statcalc.Skewness() << ",";
+		std::array<double, 6> tempinfo = {(*binit),(*distrit).size(),statcalc.Mean(),statcalc.StandardDeviation(),statcalc.Kurtosis(),statcalc.Skewness()};
+		++binit;
+		info.push_back(tempinfo);
+	}
+	return info;
+}
+
+void PressureProcessor::printBinSize(){
+	std::vector<double>::iterator binit = bins.begin();
+	for (auto it = goalDistributions.begin(); it<goalDistributions.end(); ++it){
+		std::cout << "<" << (*binit) << ": " << (*it).size() << std::endl;
+		++binit;
+	}
+	for(auto it = bins.begin();it<bins.end();++it){
+		std::cout << (*it) << std::endl;
+	}
+}
+void PressureProcessor::autoBins(int n){
+	bins.clear();
+	goalDistributions.clear();
+	std::sort(distrSorter.begin(),distrSorter.end(),[] (const std::array<double,2> &a, const std::array<double,2> &b){
+		return a[0] < b[0];
+	});
+	int binLength = distrSorter.size()/(1+n);
+	std::cout <<"U" << binLength << std::endl;
+	for(int i = 1; i < n;i++){
+		std::vector<double> binedVec;
+		bins.push_back((*(distrSorter.begin()+i*binLength))[0]);
+		for(auto it = distrSorter.begin() + (i-1)*binLength;it<distrSorter.begin()+i*binLength;++it){
+			binedVec.push_back((*it)[1]);
+		}
+		goalDistributions.push_back(binedVec);
+	}
+}	
