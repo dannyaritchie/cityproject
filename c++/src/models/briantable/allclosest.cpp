@@ -62,7 +62,7 @@ void AllClosest::addDWeights(){
 	for(int i = 0;i<28;i++){
 		std::sort(sorter[i].begin(),sorter[i].end(), [](const std::array<double,2> &a,const std::array<double,2> &b)
 		{
-			return a[1] < b[1];
+			return a[1]/a[0] < b[1]/b[0];
 		});
 	}
 	int u = 0;
@@ -253,7 +253,7 @@ void pressuresum::addPressureU(std::array<double,6> temp, int pos){
 			temp[1] = 0;
 		}
 		for(int i = 0;i<1;i++){
-pressure[0] += pow(pow(ballDist,1.5) + 1,-1)*pow(pow(goalDist,0) + 1,-1)*(pow( pow(10,0)*pow(temp[0],5) +1, -1) + pow(temp[0]+1,-1)*pow(temp[1],2))/(1+temp[4]);
+pressure[0] += pow(pow(ballDist,1.5) + 1,-1)*pow(pow(goalDist,0.5) + 1,-1)*(pow(10,2)*pow( pow(temp[1],5) +1, -1) + pow(pow(temp[0],2)+1,-1)*pow(temp[1],1))/(3+temp[4]);
 		}
 	}
 
@@ -424,7 +424,12 @@ i	} */
 	//			bnum = (*playeritb)->getNum();
 	//			std::cout << anum << ":" << bnum <<std::endl;
 			//	std::array<double,2> info = {tdistance,getBallDist(frameit,(*playerit)->getPos())};
-				std::array<double,3> info = {tdistance,getGoalDist((*playerit)->getPos(),prevAttackingTeam), getBallDist(frameit,(*playerit)->getPos())};
+				std::vector<Player*>::iterator ait;	
+				if(prevAttackingTeam != 0){
+					 ait = playerit;
+				}
+				else{ait = playeritb;}	
+				std::array<double,3> info = {tdistance,getGoalDist((*ait)->getPos(),prevAttackingTeam), getBallDist(frameit,(*ait)->getPos())};
 			//	std::array<double,3> info = {tdistance,pid,pidb};
 				allPlayers[pid].trolley.addInfo(info, pidb);
 				allPlayers[pid].trolley.addConsec(1,pidb);

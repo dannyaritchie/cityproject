@@ -32,9 +32,10 @@ void PressureProcessor::addPressure(std::array<double,4> info){
 void PressureProcessor::addFinalPressure(){
 	sections.push_back(section);
 }
-std::array<int,2> PressureProcessor::lengthThreshold(double timeLength, double size, bool increasing, bool savePhases, bool lookieLookie){
-	int prevPressure = 0;
-	int prevPrevPressure = 0;
+std::array<int,2> PressureProcessor::lengthThreshold(double timeLength, double size, bool increasing, bool savePhases, int lookieLookie){
+	std::cout << sections.size() << std::endl;
+	std::vector<double> prevPressure;
+	double lowestPressure;
 	int prevAttacking = -1;
 	int consecutive = 0;
 	std::array<int,2> number = {0,0};
@@ -43,14 +44,15 @@ std::array<int,2> PressureProcessor::lengthThreshold(double timeLength, double s
 	if(increasing){
 		for (auto sectionsit = sections.begin();sectionsit<sections.end();++sectionsit){
 			for(auto sectionit = (*sectionsit).begin();sectionit<(*sectionsit).end(); ++sectionit){
-				if(lookieLookie == true){
-					prevPressure = std::min(prevPressure,prevPrevPressure);
+				if(prevPressure.size()>0){
+					lowestPressure = *std::min_element(std::begin(prevPressure),std::end(prevPressure));
 				}
-				if((*sectionit)[1] > prevPressure&&(*sectionit)[2]==prevAttacking) {
+				else{lowestPressure = 0;}
+				if((*sectionit)[1] > lowestPressure&&(*sectionit)[2]==prevAttacking) {
 					consecutive += 1;
 				}
 				else{
-					if((*sectionit)[1]>prevPressure&&largeEnough == true){
+					if((*sectionit)[1]>lowestPressure&&largeEnough == true){
 						number[1] += 1;
 						if(savePhases == true){
 							std::vector<std::array<double,4>> tphase;
@@ -61,7 +63,7 @@ std::array<int,2> PressureProcessor::lengthThreshold(double timeLength, double s
 						}
 						largeEnough = false;
 					}
-					if((*sectionit)[1]<=prevPressure && largeEnough == true){
+					if((*sectionit)[1]<=lowestPressure && largeEnough == true){
 						number[0] += 1;
 						if(savePhases == true){
 							std::vector<std::array<double,4>> tphase;
@@ -77,8 +79,10 @@ std::array<int,2> PressureProcessor::lengthThreshold(double timeLength, double s
 				if(consecutive >= timeLength*5&&(*sectionit)[1]>size){
 					largeEnough = true;
 				}
-				prevPressure = (*sectionit)[1];
-				prevPrevPressure = prevPressure;
+				prevPressure.push_back((*sectionit)[1]);
+				if(prevPressure.size() ==  lookieLookie){
+					prevPressure.erase(prevPressure.begin());
+				}
 				prevAttacking = (*sectionit)[2];
 
 			}
@@ -143,7 +147,7 @@ void PressureProcessor::calcPressure(bool write, bool success, bool usuccess){
 			int count = (*phaseit).size();
 			for (auto pointit = (*phaseit).begin();pointit<(*phaseit).end();++pointit){
 				for(int i = 0;i<2;i++){
-					summedPressure[i] += (*pointit)[1]/count + i;
+					summedPressure[i] += (*pointit)[1]/count + 1*i;
 				}
 				count --;
 			}
@@ -153,7 +157,7 @@ void PressureProcessor::calcPressure(bool write, bool success, bool usuccess){
 				}
 			}
 			else{
-				std::array<double,2> info = {summedPressure[0], (*phaseit)[(*phaseit).size()-1][3]};
+				std::array<double,2> info = {summedPressure[1], (*phaseit)[(*phaseit).size()-1][3]};
 				getInTheBin(info);
 			}
 		}
@@ -185,7 +189,7 @@ void PressureProcessor::calcPressure(bool write, bool success, bool usuccess){
 }
 void PressureProcessor::openStreams(){
 	for (int i = 0;i<10;i++){
-		os[i].open("../data/phasepressure/distancetogoal_" + std::to_string(i) + "_.txt");
+		os[i].open("../data/phasepressure/onlydistancetogoal_" + std::to_string(i) + "_.txt");
 	}
 }
 void PressureProcessor::closeStreams(){
@@ -277,3 +281,15 @@ void PressureProcessor::autoBins(int n){
 		goalDistributions.push_back(binedVec);
 	}
 }	
+void PressureProcessor::printBins(){
+	int i = 0;
+	std::vector<double>::iterator binit = bins.begin();
+	for (auto distrit = goalDistributions.begin();distrit<goalDistributions.end();++distrit){
+		os[i] << (*binit) << std::endl;
+		for (auto rubbishit = (*distrit).begin(); rubbishit<(*distrit).end();++rubbishit){
+			os[i] << *rubbishit << std::endl;
+		}
+		++binit;
+	}
+}
+

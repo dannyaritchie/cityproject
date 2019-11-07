@@ -20,7 +20,7 @@
 		PressureProcessor();
 		void addPressure(std::array<double,4>);
 		void addFinalPressure();
-		std::array<int,2> lengthThreshold(double timeLength, double size, bool increasing, bool savePhases, bool lookieLookie);
+		std::array<int,2> lengthThreshold(double timeLength, double size, bool increasing, bool savePhases, int lookieLookie);
 		void addRates();
 		void calcPressure(bool write,bool s,bool us);
 		void openStreams();
@@ -32,6 +32,7 @@
 		std::vector<std::array<double,6>> getStats();
 		void printBinSize();
 		void autoBins(int n);
+		void printBins();
 	};
 
 	

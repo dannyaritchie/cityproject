@@ -91,7 +91,7 @@ int main() {
 	results.open("../data/results.txt",std::fstream::out|std::fstream::app);
 	PressureProcessor signalProcess;
 	signalProcess.setBins();
-//	signalProcess.openStreams();
+	signalProcess.openStreams();
 	std::vector<int> mids;
 /*	
 	for (auto i = 987592;i<987972;++i){
@@ -100,7 +100,7 @@ int main() {
 	for (auto i = 918893;i<919273;++i){
 		mids.push_back(i);
 	}*/
-	for (auto i = 1059730;i<1059780;++i){
+	for (auto i = 1059775;i<1059780;++i){
 		mids.push_back(i);
 	}
 	//mids.push_back(1059702);
@@ -113,6 +113,9 @@ int main() {
 		//	tgame->addVelocities();
 			AllClosest * tallClosest = new AllClosest(distanceThreshold, tgame->getMap(),tgame->getMapLength(), tgame->getHomeSide());
 	//		tallClosest->openStreams(mid,tgame->getMap());
+			std::ofstream os;
+			std::string name = "../data/phasepressure/" + std::to_string(mid) + ".txt";
+			os.open(name);
 		/*	for (int j = 0;j<2;j++){
 				for(int i = 0; i<1;i++){
 					std::string filename = "../data/pressuretimehistory/" + std::to_string(mid) + "_" + std::to_string(i) + ".txt";
@@ -140,9 +143,12 @@ int main() {
 				std::array<double,100> framePressure = tallClosest->addPlayers(frameit, previousFid, previousAttacking);
 				double attacking = previousAttacking;
 				double dfid = previousFid;
-				double gdistance = distanceToGoal(frameit,aframes.end(),tgame->getHomeSide());
-				std::array<double,4> temp = {dfid,framePressure[0],attacking,gdistance};
-				signalProcess.addPressure(temp);
+				double gdistance = distanceToGoald(frameit,aframes.end(),tgame->getHomeSide());
+				if (distanceToGoal(frameit,aframes.end(),tgame->getHomeSide()) > 1000){
+					std::array<double,4> temp = {dfid,framePressure[0],attacking,gdistance};
+					signalProcess.addPressure(temp);
+				}
+				os << framePressure[0] << "," << time << std::endl;
 				previousAttacking = (*frameit)->getAttacking();
 		/*		if(!found){
 					it = frameit;
@@ -168,6 +174,7 @@ int main() {
 				previousFid = (*frameit)->getFid();			
 				previousDistToGoal = distanceToGoald(frameit,aframes.end(),tgame->getHomeSide());
 			}
+			os.close();
 		//	for (int j=0;j<2;j++){
 			//	for(int i = 0; i < 1; i++){
 			//		os[i].close();
@@ -177,7 +184,7 @@ int main() {
 			delete tallClosest;
 			delete tgame;
 			signalProcess.addFinalPressure();
-			std::array<int,2> result = signalProcess.lengthThreshold(4,0,true,true,true);
+			std::array<int,2> result = signalProcess.lengthThreshold(2,5,true,true,4);
 			std::cout << result[0] << " " << result[1] <<std::endl;
 			signalProcess.calcPressure(false,false,true);
 			signalProcess.clearPhases();
@@ -187,6 +194,7 @@ int main() {
 	signalProcess.autoBins(5);
 	signalProcess.printBinSize();
 	std::vector<std::array<double,6>> stats = signalProcess.getStats();
+	signalProcess.printBins();
 	results << mids.size();
 	for(auto i = stats.begin();i<stats.end();++i){
 		for (int j = 0; j< 6;j++){
@@ -194,6 +202,7 @@ int main() {
 		}
 		results << std::endl;
 	}
+	signalProcess.closeStreams();
 	return 0;
 }
 
