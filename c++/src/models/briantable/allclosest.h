@@ -10,15 +10,15 @@
 struct findiftro {
 	//finite difference calculator.
 	//there is one of these for every player
-	std::array<std::vector<std::array<double,5>>,28> closest;
+	std::array<std::vector<std::array<double,6>>,28> closest;
 	//closest is an array for every player, with each point having a vector that stores the last three distances to that player
 	std::array<std::vector<int>,28> consecutive;
 	//consecutive is an integer that keeps track of how long its been since a frame break
 	//if it is less that 3 frames since a frame break then the velocity as calculated will be meaningless. consecutive provides 
 	//this information so velocity can be set to 0.it also catches cases where a player was not inside radius the frames before
-	void addInfo(std::array<double,3> temporary_info, int pid);
+	void addInfo(std::array<double,4> temporary_info, int pid);
 	//addDis takes distance provided by external function and adds to closest
-	std::array<double,6> passPair(int pid, int);
+	std::array<double,7> passPair(int pid, int);
 	//returns an array of {dist, change in distance} for given player id
 	void addWeights();
 	void sortBall();
@@ -28,7 +28,7 @@ struct findiftro {
 struct frameInfo {
 	int fid;
 	int attacking;
-	std::vector<std::array<double,6>> framePlayerPressures;
+	std::vector<std::array<double,7>> framePlayerPressures;
 };
 
 struct phaseselect {
@@ -43,27 +43,28 @@ struct closeplayer {
 	findiftro  trolley;
 	frameInfo tempInfo;
 	//not implemented
-	std::array<double,6>pullPair(int pid);
+	std::array<double,7>pullPair(int pid);
 	//not implemented
-	std::array<double,6> pullWritePassPair(int pid);
-	std::array<double,6> pullPassInfo(int pid, int);
+	std::array<double,7> pullWritePassPair(int pid);
+	std::array<double,7> pullPassInfo(int pid, int);
 	//pulls info from trolley of distance to player with pid, writes this for its info file 
 	//and also returns info so it can bewritten to other players info file	
-	void writePair(std::array<double,6> info_pair);
+	void writePair(std::array<double,7> info_pair);
 	//writes info_pair to players output stream
 };
 
 struct pressuresum {
-        pressuresum();
+	double gp,dp,dw,bp,vp,dvp,ra,ddg;
+        pressuresum(double,double,double,double,double,double,double,double);
         std::array<double, 100> pressure;
-        void addPressureA(std::array<double,6>, int);
-        void addPressureB(std::array<double,6>, int);
-        void addPressureC(std::array<double,6>, int);
-        void addPressureD(std::array<double,6>, int);
-        void addPressureU(std::array<double,6>, int);
-        void addPressureZ(std::array<double,6>, int);
-        void addPressureBallGoalWeight(std::array<double,6>);
-	void callPresures(std::vector<int> pressureTypes, std::array<double, 6> temp);
+        void addPressureA(std::array<double,7>, int);
+        void addPressureB(std::array<double,7>, int);
+        void addPressureC(std::array<double,7>, int);
+        void addPressureD(std::array<double,7>, int);
+        void addPressureU(std::array<double,7>, int);
+        void addPressureZ(std::array<double,7>, int);
+        void addPressureBallGoalWeight(std::array<double,7>);
+	void callPresures(std::vector<int> pressureTypes, std::array<double, 7> temp);
 };
 
 class AllClosest {
@@ -79,8 +80,10 @@ class AllClosest {
 		Idmap mappedIds;
 		phaseselect phaseSelector;
 		int dead_before;
+		double gp,dp,dw,bp,vp,dvp,ra,ddg;
+
 	public:
-		AllClosest(int pdistanceThreshold, Idmap tidmap, int number_of_players, char homeSide);
+		AllClosest(int pdistanceThreshold, Idmap tidmap, int number_of_players, char homeSide,double,double,double,double,double,double,double,double);
 		std::array<double, 100> addPlayers(std::vector<Frame*>::iterator currentFrameit,int previousFid, int prevAttackingTeamid);
 		//gets home and away player vectors for given frame
 		//calculates all distances and if less than distance Threshold adds information to players trolley

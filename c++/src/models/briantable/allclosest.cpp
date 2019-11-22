@@ -8,22 +8,23 @@
 #include <iomanip>
 #include <cmath>
 #include <algorithm>
-void findiftro::addInfo(std::array<double,3> info,int pid){
-	std::array<double,5> temp;
+void findiftro::addInfo(std::array<double,4> info,int pid){
+	std::array<double,6> temp;
 	for(int i = 0;i<3;i++){
 		temp[i] = info[i];
 	}
 	temp[3] = 0;
 	temp[4] = 0;
+	temp[5] = info[3];
 	if(closest[pid].size()==3){
 		closest[pid].erase(closest[pid].begin());
 	}
 	closest[pid].push_back(temp);
 }
-std::array<double,6> findiftro::passPair(int pidv, int dead){
-	std::array<double,6> temp;
+std::array<double,7> findiftro::passPair(int pidv, int dead){
+	std::array<double,7> temp;
 	if(consecutive[pidv][1] == 0){
-		temp = {-1,-1,-1,-1,-1,-1};
+		temp = {-1,-1,-1,-1,-1,-1,-1};
 	}
 	else{
 		if(consecutive[pidv][0] == 0||consecutive[pidv][2] == 0){
@@ -37,7 +38,7 @@ std::array<double,6> findiftro::passPair(int pidv, int dead){
 				temp = {closest[pidv][1][0],0,0,0,0,0};
 			}
 		}
-		for(int i =1;i<5;i++){
+		for(int i =1;i<6;i++){
 			temp[i+1] = closest[pidv][1][i];
 		}
 	}
@@ -132,42 +133,42 @@ void findiftro::addConsec(int i, int pid){
 }
 		
 
-std::array<double,6> closeplayer::pullPair(int pid){
-	std::array<double,6> temp = trolley.passPair(pid, true);
+std::array<double,7> closeplayer::pullPair(int pid){
+	std::array<double,7> temp = trolley.passPair(pid, true);
 	tempInfo.framePlayerPressures.push_back(temp); 	
 	return temp;
 }
-std::array<double,6> closeplayer::pullWritePassPair(int pid){
+std::array<double,7> closeplayer::pullWritePassPair(int pid){
 	if (trolley.closest[pid].size() > 2){
-		std::array<double,6> temp = trolley.passPair(pid, true);
+		std::array<double,7> temp = trolley.passPair(pid, true);
 		playerPressures << std::setprecision(0) <<temp[3] << std::setprecision(2) <<"," << temp[0] << ","<< temp[1] << "\t";
 		return temp;
 	}
 	else{
-		return {-1,-1,-1,-1,-1,-1};
+		return {-1,-1,-1,-1,-1,-1,-1};
 	}
 }
-std::array<double,6> closeplayer::pullPassInfo(int pid, int dead){
+std::array<double,7> closeplayer::pullPassInfo(int pid, int dead){
 	if (trolley.closest[pid].size() > 2){
-		std::array<double,6> temp = trolley.passPair(pid,dead);
+		std::array<double,7> temp = trolley.passPair(pid,dead);
 		return temp;
 	}
 	else{
-		return {-1,-1,-1,-1,-1,-1};
+		return {-1,-1,-1,-1,-1,-1,-1};
 	}
 }
-void closeplayer::writePair(std::array<double,6> temp){
+void closeplayer::writePair(std::array<double,7> temp){
 	if (temp[2] != -1){
 	playerPressures << std::setprecision(0) << temp[2] << std::setprecision(2) <<"," << temp[0] << ","<< temp[1]<<"\t";
 	}
 }
 
-pressuresum::pressuresum(){
+pressuresum::pressuresum(double tgp,double tdp,double tdw,double tbp,double tvp,double tdvp,double tra,double tddg):gp{tgp},dp{tdp},dw{tdw},bp{tbp},vp{tvp},dvp{tdvp},ra{tra},ddg{tddg}{
         for(int i = 0;i<100;i++){
                 pressure[i] = 0;
         }
 }
-void pressuresum::callPresures(std::vector<int> pressureTypes, std::array<double, 6> temp){
+void pressuresum::callPresures(std::vector<int> pressureTypes, std::array<double, 7> temp){
 	for (auto it = pressureTypes.begin();it< pressureTypes.end();it++){
 		switch(*it){
 			case 0:
@@ -194,12 +195,12 @@ void pressuresum::callPresures(std::vector<int> pressureTypes, std::array<double
 		}
 	}
 }
-void pressuresum::addPressureBallGoalWeight(std::array<double,6> temp){
+void pressuresum::addPressureBallGoalWeight(std::array<double,7> temp){
         double goalDist = temp[2];
 	double ballDist = temp[3];
 	double goalMult;
 	double ballMult;
-	std::array<double,6> notgg = {-1,-1,-1,-1,-1,-1};
+	std::array<double,7> notgg = {-1,-1,-1,-1,-1,-1,-1};
 	if (temp!=notgg){
 		if (goalDist>0.1){
 			goalMult = 1/goalDist;
@@ -219,10 +220,10 @@ void pressuresum::addPressureBallGoalWeight(std::array<double,6> temp){
 		}
 	}
 }
-void pressuresum::addPressureA(std::array<double,6> temp, int pos){
+void pressuresum::addPressureA(std::array<double,7> temp, int pos){
         double goalDist = temp[2];
 	double ballDist = temp[3];
-	std::array<double,6> notgg = {-1,-1,-1,-1,-1,-1};
+	std::array<double,7> notgg = {-1,-1,-1,-1,-1,-1,7};
 	if (temp!=notgg){
 		if(temp[1] < 0){
 			temp[1] = 0;
@@ -244,24 +245,30 @@ void pressuresum::addPressureA(std::array<double,6> temp, int pos){
 	}
 
 }
-void pressuresum::addPressureU(std::array<double,6> temp, int pos){
+void pressuresum::addPressureU(std::array<double,7> temp, int pos){
         double goalDist = temp[2];
 	double ballDist = temp[3];
-	std::array<double,6> notgg = {-1,-1,-1,-1,-1,-1};
+	double goalRank;
+	if(ra == 0){
+		goalRank = 1;
+	}
+	else{goalRank = ra+temp[4];}
+	//std::cout << temp[6] <<std::endl;
+	std::array<double,7> notgg = {-1,-1,-1,-1,-1,-1,-1};
 	if (temp!=notgg){
 		if(temp[1] < 0){
 			temp[1] = 0;
 		}
 		for(int i = 0;i<1;i++){
-pressure[0] += pow(pow(ballDist,1.5) + 1,-1)*pow(pow(goalDist,0.5) + 1,-1)*(pow(10,2)*pow( pow(temp[1],5) +1, -1) + pow(pow(temp[0],2)+1,-1)*pow(temp[1],1))/(3+temp[4]);
+pressure[0] += exp(ddg*temp[2])*pow(pow(ballDist,bp) + 1,-1)*(pow(10,dw)*pow( pow(temp[0],dp) +1, -1) + pow(pow(temp[0],dvp)+1,-1)*pow(temp[1],vp))/goalRank;//(1+temp[4]);
 		}
 	}
-
 }
-void pressuresum::addPressureB(std::array<double,6> temp, int pos){
+
+void pressuresum::addPressureB(std::array<double,7> temp, int pos){
         double goalDist = temp[2];
 	double ballDist = temp[3];
-	std::array<double,6> notgg = {-1,-1,-1,-1,-1,-1};
+	std::array<double,7> notgg = {-1,-1,-1,-1,-1,-1};
 	if (temp!=notgg){
 		if(temp[1] < 0){
 			temp[1] = 0;
@@ -276,10 +283,10 @@ void pressuresum::addPressureB(std::array<double,6> temp, int pos){
 		}
 	}
 }
-void pressuresum::addPressureC(std::array<double,6> temp, int pos){
+void pressuresum::addPressureC(std::array<double,7> temp, int pos){
         double goalDist = temp[2];
 	double ballDist = temp[3];
-	std::array<double,6> notgg = {-1,-1,-1,-1,-1,-1};
+	std::array<double,7> notgg = {-1,-1,-1,-1,-1,-1};
 	if (temp!=notgg){
 		if(temp[1] < 0){
 			temp[1] = 0;
@@ -294,10 +301,10 @@ void pressuresum::addPressureC(std::array<double,6> temp, int pos){
 		}
 	}
 }
-void pressuresum::addPressureD(std::array<double,6> temp, int pos){
+void pressuresum::addPressureD(std::array<double,7> temp, int pos){
         double goalDist = temp[2];
 	double ballDist = temp[3];
-	std::array<double,6> notgg = {-1,-1,-1,-1,-1,-1};
+	std::array<double,7> notgg = {-1,-1,-1,-1,-1,-1};
 	if (temp!=notgg){
 		if(temp[1] < 0){
 			temp[1] = 0;
@@ -310,10 +317,10 @@ void pressuresum::addPressureD(std::array<double,6> temp, int pos){
 		pressure[pos+5] += pow(pow(goalDist,0) + 1,-1)*(pow(10,0)*pow( pow(temp[0],5) +1, -1) + pow(temp[0]+1,-1)*pow(temp[1],2))/(temp[4]+3);
 	}
 }
-void pressuresum::addPressureZ(std::array<double,6> temp, int pos){
+void pressuresum::addPressureZ(std::array<double,7> temp, int pos){
         double goalDist = temp[2];
 	double ballDist = temp[3];
-	std::array<double,6> notgg = {-1,-1,-1,-1,-1,-1};
+	std::array<double,7> notgg = {-1,-1,-1,-1,-1,-1};
 	if (temp!=notgg){
 		if(temp[1] < 0){
 			temp[1] = 0;
@@ -330,7 +337,9 @@ void pressuresum::addPressureZ(std::array<double,6> temp, int pos){
 	else{pressure[pos] +=1;}
 }
 
-AllClosest::AllClosest(int pdist, Idmap pidmap, int playerSize, char phomeSide): mappedIds{pidmap}, distanceThreshold{pdist}, homeSide{phomeSide} {
+
+AllClosest::AllClosest(int pdist, Idmap pidmap, int playerSize, char phomeSide, double tgoal_pow,double tball_pow,double dist_weight,double tdist_pow,double tvel_pow,double tdistvel_pow,double tranking,double change_in_dtog): mappedIds{pidmap}, distanceThreshold{pdist}, homeSide{phomeSide}, gp{tgoal_pow}, bp{tball_pow}, dw{dist_weight}, dp{tdist_pow}, vp{tvel_pow},dvp{tdistvel_pow},ra{tranking},ddg{change_in_dtog}
+{
 	allPlayers.resize(playerSize);
 	phaseSelector.prepreAttacking = -1;
 	phaseSelector.framesInPos = 0;
@@ -346,7 +355,7 @@ std::array<double,100> AllClosest::addPlayers(std::vector<Frame*>::iterator fram
 //***
 //a member function to add player distances below a set threshhold to a container of 2-arrays
 //also creates a differential class
-	pressuresum pressureCalc;
+	pressuresum pressureCalc(gp,dp,dw,bp,vp,dvp,ra,ddg);
 	if((*frameit)->getFid()==previousFid + 1){
 		dead_before += 1;
 	}else{dead_before= 0;}
@@ -397,21 +406,29 @@ i	} */
 //	}
 //	else{framesInPos = 0;}
 //	phaseSelector.prepreAttacking = prevAttackingTeam
-	/*if(previousFid!=-1){
-		for (auto allPlayerit = allPlayers.begin();allPlayerit < allPlayers.end();++allPlayerit){
-			(*allPlayerit).playerPressures << previousFid<<"\t" << prevAttackingTeam << "\t";	
+	if(previousFid!=-1){
+	//	for (auto allPlayerit = allPlayers.begin();allPlayerit < allPlayers.end();++allPlayerit){
+	//		(*allPlayerit).playerPressures << previousFid<<"\t" << prevAttackingTeam << "\t";	
+	//	}
+		pressureCalc.pressure[1] =0;
+		if(prevAttackingTeam == 0){
+			for (auto playerit = defensePlayers.begin(); playerit<defensePlayers.end();++playerit){
+				double vel = (*playerit)->getVelocity();
+				if(vel>3){
+					pressureCalc.pressure[1] +=1;
+				}
+			}
+
 		}
-		for (auto playerit = homePlayers.begin(); playerit<homePlayers.end();++playerit){
-			double vel = (*playerit)->getVelocity();
-			double pid = (*playerit)->getMappedPid();
-			allPlayers[pid].playerPressures << std::setprecision(2) << vel << ":\t";
+		else{
+			for (auto playerit = attackPlayers.begin(); playerit<attackPlayers.end();++playerit){
+				double vel = (*playerit)->getVelocity();
+				if(vel>3){
+					pressureCalc.pressure[1] +=1;
+				}
+			}
 		}
-		for (auto playerit = awayPlayers.begin(); playerit<awayPlayers.end();++playerit){
-			double vel = (*playerit)->getVelocity();
-			double pid = (*playerit)->getMappedPid();
-			allPlayers[pid].playerPressures << std::setprecision(2)<<vel << ":\t";
-		}
-	}*/
+	}
 
 	for (auto playerit = attackPlayers.begin() ; playerit < attackPlayers.end();++playerit){
 		int pid = (*playerit)->getMappedPid();
@@ -425,11 +442,18 @@ i	} */
 	//			std::cout << anum << ":" << bnum <<std::endl;
 			//	std::array<double,2> info = {tdistance,getBallDist(frameit,(*playerit)->getPos())};
 				std::vector<Player*>::iterator ait;	
+				std::vector<Player*>::iterator dit;	
 				if(prevAttackingTeam != 0){
-					 ait = playerit;
+					 dit = playerit;
+					 ait = playeritb;
 				}
-				else{ait = playeritb;}	
-				std::array<double,3> info = {tdistance,getGoalDist((*ait)->getPos(),prevAttackingTeam), getBallDist(frameit,(*ait)->getPos())};
+				else{
+					dit = playeritb;
+					ait = playerit;
+				}	
+				double defendingVel = (*dit)->getVelocity();
+				double goalDiff = getGoalDist((*ait)->getPos(),prevAttackingTeam) - getGoalDist((*dit)->getPos(),prevAttackingTeam);
+				std::array<double,4> info = {tdistance,goalDiff, getBallDist(frameit,(*dit)->getPos()), defendingVel};
 			//	std::array<double,3> info = {tdistance,pid,pidb};
 				allPlayers[pid].trolley.addInfo(info, pidb);
 				allPlayers[pid].trolley.addConsec(1,pidb);

@@ -129,7 +129,8 @@ bool Game::readNewFile(){
 			if (rightCount>0&&leftCount==0){
 				homeSide = 'R';
 				}
-			else{std::cout<<"uhoh could not not work out which side of the pitch everyone was on" << std::endl;}
+			else{std::cout<<"uhoh could not not work out which side of the pitch everyone was on" << std::endl;
+			return false;}
 		}
 		for(int i = 0; i < ex_match.number_of_frames();i++){
 			Football::Frame tframe = ex_match.get_frame(i);

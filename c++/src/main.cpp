@@ -25,7 +25,7 @@ double distanceToGoal(std::vector<Frame*>::iterator frameit,std::vector<Frame*>:
 	double currentDist = distance(ballPos[0],goalx, ballPos[1],0);
 	return currentDist;
 }
-double distanceToGoald(std::vector<Frame*>::iterator frameit,std::vector<Frame*>::iterator endit, char homeSide){
+double distanceToGoald(std::vector<Frame*>::iterator frameit,std::vector<Frame*>::iterator endit, char homeSide, int lookDist){
 	int attacking = (*frameit)->getAttacking();
 	std::array<double,2> ballPos = (*frameit)->getBall()->getPos();
 	int goalx;
@@ -41,8 +41,8 @@ double distanceToGoald(std::vector<Frame*>::iterator frameit,std::vector<Frame*>
 	}
 	double currentDist = distance(ballPos[0],goalx, ballPos[1],0);
 	std::vector<Frame*>::iterator advit = frameit;
-	if(endit-frameit>32){
-		std::advance(advit, 30);
+	if(endit-frameit>lookDist+2){
+		std::advance(advit, lookDist);
 	}
 	else{
 		std::advance(endit, -1);
@@ -85,33 +85,74 @@ std::array<double,100> distanceToGoalda(std::vector<Frame*>::iterator frameit,st
 	}
 	return fdistances;
 }
-int main() {
-	int distanceThreshold = 15;
+int main(int argc, char** arg) {
+//setting parameters
+	double goal_pow = atoi(arg[1]);
+	double ball_pow = 	atoi(arg[2]);
+	double dist_weight= 	atoi(arg[3]);
+	double dist_pow =  	atoi(arg[4]);
+	double vel_pow =  	atoi(arg[5]);
+	double distvel_pow =  	atoi(arg[6]);
+	double ranking =  	atoi(arg[7]);
+	double min_dis_toDg =  	atoi(arg[8]);
+	double max_dis_toDg = 	atoi(arg[9]);
+	double pressureLimit= 	atoi(arg[10]);
+	double timeLimit =	atoi(arg[11]);
+	double lookieLookie =	atoi(arg[12]);
+	double pos_time_limit =	atoi(arg[13]);
+	double frame_weighting =	atoi(arg[14]);
+	double change_in_dtog =	atoi(arg[15]);
+	double number_of_bins =	atoi(arg[16]);
+	double distThreshold  =	atoi(arg[17]);
+	double numberOfGames = atoi(arg[18]);
+	std::string filePath = arg[19];
+	double looking_distance = atoi(arg[20]);
 	std::fstream results;
 	results.open("../data/results.txt",std::fstream::out|std::fstream::app);
-	PressureProcessor signalProcess;
+	PressureProcessor signalProcess(frame_weighting,filePath);
 	signalProcess.setBins();
 	signalProcess.openStreams();
+	int coutg,coutu;
 	std::vector<int> mids;
-/*	
-	for (auto i = 987592;i<987972;++i){
+	
+	for (auto i = 987592;i<987863;++i){
 		mids.push_back(i);
 	}
-	for (auto i = 918893;i<919273;++i){
-		mids.push_back(i);
-	}*/
-	for (auto i = 1059775;i<1059780;++i){
+	for (auto i = 987864;i<987972;++i){
 		mids.push_back(i);
 	}
-	//mids.push_back(1059702);
+	for (auto i = 918893;i<918913;++i){
+		mids.push_back(i);
+	}
+	for (auto i = 918914;i<918922;++i){
+		mids.push_back(i);
+	}
+	for (auto i = 918923;i<918967;++i){
+		mids.push_back(i);
+	}
+	for (auto i = 918968;i<919273;++i){
+		mids.push_back(i);
+	}
+	for (auto i = 1059702;i<1059782;++i){
+		mids.push_back(i);
+	}
+//	mids.push_back(1059705);
 	std::string rempath = "/pc2014-data1/lah/data_msgpk/";
-	for (int mid : mids){
-		Game * tgame = new Game(mid, "../idata/");
+	for (int i = 0;i<numberOfGames;i++){
+		int mid;
+		if (i<mids.size()){
+			mid = mids[i];
+		}
+		else{std::cout << "not enough fames" << std::endl;
+		return 0;
+		}
+		std::cout << mid << std::endl;
+		Game * tgame = new Game(mid, rempath);
 		if(tgame->readNewFile()==true){
 			char homeSide = tgame->getHomeSide();
 			std::vector<Frame*> aframes = tgame->getFrames();
-		//	tgame->addVelocities();
-			AllClosest * tallClosest = new AllClosest(distanceThreshold, tgame->getMap(),tgame->getMapLength(), tgame->getHomeSide());
+			tgame->addVelocities();
+			AllClosest * tallClosest = new AllClosest(distThreshold, tgame->getMap(),tgame->getMapLength(), tgame->getHomeSide(),goal_pow,ball_pow,dist_weight,dist_pow,vel_pow,distvel_pow,ranking,change_in_dtog);
 	//		tallClosest->openStreams(mid,tgame->getMap());
 			std::ofstream os;
 			std::string name = "../data/phasepressure/" + std::to_string(mid) + ".txt";
@@ -132,7 +173,9 @@ int main() {
 			bool found = false;
 			std::vector<Frame*>::iterator it;
 			std::vector<Frame*>::iterator bit;
+			bool faffyPlay;
 			for(auto frameit = aframes.begin();frameit<aframes.end();++frameit){
+
 				double fid = (*frameit)->getFid();
 				double time = fid/5;
 				std::vector<Player*> players = (*frameit)->getPlayers();
@@ -143,14 +186,16 @@ int main() {
 				std::array<double,100> framePressure = tallClosest->addPlayers(frameit, previousFid, previousAttacking);
 				double attacking = previousAttacking;
 				double dfid = previousFid;
-				double gdistance = distanceToGoald(frameit,aframes.end(),tgame->getHomeSide());
-				if (distanceToGoal(frameit,aframes.end(),tgame->getHomeSide()) > 1000){
-					std::array<double,4> temp = {dfid,framePressure[0],attacking,gdistance};
-					signalProcess.addPressure(temp);
-				}
+				double gdistance = distanceToGoald(frameit,aframes.end(),tgame->getHomeSide(),looking_distance);
+				if(!faffyPlay){
+					if (distanceToGoal(frameit,aframes.end(),tgame->getHomeSide()) > min_dis_toDg && distanceToGoal(frameit,aframes.end(),tgame->getHomeSide()) < max_dis_toDg){
+						std::array<double,5> temp = {dfid,framePressure[0],attacking,gdistance,framePressure[1]};
+						signalProcess.addPressure(temp);
+					}
+				}	
 				os << framePressure[0] << "," << time << std::endl;
 				previousAttacking = (*frameit)->getAttacking();
-		/*		if(!found){
+				if(!found){
 					it = frameit;
 					bool finding = true;
 					while(finding){
@@ -159,6 +204,10 @@ int main() {
 							if((*it)->getAttacking()!=previousAttacking){
 								finding = false;
 								previousTimeTillPossessionChange = it-frameit;
+								if(previousTimeTillPossessionChange < 5*pos_time_limit){
+									faffyPlay = true;
+								}
+								else{faffyPlay = false;}
 							}
 						}
 						else{finding = false;}
@@ -170,9 +219,9 @@ int main() {
 						previousTimeTillPossessionChange -= 1;
 					}
 					else{found = false;}
-				}*/
+				}
 				previousFid = (*frameit)->getFid();			
-				previousDistToGoal = distanceToGoald(frameit,aframes.end(),tgame->getHomeSide());
+				previousDistToGoal = distanceToGoald(frameit,aframes.end(),tgame->getHomeSide(),looking_distance);
 			}
 			os.close();
 		//	for (int j=0;j<2;j++){
@@ -184,24 +233,41 @@ int main() {
 			delete tallClosest;
 			delete tgame;
 			signalProcess.addFinalPressure();
-			std::array<int,2> result = signalProcess.lengthThreshold(2,5,true,true,4);
+			std::array<int,2> result = signalProcess.lengthThreshold(timeLimit,pressureLimit,true,true,lookieLookie);
 			std::cout << result[0] << " " << result[1] <<std::endl;
-			signalProcess.calcPressure(false,false,true);
+			signalProcess.calcPressure(false,false,true,false);
 			signalProcess.clearPhases();
 			}
 			else{std::cout << "stinky" << std::endl;}
-		}
-	signalProcess.autoBins(5);
-	signalProcess.printBinSize();
+	}
+	signalProcess.autoBins(1+number_of_bins);
+//	signalProcess.printBins();
 	std::vector<std::array<double,6>> stats = signalProcess.getStats();
 	signalProcess.printBins();
-	results << mids.size();
-	for(auto i = stats.begin();i<stats.end();++i){
+	for(auto u = stats.begin();u<stats.end();++u){
 		for (int j = 0; j< 6;j++){
-			results <<  (*i)[j] << ",";
+			results <<  (*u)[j] << ",";
 		}
 		results << std::endl;
 	}
+
+	
+	/*
+	for (int i = 0;i<12;i++){
+		std::cout << "For number of defenders below threshold:  " << i << std::endl;
+		if(signalProcess.autoBins(3,i)==true){
+			std::vector<std::array<double,6>> stats = signalProcess.getStats(i);
+		//	signalProcess.printBins();
+		//	results << mids.size();
+			for(auto u = stats.begin();u<stats.end();++u){
+				for (int j = 0; j< 6;j++){
+					results <<  (*u)[j] << ",";
+				}
+				results << std::endl;
+			}
+		}
+	}
+	*/
 	signalProcess.closeStreams();
 	return 0;
 }
