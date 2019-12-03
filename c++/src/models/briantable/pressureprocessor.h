@@ -28,7 +28,7 @@
 		void addFinalPressure();
 		std::array<int,2> lengthThreshold(double timeLength, double size, bool increasing, bool savePhases, int lookieLookie);
 		void addRates();
-		void calcPressure(bool write,bool s,bool us, bool defVel);
+		void calcPressure(bool write,bool s,bool us, bool defVel, int fromEnd, int fromStart);
 		void openStreams();
 		void closeStreams();
 		void clearPhases();
@@ -36,8 +36,8 @@
 		void getInTheBin(std::array<double,2> rubbish,int number_of_defenders);
 		void setBins();
 		void setBins(bool);
-		std::vector<std::array<double,6>> getStats();
-		std::vector<std::array<double,6>> getStats(int def);
+		std::vector<std::array<double,6>> getStats(std::ofstream&);
+		std::vector<std::array<double,6>> getStats(int def, std::ofstream&);
 		void printBinSize();
 		void printBinSize(int def);
 		void autoBins(int n);

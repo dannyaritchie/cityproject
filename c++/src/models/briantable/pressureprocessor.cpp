@@ -36,17 +36,18 @@ void PressureProcessor::addFinalPressure(){
 	sections.push_back(section);
 }
 std::array<int,2> PressureProcessor::lengthThreshold(double timeLength, double size, bool increasing, bool savePhases, int lookieLookie){
-	std::cout << sections.size() << std::endl;
+	std::cout << "number of phases" << sections.size() << std::endl;
 	std::vector<double> prevPressure;
 	double lowestPressure;
 	int prevAttacking = -1;
-	int consecutive = 0;
 	std::array<int,2> number = {0,0};
 	bool largeEnough = false;
 	bool possessionChange = false;
 	if(increasing){
 		for (auto sectionsit = sections.begin();sectionsit<sections.end();++sectionsit){
 			prevPressure.clear();
+			largeEnough = false;
+			int consecutive = 0;
 			for(auto sectionit = (*sectionsit).begin();sectionit<(*sectionsit).end(); ++sectionit){
 				if(prevPressure.size()>0){
 					lowestPressure = *std::min_element(std::begin(prevPressure),std::end(prevPressure));
@@ -58,27 +59,28 @@ std::array<int,2> PressureProcessor::lengthThreshold(double timeLength, double s
 				else{
 
 					if((*sectionit)[1]>lowestPressure&&largeEnough == true){
+			//			std::cout << "length of sphase"<< consecutive << std::endl;
 						number[1] += 1;
 						if(savePhases == true){
 							std::vector<std::array<double,5>> tphase;
-							for(auto dit = sectionit-1-consecutive;dit<sectionit;++dit){
-								tphase.push_back(*sectionit);
+							for(auto dit = sectionit-consecutive;dit<sectionit;++dit){
+								tphase.push_back(*dit);
 							}
 							sPhases.push_back(tphase);
 						}
-						largeEnough = false;
 					}
 					if((*sectionit)[1]<=lowestPressure && largeEnough == true){
+			//			std::cout << "length of uphase" << consecutive << std::endl;
 						number[0] += 1;
 						if(savePhases == true){
 							std::vector<std::array<double,5>> tphase;
-							for(auto dit = sectionit-1-consecutive;dit<sectionit;++dit){
-								tphase.push_back(*sectionit);
+							for(auto dit = sectionit-consecutive;dit<sectionit;++dit){
+								tphase.push_back(*dit);
 							}
 							uPhases.push_back(tphase);
 						}
-						largeEnough = false;
 					}
+					largeEnough = false;
 					consecutive = 0;
 				}
 				if(consecutive >= timeLength*5&&(*sectionit)[1]>size){
@@ -138,7 +140,7 @@ void PressureProcessor::addRates(){
 		}
 	}
 }
-void PressureProcessor::calcPressure(bool write, bool success, bool usuccess, bool splitByDef){
+void PressureProcessor::calcPressure(bool write, bool success, bool usuccess, bool splitByDef, int fromStart, int length){
 	if(!write){
 		goalDistributions.clear();
 		goalDistributions.resize(bins.size());
@@ -164,25 +166,65 @@ void PressureProcessor::calcPressure(bool write, bool success, bool usuccess, bo
 			}
 			double lowestDefNum = *std::min_element(defNums.begin(),defNums.end());
 			int lowestDefInt = lowestDefNum;
+			
+			int z = 0;
+			bool stopcon = true;
+			while(stopcon){
+				z = z + 2;
+				if(z>10){
+					stopcon = false;
+				}
+				else{
+					if (lowestDefInt < z){
+						stopcon = false;
+						lowestDefInt = z;
+					}
+				}
+			}
+			std::vector<std::array<double,5>>::iterator fit = (*phaseit).begin();
+		//	std::cout << (*phaseit).size() << std::endl;
+			double changeInGoalDistance{0};
+			int acount{0};
+			if((*phaseit).size() < fromStart + length +1){
+				std::cout << "nooooo" << std::endl;
+			}
+			int check{0};
 			for (auto pointit = (*phaseit).begin();pointit<(*phaseit).end();++pointit){
-				for(int i = 0;i<2;i++){
-					summedPressure[i] += exp(-frameWeighting*count)*(*pointit)[1];
+				if(acount == fromStart){
+					changeInGoalDistance -= (*pointit)[3];
+			//		std::cout << (*pointit)[3];
+					check++;
+				}
+				if(acount == fromStart+length){
+					changeInGoalDistance += (*pointit)[3];
+			//		std::cout << "," << (*pointit)[3] << std::endl;
+					check++;
+				}
+				for(int i = 0;i<1;i++){
+					if((*pointit)[3] < 1 || (*pointit)[3] > 9999){
+						std::cout << "A point," <<  acount << "has a weird goal distance: " <<  (*pointit)[3] <<std::endl;
+					}
+					summedPressure[i] += pow(frameWeighting+count,-1)*(*pointit)[1];
 				}
 				count --;
+				acount ++;
+			}
+			if(check!=2){
+				std::cout << "Error: did not locate start and final d to g" << std::endl;
 			}
 			if(splitByDef){
-				os[lowestDefInt] << summedPressure[0] << "," << (*phaseit)[(*phaseit).size()-2][3] << ",0" << std::endl;	
-				std::array<double,2> info = {summedPressure[1], (*phaseit)[(*phaseit).size()-2][3]};
+				os[lowestDefInt] << summedPressure[0] << "," << changeInGoalDistance << ",0" << std::endl;	
+				std::array<double,2> info = {summedPressure[0], changeInGoalDistance};
 				getInTheBin(info,lowestDefInt);
 			}
 			else{
 				if(write){
 					for(int i = 0;i<2;i++){
-						os[i] << summedPressure[i] << "," << (*phaseit)[(*phaseit).size()-1][3] << ",0" << std::endl;
+						os[i] << summedPressure[i] << "," << changeInGoalDistance << ",0" << std::endl;
 					}
 				}
 				else{
-					std::array<double,2> info = {summedPressure[1], (*phaseit)[(*phaseit).size()-1][3]};
+					std::array<double,2> info = {summedPressure[0], changeInGoalDistance};
 					getInTheBin(info);
 				}
 			}
@@ -283,39 +325,43 @@ void PressureProcessor::setBins(){
 	return;
 }
 
-std::vector<std::array<double,6>> PressureProcessor::getStats(int defs){
+std::vector<std::array<double,6>> PressureProcessor::getStats(int defs, std::ofstream& off){
 	std::vector<double>::iterator binit = binss[defs].begin();
 	std::vector<std::array<double,6>> info;
 	for (auto distrit = goalDistributionss[defs].begin();distrit<goalDistributionss[defs].end();++distrit){
-		std::cout << "Defenders = " << defs << std::endl;
 		std::cout <<"P <  " << (*binit) << ": ";
+		off << "For pressure less than " << (*binit) << ": ";
 		RunningStats statcalc;
 		for (auto rubbishit = (*distrit).begin(); rubbishit<(*distrit).end();++rubbishit){
 			statcalc.Push((*rubbishit));
 		}		
 		std::cout << "me: "<< statcalc.Mean() << ",";
+	
 		std::cout << "std: " << statcalc.StandardDeviation() << ",";
 		std::cout << "kurt: "<< statcalc.Kurtosis() << "," ;
 		std::cout << "sk: "<< statcalc.Skewness() << ",";
+		off << "Mean-" << statcalc.Mean() << ", Skew-" << statcalc.Skewness() << ", STD-" << statcalc.StandardDeviation() << std::endl;
 		std::array<double, 6> tempinfo = {(*binit),(*distrit).size(),statcalc.Mean(),statcalc.StandardDeviation(),statcalc.Kurtosis(),statcalc.Skewness()};
 		++binit;
 		info.push_back(tempinfo);
 	}
 	return info;
 }
-std::vector<std::array<double,6>> PressureProcessor::getStats(){
+std::vector<std::array<double,6>> PressureProcessor::getStats(std::ofstream& off){
 	std::vector<double>::iterator binit = bins.begin();
 	std::vector<std::array<double,6>> info;
 	for (auto distrit = goalDistributions.begin();distrit<goalDistributions.end();++distrit){
-		std::cout <<"P <  " << (*binit) << ": ";
+		off << "For pressure less than " << (*binit) << ": ";
 		RunningStats statcalc;
 		for (auto rubbishit = (*distrit).begin(); rubbishit<(*distrit).end();++rubbishit){
 			statcalc.Push((*rubbishit));
+		//	std::cout << (*rubbishit) << std::endl;
 		}		
 		std::cout << "me: "<< statcalc.Mean() << ",";
 		std::cout << "std: " << statcalc.StandardDeviation() << ",";
 		std::cout << "kurt: "<< statcalc.Kurtosis() << "," ;
 		std::cout << "sk: "<< statcalc.Skewness() << ",";
+		off << "Mean-" << statcalc.Mean() << ", Skew-" << statcalc.Skewness() << ", STD-" << statcalc.StandardDeviation() << std::endl;
 		std::array<double, 6> tempinfo = {(*binit),(*distrit).size(),statcalc.Mean(),statcalc.StandardDeviation(),statcalc.Kurtosis(),statcalc.Skewness()};
 		++binit;
 		info.push_back(tempinfo);
@@ -339,9 +385,6 @@ void PressureProcessor::printBinSize(){
 		std::cout << "<" << (*binit) << ": " << (*it).size() << std::endl;
 		++binit;
 	}
-	for(auto it = bins.begin();it<bins.end();++it){
-		std::cout << (*it) << std::endl;
-	}
 }
 bool PressureProcessor::autoBins(int n,int def){
 	binss[def].clear();
@@ -357,7 +400,7 @@ bool PressureProcessor::autoBins(int n,int def){
 	std::cout <<"Bin Size: " << binLength << std::endl;
 	for(int i = 1; i < n;i++){
 		std::vector<double> binedVec;
-		bins.push_back((*(distrSorters[def].begin()+i*binLength))[0]);
+		binss[def].push_back((*(distrSorters[def].begin()+i*binLength))[0]);
 		for(auto it = distrSorters[def].begin() + (i-1)*binLength;it<distrSorters[def].begin()+i*binLength;++it){
 			binedVec.push_back((*it)[1]);
 		}
