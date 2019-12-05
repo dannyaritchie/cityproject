@@ -9,6 +9,7 @@
 #include <vector>
 #include<algorithm>
 #include <array>
+#include<cmath>
 double distanceToGoal(std::vector<Frame*>::iterator frameit,std::vector<Frame*>::iterator endit, char homeSide){
 	std::advance(frameit, -1);
 	int attacking = (*frameit)->getAttacking();
@@ -123,14 +124,38 @@ std::array<double,100> distanceToGoalda(std::vector<Frame*>::iterator frameit,st
 	}
 	return fdistances;
 }
-std::array<int,100> checkBall(std::vector<Frame*>::iterator frameit, std::array<int,100> count){
-	for (int i = 0; i < 100;i++){
-		if((*frameit)->getBall()->getVelocity() < 10*i){
-			count[i] ++;
+std::array<int,200> checkBall(std::vector<Frame*>::iterator frameit, std::array<int,200> count){
+	double diff =  (*(frameit-7))->getBall()->getVelocity() - (*frameit)->getBall()->getVelocity();//fabs((*(frameit-1))->getBall()->getVelocity() - (*frameit)->getBall()->getVelocity() <i/200) << std::endl;
+	if(diff < 0){
+		diff = -1*diff;
+	}
+
+	if((*frameit)->getBall()->getVelocity() > 100){
+//		std::cout << diff << std::endl;
+	}
+	for (double i = 0; i < 200;i++){
+		if(diff<1){
+			if((*frameit)->getBall()->getVelocity() >0){
+			if((*frameit)->getBall()->getVelocity() < i*5){
+				count[i] ++;
+				return count;
+			}
+			}
 		}
 	}
 	return count;
 }
+bool checkBallB(std::vector<Frame*>::iterator frameit){
+	double diff =  (*(frameit-7))->getBall()->getVelocity() - (*frameit)->getBall()->getVelocity();//fabs((*(frameit-1))->getBall()->getVelocity() - (*frameit)->getBall()->getVelocity() <i/200) << std::endl;
+		if(diff<1){
+			if((*frameit)->getBall()->getVelocity() > 500){
+				return false;
+			}
+		}
+		return true;
+}
+
+
 int main(int argc, char** arg) {
 //setting parameters
 /*
@@ -166,7 +191,7 @@ int main(int argc, char** arg) {
 	double vel_pow = 4;
 	double distvel_pow = 2;
 	double ranking = 0;
-	double min_dis_toDg =  1000;
+	double min_dis_toDg =  200;
 	double max_dis_toDg = 9000;
 	double pressureLimit= 	0;
 	double timeLimit = 1.6;
@@ -176,7 +201,7 @@ int main(int argc, char** arg) {
 	double change_in_dtog =	0;
 	double number_of_bins =	3;
 	double distThreshold  =	15;
-	double numberOfGames = 15;
+	double numberOfGames = 2;
 	std::string filePath = "../data/temp/EHud";
 	double start_looking_distance = 7;
 	double looking_length = 1;
@@ -241,11 +266,17 @@ int main(int argc, char** arg) {
 	std::string rempath = "/pc2014-data1/lah/data_msgpk_031219/2018/PremierLeague/";
 	std::string rempathb= "/pc2014-data1/lah/data_msgpk_031219/2017/PremierLeague/";
 	std::array<double,2> fResults;
+	std::array<int,200> blah;
+	for(int i = 0; i< 200; i++){
+		blah[i]=0;
+	}
+	std::ofstream balldat;
+	balldat.open("../data/ballfreq.txt");
 	for (int i = 0;i<numberOfGames;i++){
 //	for (int i = 0;i<midsb.size();i++){
 		int mid = midsb[i];
 		std::cout << mid << std::endl;
-		Game * tgame = new Game(midsb[i], rempathb);
+		Game * tgame = new Game(midsb[i], "../idata/2017");
 		int homeid{-1}, awayid{-1};
 		std::vector<int> cityid = {3,13,36,43,8,90,31,38,11,110,1,21,4,6,20,80,57,14,35,91};
 		//cit 43 //liv 14 // hud38
@@ -294,10 +325,6 @@ int main(int argc, char** arg) {
 			std::vector<Frame*>::iterator it;
 			std::vector<Frame*>::iterator bit;
 			bool faffyPlay;
-			std::array<int,100> blah;
-			for(int i = 0; i< 100; i++){
-				blah[i]=0;
-			}
 			for(auto frameit = aframes.begin()+1;frameit<aframes.end();++frameit){
 				double fid = (*frameit)->getFid();
 				double time = fid/5;
@@ -313,8 +340,8 @@ int main(int argc, char** arg) {
 				if(gdistance < 1){
 	//				std::cout << "main gd <1"<<gdistance << std::endl;
 				}
-				blah = checkBall(frameit, blah);
-
+				if (frameit - aframes.begin()>8){
+				if (checkBallB(frameit)){
 					if(gdistance != -1){
 						if (framePressure[2] != -1){
 							if(!faffyPlay){
@@ -325,6 +352,8 @@ int main(int argc, char** arg) {
 							}
 						}
 					}
+				}
+				}
 			//	os << framePressure[0] << "," << time << std::endl;
 				previousAttacking = (*frameit)->getAttacking();
 				if(!found){
@@ -364,9 +393,6 @@ int main(int argc, char** arg) {
 		//tallClosest->closeStreams();
 		//	tallClosest->closeBrianNew();
 		//
-			for(int i = 0; i< 100; i++){
-				std::cout << i << "," << blah[i] << std::endl;
-			}
 			delete tallClosest;
 			delete tgame;
 			
@@ -381,6 +407,11 @@ int main(int argc, char** arg) {
 		}
 		else{std::cout << "stinky" << std::endl;}
 	}
+	for(int i = 0; i< 200; i++){
+		std::cout << i << "," << blah[i] << std::endl;
+		balldat << i << "," << blah[i] << std::endl;
+	}
+	balldat.close();
 	std::cout << "Ratio" << fResults[0]/fResults[1] << std::endl;
 	results << "Ratio: " << fResults[0]/fResults[1] << std::endl;
 	

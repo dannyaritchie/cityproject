@@ -283,17 +283,17 @@ void Game::addBVelocities(){
 		}
 		Ball * ball = (*frameit)->getBall();
 		std::array<double,2> posball = ball->getPos();
-			positions[pid].push_back( posb);
-			if (positions.size() > 18) {
+			positions.push_back( posball);
+			if (positions.size() > 3) {
 				positions.erase(positions.begin());
 			}
-			if (positions[pid].size() == 18) {
+			if (positions.size() == 3) {
 				std::array<double,2> velocity;
 				for (int j = 0; j < 2; j++) {
 			velocity[j] = ((positions[0][j]) 
-						 - (positions[17][j]));
+						 - (positions[2][j]));
 				}
-				(*(frameit - 9))->getBall()->setVelocity(velocity);
+				(*(frameit - 1))->getBall()->setVelocity(velocity);
 			}
 	previousFid = (*frameit)->getFid();
 	}
