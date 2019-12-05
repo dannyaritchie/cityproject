@@ -21,12 +21,13 @@ class Game {
 		~Game();
 		void addFrame(Frame*);
 		bool readFile(bool);
-		bool readNewFile();
+		bool readNewFile(std::vector<int>,int&,int&);
 	        bool storeMdata();
 		//reads in Mdata for a game
 		void writeFile(std::ofstream & os,int type);
 		void findPhases();
 		void addVelocities();
+		void addBVelocities();
 		void setClosestPlayers();
 		void writeClosestPlayers(int game);
 		std::vector<double> calcVoronoi();
@@ -45,6 +46,7 @@ class Game {
 		int getMapLength();
 		char getHomeSide();
 		Idmap getMap();
+		std::array<int,2> output(std::ofstream & names, std::vector<int> prevDone);
 
 };
 #endif

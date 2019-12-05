@@ -26,7 +26,7 @@
 		PressureProcessor(double weighting,std::string);
 		void addPressure(std::array<double,5>);
 		void addFinalPressure();
-		std::array<int,2> lengthThreshold(double timeLength, double size, bool increasing, bool savePhases, int lookieLookie);
+		std::array<int,2> lengthThreshold(double timeLength, double size, bool increasing, bool savePhases, int lookieLookie, int interestingTeam);
 		void addRates();
 		void calcPressure(bool write,bool s,bool us, bool defVel, int fromEnd, int fromStart);
 		void openStreams();

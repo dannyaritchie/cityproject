@@ -161,12 +161,12 @@ void closeplayer::writePair(std::array<double,8> temp){
 	}
 }
 
-pressuresum::pressuresum(double tgp,double tdp,double tdw,double tbp,double tvp,double tdvp,double tra,double tddg,double tdpv,double at):gp{tgp},dp{tdp},dw{tdw},bp{tbp},vp{tvp},dvp{tdvp},ra{tra},ddg{tddg}, dpv{tdpv}, angleThreshold{at}{
+pressuresum::pressuresum(double tgp,double tdp,double tdw,double tbp,double tvp,double tdvp,double tra,double tddg,double tdpv,double at, int tinterestingTeam):gp{tgp},dp{tdp},dw{tdw},bp{tbp},vp{tvp},dvp{tdvp},ra{tra},ddg{tddg}, dpv{tdpv}, angleThreshold{at}, interestingTeam{tinterestingTeam}{
         for(int i = 0;i<100;i++){
                 pressure[i] = 0;
         }
 }
-void pressuresum::callPresures(std::vector<int> pressureTypes, std::array<double, 8> temp){
+void pressuresum::callPresures(std::vector<int> pressureTypes, std::array<double, 8> temp,int tip){
 	for (auto it = pressureTypes.begin();it< pressureTypes.end();it++){
 		switch(*it){
 			case 0:
@@ -188,8 +188,9 @@ void pressuresum::callPresures(std::vector<int> pressureTypes, std::array<double
 				addPressureA(temp, 50);
 				break;
 			case 8:
-				addPressureU(temp, 60);
+				addPressureU(temp, 60,tip);
 				break;
+		
 		}
 	}
 }
@@ -243,8 +244,14 @@ void pressuresum::addPressureA(std::array<double,8> temp, int pos){
 	}
 
 }
-void pressuresum::addPressureU(std::array<double,8> temp, int pos){
+void pressuresum::addPressureU(std::array<double,8> temp, int pos,int tip){
 	double goalRank;
+	if (interestingTeam ==1||interestingTeam == 0){
+		if (tip==interestingTeam){
+			pressure[2] = -1;
+			return;
+		}
+	}
 	if(ra == 0){
 		goalRank = 1;
 	}
@@ -252,11 +259,11 @@ void pressuresum::addPressureU(std::array<double,8> temp, int pos){
 	//std::cout << temp[6] <<std::endl;
 	std::array<double,8> notgg = {-1,-1,-1,-1,-1,-1,-1,-1};
 	if (temp!=notgg){
-		if(temp[1] < 0){
-			temp[1] = 0;
-		}
+
+		if(temp[1] > 3&&temp[2]<30*3.1419/180){
 		for(int i = 0;i<1;i++){
 pressure[0] += pow(pow(temp[2],ddg)+1,-1)*pow(temp[6],dpv)*pow(pow(temp[4],bp) + 1,-1)*(pow(10,dw)*pow( pow(temp[0],dp) +1, -1) + pow(pow(temp[0],dvp)+1,-1)*pow(temp[1],vp))/goalRank;//(1+temp[4]);
+		}
 		}
 	}
 }
@@ -334,6 +341,7 @@ void pressuresum::addPressureZ(std::array<double,8> temp, int pos){
 }
 
 
+
 AllClosest::AllClosest(int pdist, Idmap pidmap, int playerSize, char phomeSide, double tgoal_pow,double tball_pow,double dist_weight,double tdist_pow,double tvel_pow,double tdistvel_pow,double tranking,double change_in_dtog, double defensive_player_velocity, double tangleThreshold, int tmid): mappedIds{pidmap}, distanceThreshold{pdist}, homeSide{phomeSide}, gp{tgoal_pow}, bp{tball_pow}, dw{dist_weight}, dp{tdist_pow}, vp{tvel_pow},dvp{tdistvel_pow},ra{tranking},ddg{change_in_dtog},dpv{defensive_player_velocity}, angleThreshold{tangleThreshold}, mid{tmid}
 {
 	allPlayers.resize(playerSize);
@@ -345,11 +353,11 @@ AllClosest::AllClosest(int pdist, Idmap pidmap, int playerSize, char phomeSide, 
 	}
 
 }
-std::array<double,100> AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previousFid,int prevAttackingTeam){
+std::array<double,100> AllClosest::addPlayers(std::vector<Frame*>::iterator frameit, int previousFid,int prevAttackingTeam,int interestingTeam){
 //***
 //a member function to add player distances below a set threshhold to a container of 2-arrays
 //also creates a differential class
-	pressuresum pressureCalc(gp,dp,dw,bp,vp,dvp,ra,ddg,dpv,angleThreshold);
+	pressuresum pressureCalc(gp,dp,dw,bp,vp,dvp,ra,ddg,dpv,angleThreshold,interestingTeam);
 	int attackingTeam = (*frameit)->getAttacking();
 	if((*frameit)->getFid()==previousFid + 1){
 		dead_before += 1;
@@ -366,7 +374,7 @@ std::array<double,100> AllClosest::addPlayers(std::vector<Frame*>::iterator fram
 		std::cout << pidb << ":" ;
 		}
 		std::cout << std::endl;
-	for (auto playerit = attackPlayers.begin() ; playerit < attackPlayers.end();++playerit){
+	for (aut playerit = attackPlayers.begin() ; playerit < attackPlayers.end();++playerit){
 		int pid = (*playerit)->getMappedPid();
 		if(pid == 15){
 		for (auto playeritb = defensePlayers.begin();playeritb < defensePlayers.end();++playeritb){
@@ -477,7 +485,7 @@ i	} */
 		for (auto itb = defensePlayers.begin();itb < defensePlayers.end();++itb){
 			int pidb = (*itb)->getMappedPid();
 			std::vector<int> pressureTypes = {8};
-			pressureCalc.callPresures(pressureTypes,allPlayers[pid].pullPassInfo(pidb,dead_before));
+			pressureCalc.callPresures(pressureTypes,allPlayers[pid].pullPassInfo(pidb,dead_before), prevAttackingTeam);
 		}
 	}
 
@@ -494,6 +502,7 @@ i	} */
                 attackStartIt = defensePlayers.begin();
                 attackEndIt = defensePlayers.end();
         }
+	/*
         for(auto defenseIt = defenseStartIt;defenseIt < defenseEndIt;defenseIt++){
                 int defensePid = (*defenseIt)->getMappedPid();
                 int defNum = (*defenseIt)->getNum();
@@ -516,6 +525,7 @@ i	} */
 			}
 		}
 	}
+	*/
 
 
 //		for (auto allPlayerit = allPlayers.begin();allPlayerit < allPlayers.end();++allPlayerit){
@@ -598,7 +608,6 @@ void AllClosest::closeStreams(){
 }
 void AllClosest::openBrianNew(std::string fileloc){
         brianNew.open(fileloc);
-	brianNew << std::fixed;
         brianNew << "Match ID, Frame ID, Team in possession,Player shirt number (TOP), Player shirt number(TIP), Velocity (POP), Relative velocity(POP), Distance, Defensive position, Rank (By distance), Distance to ball (PIP), Distance to ball (POP) , Distance of ball to goal, Pressure metric" <<std::endl;
 }
 void AllClosest::closeBrianNew(){

@@ -55,16 +55,17 @@ struct closeplayer {
 
 struct pressuresum {
 	double gp,dp,dw,bp,vp,dvp,ra,ddg, dpv, angleThreshold;
-        pressuresum(double,double,double,double,double,double,double,double,double,double);
+	int interestingTeam;
+        pressuresum(double,double,double,double,double,double,double,double,double,double, int);
         std::array<double, 100> pressure;
         void addPressureA(std::array<double,8>, int);
         void addPressureB(std::array<double,8>, int);
         void addPressureC(std::array<double,8>, int);
         void addPressureD(std::array<double,8>, int);
-        void addPressureU(std::array<double,8>, int);
+        void addPressureU(std::array<double,8>, int, int);
         void addPressureZ(std::array<double,8>, int);
         void addPressureBallGoalWeight(std::array<double,8>);
-	void callPresures(std::vector<int> pressureTypes, std::array<double, 8> temp);
+	void callPresures(std::vector<int> pressureTypes, std::array<double, 8> temp, int);
 };
 
 class AllClosest {
@@ -83,10 +84,11 @@ class AllClosest {
 		double gp,dp,dw,bp,vp,dvp,ra,ddg,dpv,angleThreshold;
 		int mid;
 		std::ofstream brianNew;
+		int interestingTeam;
 
 	public:
 		AllClosest(int pdistanceThreshold, Idmap tidmap, int number_of_players, char homeSide,double,double,double,double,double,double,double,double,double,double,int);
-		std::array<double, 100> addPlayers(std::vector<Frame*>::iterator currentFrameit,int previousFid, int prevAttackingTeamid);
+		std::array<double, 100> addPlayers(std::vector<Frame*>::iterator currentFrameit,int previousFid, int prevAttackingTeamid,int interstingTeam);
 		//gets home and away player vectors for given frame
 		//calculates all distances and if less than distance Threshold adds information to players trolley
 		//this is so rate of change can be calculated in same loop 
