@@ -1,11 +1,11 @@
-# Minimum version of CMake required to build this project
+#Minimum version of CMake required to build this project
 cmake_minimum_required(VERSION 2.7)
 
 # Name of the project
-project(Project)
+project(Nproject)
 
 # Add all the source files needed to build the executable
-add_executable(Project src/main.cpp 
+add_executable(Nproject src/main.cpp 
 	src/helpers/functions.cpp
 	src/models/ball.cpp 
     	src/models/frame.cpp 
@@ -27,5 +27,5 @@ add_executable(Project src/main.cpp
 
 # Include the directory where MyLibrary project is. Otherwise, we can't use the
 # library
-target_include_directories(Project PRIVATE src/include)
+target_include_directories(Nproject PRIVATE src/ReadTrackingData/include)
 # Link the executable and the library together
