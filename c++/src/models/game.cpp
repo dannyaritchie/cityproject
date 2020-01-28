@@ -684,7 +684,8 @@ std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::arr
 			std::advance(frameit,1);
 		}
 		std::advance(frameit,startLookingDistance);
-		pressure = (*frameit)->getPressure(radius);
+//		pressure = (*frameit)->getPressure(radius);
+		pressure = (*frameit)->getPressureB();
 		if(type == 0){
 			startBallDistance = (*frameit)->getBallDistance();
 			std::advance(frameit,lookingLength);
