@@ -15,6 +15,7 @@ class FrameObjects{
 		void setVelocity(std::array<double,2> tvel);
 		void setVelBool();
 		double getVelocity();
+		std::array<double,2> getVelocityVector();
 		const std::array<double,2> getPos();
 };
 #endif

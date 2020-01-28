@@ -13,6 +13,7 @@
 		std::vector<std::array<double,5>> section;
 		std::vector<std::vector<std::array<double,5>>> sPhases;
 		std::vector<std::vector<std::array<double,5>>> uPhases;
+		std::vector<std::vector<std::array<double,5>>> ePhases;
 		std::ofstream os[12];
 		std::array<std::vector<std::vector<double>>,12> goalDistributionss;
 		std::vector<std::vector<double>> goalDistributions;
@@ -22,13 +23,20 @@
 		std::array<std::vector<std::array<double,2>>,12> distrSorters;
 		double frameWeighting;
 		std::string filePath;
+		
+		std::vector<int> sizes;
+		std::vector<int> sizesb;
+		//TESTING VARIABLES
+		int count{0};
+		int timeToPrint;
+		std::vector<int> tempPossession;
 	public:
 		PressureProcessor(double weighting,std::string);
 		void addPressure(std::array<double,5>);
 		void addFinalPressure();
-		std::array<int,2> lengthThreshold(double timeLength, double size, bool increasing, bool savePhases, int lookieLookie, int interestingTeam);
+		std::array<int,3> lengthThreshold(double timeLength, double size, bool increasing, bool savePhases, int lookieLookie, int interestingTeam, bool test);
 		void addRates();
-		void calcPressure(bool write,bool s,bool us, bool defVel, int fromEnd, int fromStart);
+		void calcPressure(bool write,bool s,bool us, bool es, bool defVel, int fromEnd, int fromStart);
 		void openStreams();
 		void closeStreams();
 		void clearPhases();

@@ -59,3 +59,39 @@ void Player::plusAngScore(){
 int Player::getAngScore(){
 	return angControlScore;
 }
+void Player::setDistanceInFrontOfBall(double distance){
+	distanceInFrontOfBall = distance;
+}
+double Player::getDistanceInFrontOfBall(){
+	return distanceInFrontOfBall;
+}
+double Player::getPlayerPlayerDistance(int pid)
+{
+	return playerInfo[pid].distance;  
+}
+void Player::setPlayerPlayerDistance(double distance, int pid){
+	playerInfo[pid].distance = distance;
+}
+void Player::setPlayerPlayerVelocity(double velocity, int pid){
+	playerInfo[pid].velocity = velocity;
+}
+double Player::getPlayerPlayerVelocity(int pid){
+	return playerInfo[pid].velocity;
+}
+bool Player::getShortestTime(double & time){
+	double minTime = 9999;
+	for(int i = 0; i < 28;i++){
+		if(playerInfo[i].distance!=0&&playerInfo[i].velocity>0){
+			if(playerInfo[i].distance/playerInfo[i].velocity<minTime){
+				minTime = playerInfo[i].distance/playerInfo[i].velocity;
+			}
+		}
+	}
+	if(minTime!=9999){
+		time = minTime;
+		return true;
+	}
+	else{
+		return false;
+	}
+}

@@ -47,6 +47,12 @@ class Game {
 		char getHomeSide();
 		Idmap getMap();
 		std::array<int,2> output(std::ofstream & names, std::vector<int> prevDone);
+		void setFramesPlayersDistance(double radius);
+		void setFramesPlayersVelocity();
+		void setAllGoalPos();
+		std::vector<std::array<int,4>> getPhases(int minDefA, double minDefVel, int minFrames, int postPressTime);
+		std::vector<std::array<double,2>> getPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, double radius, int type);
+		std::array<int,2> getPossessionTimes();
 
 };
 #endif

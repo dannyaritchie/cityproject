@@ -2,6 +2,11 @@
 #define PLAYER_H_
 #include"frameobjects.h"
 #include <ostream>
+struct playerplayerinfo {
+	double distance;
+	double velocity;
+	playerplayerinfo():distance{0},velocity{0}{}
+};
 class Player : public FrameObjects{
 	private:
 		int home;
@@ -10,6 +15,8 @@ class Player : public FrameObjects{
 		double closestDist;
 		std::array<double,2> ballCentredPolar;
 		int angControlScore;
+		double distanceInFrontOfBall;
+		std::array<playerplayerinfo,28> playerInfo;
 		//static int maxAcceleration;
 	//	static int maxDeceleration;
 	//	static int maxVelocity;
@@ -28,5 +35,12 @@ class Player : public FrameObjects{
 		std::array<double,2> getBallCentredPolar();
 		void plusAngScore();
 		int getAngScore();
+		void setDistanceInFrontOfBall(double distance);
+		double getDistanceInFrontOfBall();
+		void setPlayerPlayerVelocity(double distance, int pid);
+		double getPlayerPlayerVelocity(int pid);
+		void setPlayerPlayerDistance(double distance, int pid);
+		double getPlayerPlayerDistance(int pid);
+		bool getShortestTime(double&time);
 };
 #endif

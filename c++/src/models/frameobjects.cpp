@@ -9,6 +9,9 @@ void FrameObjects::setVelBool() {
 double FrameObjects::getVelocity(){
 	return pow(pow(velocity[0],2)+pow(velocity[1],2),0.5);
 }
+std::array<double,2> FrameObjects::getVelocityVector(){
+	return velocity;
+}
 const std::array<double,2> FrameObjects::getPos() {
 	std::array<double,2> pos;
 	pos[0] = x;

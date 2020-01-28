@@ -9,6 +9,9 @@
 double distance(double xa, double xb, double ya, double yb){
 	return pow((pow((xa-xb),2)+pow(ya-yb,2)),0.5);
 }
+double distance(std::array<double,2> a, std::array<double,2> b){
+	return pow((pow((a[0]-b[0]),2)+pow(a[1]-a[2],2)),0.5);
+}
 double magnitude(std::array<double,2> vec){
 	return pow(pow(vec[0],2)+pow(vec[1],2),0.5);
 }
@@ -47,6 +50,99 @@ void closestPlayers(std::vector<Player*> & players) {
 		}
 }
 
+void splitByType(std::vector<std::array<int,4>> in, std::vector<std::array<int,2>>& a,std::vector<std::array<int,2>> &b,std::vector<std::array<int,2>>& c){
+	for (auto i : in){
+		std::array<int,2> temp = {i[0],i[1]};
+		if(i[2] == 0){
+			a.push_back(temp);
+		}
+		if(i[2]==1){
+			c.push_back(temp);
+		}
+		if(i[2]==2){
+			b.push_back(temp);
+		}
+	}
+	return;
+}
+			
+void splitByTypeAndGroup(std::vector<std::array<int,4>> in, std::array<std::vector<std::array<int,2>>,3>& a,std::array<std::vector<std::array<int,2>>,3> &b){
+	for(auto i : in){
+		std::array<int,2> temp = {i[0],i[1]};
+		if (i[3] = 0){
+			if(i[2] == 0){
+				a[0].push_back(temp);
+			}
+			if(i[2]==1){
+				a[1].push_back(temp);
+			}
+			if(i[2]==2){
+				a[2].push_back(temp);
+			}
+		}
+		if (i[3] = 1){
+			if(i[2] == 0){
+				b[0].push_back(temp);
+			}
+			if(i[2]==1){
+				b[1].push_back(temp);
+			}
+			if(i[2]==2){
+				b[2].push_back(temp);
+			}
+		}
+	}
+}
+std::array<std::array<double,2>,5> findMeanOfBins(std::vector<std::array<double,2>> & pressureBallDist){
+	std::sort(pressureBallDist.begin(),pressureBallDist.end(),[] (const std::array<double,2> &a, const std::array<double,2> &b){
+		return a[0] < b[0];
+	});
+	std::array<std::array<double,2>,5> means = {};
+	int count{0};
+	int binNumber = {1};
+	int binCount = 4;
+	double binSize = pressureBallDist.size()/binCount;
+	for(auto i : pressureBallDist){
+//		std::cout << i[0] << std::endl;
+		means[0][0] += i[0];
+		means[0][1] += i[1];
+		if(binNumber<binCount){
+			if(count>=binNumber*binSize){
+				binNumber ++;
+			}
+		}
+		means[binNumber][0] += i[0];
+		means[binNumber][1] += i[1];
+		count++;
+	}
+	for(double i = 0;i<2;i++){
+		double x = pressureBallDist.size();
+		means[0][i] /= x;
+//		std::cout << "AAA" << x <<std::endl;
+	}
+	//std::cout << binSize << std::endl;
+	for(int i = 1;i<4;i++){
+		for(int j =0;j<2;j++){
+			means[i][j] /= binSize;
+		}
+	}
+	for(int i = 0;i<2;i++){
+		double x = pressureBallDist.size()-binSize*(binCount-1);
+		means[4][i] /= x;
+	//	std::cout << x << std::endl;
+	}
+	return means;
+}
+double findMean(std::vector<std::array<double,2>> & pressureBallDist){
+	double summedPressure{0};
+	for(auto i : pressureBallDist){
+		summedPressure +=i[0];
+	}
+	double size = pressureBallDist.size();
+	//std::cout << summedPressure << std::endl;
+	return summedPressure/size;
+}
+				
 /*double timePlayerToBall(std::array<double,2> initial, std::array<double,2> final,std::array<double,2> velInitial,double velMax, double accMax,double deaccMax){
 	std::array<double,2> stopPos;
 	double velInitialMag = pow(pow(velInitial[0],2)+pow(velInitial[1],2),0.5);

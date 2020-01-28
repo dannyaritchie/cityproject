@@ -11,23 +11,37 @@ PressureProcessor::PressureProcessor(double tframeWeighting, std::string tfilePa
 	filePath = tfilePath;
 }
 void PressureProcessor::addPressure(std::array<double,5> info){
+	/*TESTSTUFF
+	tempPossession.push_back(info[2]);
+	timeToPrint --;
+	if(timeToPrint == 0){
+		count ++;
+		std::cout << "C" << count << std::endl;
+		std::cout << "Pos: ";
+		for(auto i : tempPossession){
+			std::cout << i << ",";
+		}
+		std::cout << std::endl;
+	}
+	if(tempPossession.size()>7) {
+		tempPossession.erase(tempPossession.begin());
+	}*/
 	if(info[0] != previousFid+1){
 		sections.push_back(section);
 		section.clear();
 		std::array<double,5> temp;
-		for (int i = 1; i < 5; i++){
+		for (int i = 0; i < 5; i++){
 			temp[i] = info [i];
 		}
-		temp[0] = 0;
 		section.push_back(temp);
 		previousFid = info[0];
+	//TEST	timeToPrint = 3;
 	}
 	else{
 		std::array<double,5> temp;
-		for (int i = 1; i < 5; i++){
+		for (int i = 0; i < 5; i++){
 			temp[i] = info [i];
 		}
-		temp[0] = 0;
 		section.push_back(temp);
 		previousFid = info[0];
 	}
@@ -35,29 +49,39 @@ void PressureProcessor::addPressure(std::array<double,5> info){
 void PressureProcessor::addFinalPressure(){
 	sections.push_back(section);
 }
-std::array<int,2> PressureProcessor::lengthThreshold(double timeLength, double size, bool increasing, bool savePhases, int lookieLookie,int interestingTeam){
+std::array<int,3> PressureProcessor::lengthThreshold(double timeLength, double size, bool increasing, bool savePhases, int lookieLookie,int interestingTeam, bool testing){
+	sections.erase(sections.begin());
+	std::ofstream unsucFrameId;
+	std::ofstream sucFrameId;
+	unsucFrameId.open("../data/unsucFrameId.txt");
+	sucFrameId.open("../data/sucFrameId.txt");
 	std::vector<double> prevPressure;
+	int zcount{0}, ycount{0}, xcount{0};
 	double lowestPressure;
 	int prevAttacking = -1;
-	std::array<int,2> number = {0,0};
+	std::array<int,3> number = {0,0,0};
 	bool largeEnough = false;
 	bool possessionChange = false;
 	if(increasing){
+		for (auto sectionsit = sections.begin();sectionsit<sections.end();++sectionsit){
+			ycount ++;
+		//	std::cout <<  (*sectionsit).size() << std::endl;
+		}
+		std::cout << "TFB"<< ycount << std::endl;
 		for (auto sectionsit = sections.begin();sectionsit<sections.end();++sectionsit){
 			prevPressure.clear();
 			largeEnough = false;
 			int consecutive = 0;
 			for(auto sectionit = (*sectionsit).begin();sectionit<(*sectionsit).end(); ++sectionit){
-				if(prevPressure.size()>0){
-					lowestPressure = *std::min_element(std::begin(prevPressure),std::end(prevPressure));
-				}
-				else{lowestPressure = 0;}
-				if((*sectionit)[1] > lowestPressure&&(*sectionit)[2]==prevAttacking) {
-					consecutive += 1;
-				}
-				else{
-
-					if((*sectionit)[1]>lowestPressure&&largeEnough == true){
+				//CASE FOR END OF SECTION (BALL HAS GONE OUT OF PLAY)
+				/*
+				if(sectionit == (*sectionsit).end()-1){
+					if(testing){
+					//	std::cout << "econ " << consecutive << std::endl;
+						zcount = zcount+ consecutive+1;
+						sizesb.push_back(consecutive + 1);
+					}
+					if(largeEnough){
 						bool interested{false};
 						if(interestingTeam != 2){
 							if(interestingTeam != prevAttacking){
@@ -67,51 +91,98 @@ std::array<int,2> PressureProcessor::lengthThreshold(double timeLength, double s
 						else{interested = true;}
 			//			std::cout << "length of sphase"<< consecutive << std::endl;
 						if(interested){
-							number[1] += 1;
+							number[2] += 1;
 							if(savePhases == true){
 								std::vector<std::array<double,5>> tphase;
-								for(auto dit = sectionit-consecutive;dit<sectionit;++dit){
+								for(auto dit = sectionit-consecutive;dit<sectionit+1;++dit){
 									tphase.push_back(*dit);
 								}
-								sPhases.push_back(tphase);
-							}
-						}
-					}
-					if((*sectionit)[1]<=lowestPressure && largeEnough == true){
-			//			std::cout << "length of uphase" << consecutive << std::endl;
-						bool interested{false};
-						if(interestingTeam != 2){
-							if(interestingTeam != prevAttacking){
-								interested = true;
-							}
-						}
-						else{interested = true;}
-			//			std::cout << "length of sphase"<< consecutive << std::endl;
-						if(interested){
-							number[0] += 1;
-							if(savePhases == true){
-								std::vector<std::array<double,5>> tphase;
-								for(auto dit = sectionit-consecutive;dit<sectionit;++dit){
-									tphase.push_back(*dit);
+								if(tphase.size() == consecutive +1){
+					//				std::cout << "y" << std::endl;
 								}
-								uPhases.push_back(tphase);
+								else{std::cout << "n" << std::endl;}
+								ePhases.push_back(tphase);
 							}
 						}
+						else {std::cout << "uhuh" << std::endl;}
 					}
-					largeEnough = false;
-					consecutive = 0;
 				}
-				if(consecutive >= timeLength*5&&(*sectionit)[1]>size){
-					largeEnough = true;
-				}
-				prevPressure.push_back((*sectionit)[1]);
-				if(prevPressure.size() ==  lookieLookie){
-					prevPressure.erase(prevPressure.begin());
-				}
-				prevAttacking = (*sectionit)[2];
+				else{*/
+					//OTHERWISE
+					if(prevPressure.size()>0){
+						lowestPressure = *std::min_element(std::begin(prevPressure),std::end(prevPressure));
+					}
+					else{lowestPressure = 0;}
+					if((*sectionit)[1] > lowestPressure&&(*sectionit)[2]==prevAttacking) {
+						consecutive += 1;
+					}
+					else{
+						//	std::cout << lowestPressure << std::endl;
 
+						if((*sectionit)[1]>lowestPressure&&largeEnough == true){
+							bool interested{false};
+							if(interestingTeam != 2){
+								if(interestingTeam != prevAttacking){
+									interested = true;
+								}
+							}
+							else{interested = true;}
+				//			std::cout << "length of sphase"<< consecutive << std::endl;
+							if(interested){
+								number[1] += 1;
+								if(savePhases == true){
+									sucFrameId << 	(*(sectionit-consecutive))[0] << "," << consecutive <<std::endl;
+									std::vector<std::array<double,5>> tphase;
+									for(auto dit = sectionit-consecutive;dit<sectionit+1;++dit){
+										tphase.push_back(*dit);
+									}
+									sPhases.push_back(tphase);
+								}
+							}
+						}
+						if((*sectionit)[1]<=lowestPressure && largeEnough == true){
+				//			std::cout << "length of uphase" << consecutive << std::endl;
+							bool interested{false};
+							if(interestingTeam != 2){
+								if(interestingTeam != prevAttacking){
+									interested = true;
+								}
+							}
+							else{interested = true;}
+				//			std::cout << "length of sphase"<< consecutive << std::endl;
+							if(interested){
+								number[0] += 1;
+								if(savePhases == true){
+									unsucFrameId << 	(*(sectionit-consecutive))[0] << "," << consecutive << std::endl;
+									std::vector<std::array<double,5>> tphase;
+									for(auto dit = sectionit-consecutive;dit<sectionit + 1;++dit){
+										tphase.push_back(*dit);
+									}
+									uPhases.push_back(tphase);
+								}
+							}
+						}
+						if(largeEnough == false){
+							xcount += consecutive + 1;
+						//	std::cout << consecutive << std::endl;
+						}
+						largeEnough = false;
+						consecutive = 0;
+					}
+					if(consecutive >= timeLength*5&&(*sectionit)[1]>=size){
+						largeEnough = true;
+					}
+					prevPressure.push_back((*sectionit)[1]);
+					if(prevPressure.size() ==  lookieLookie){
+						prevPressure.erase(prevPressure.begin());
+					}
+					prevAttacking = (*sectionit)[2];
+
+	//			}
 			}
 		}
+//		sucFrameId.close();
+//		unsucFrameId.close();
 		return number;
 	}
 /*	else{
@@ -158,11 +229,12 @@ void PressureProcessor::addRates(){
 		}
 	}
 }
-void PressureProcessor::calcPressure(bool write, bool success, bool usuccess, bool splitByDef, int fromStart, int length){
+void PressureProcessor::calcPressure(bool write, bool success, bool usuccess, bool esuccess, bool splitByDef, int fromStart, int length){
 	if(!write){
 		goalDistributions.clear();
 		goalDistributions.resize(bins.size());
 	}
+	double uframes{0}, sframes{0}, eframes{0};
 	if(usuccess){
 		for (auto phaseit = uPhases.begin();phaseit<uPhases.end();++phaseit){
 			std::array<double,2> summedPressure;
@@ -207,8 +279,14 @@ void PressureProcessor::calcPressure(bool write, bool success, bool usuccess, bo
 		//		std::cout << "nooooo" << std::endl;
 		//	}
 			int check{0};
+			bool successPhase{false};
+			std::cout << "YYYY" << std::endl;
 			for (auto pointit = (*phaseit).begin();pointit<(*phaseit).end();++pointit){
+				uframes += 1;
 				if((*phaseit).end()-pointit == 1){
+					if((*pointit)[3] = -1){
+						successPhase = true;
+					}
 					changeInGoalDistance += (*pointit)[3];
 			//		std::cout << (*pointit)[3];
 					check++;
@@ -237,8 +315,14 @@ void PressureProcessor::calcPressure(bool write, bool success, bool usuccess, bo
 					}
 				}
 				else{
-					std::array<double,2> info = {summedPressure[0], changeInGoalDistance};
-					getInTheBin(info);
+				//	if(!successPhase){
+						std::array<double,2> info = {summedPressure[0], changeInGoalDistance};
+					//	std::cout << "YYYY" << std::endl;
+						getInTheBin(info);
+				//	}
+				//	else{
+				//		std::cout << "Extra Success" <<std::endl;
+				//	}
 				}
 			}
 		}
@@ -257,6 +341,7 @@ void PressureProcessor::calcPressure(bool write, bool success, bool usuccess, bo
 		//	}
 			int check{0};
 			for (auto pointit = (*phaseit).begin();pointit<(*phaseit).end();++pointit){
+				sframes +=1;
 				if((*phaseit).end()-pointit == 1){
 					changeInGoalDistance += (*pointit)[3];
 			//		std::cout << (*pointit)[3];
@@ -285,6 +370,31 @@ void PressureProcessor::calcPressure(bool write, bool success, bool usuccess, bo
 			}
 		}
 	}
+	if(esuccess){
+		for (auto phaseit = ePhases.begin();phaseit<ePhases.end();++phaseit){
+			sizes.push_back((*phaseit).size());
+			for(auto pointit = (*phaseit).begin(); pointit < (*phaseit).end(); ++pointit){
+				eframes += 1;
+			}
+		}
+	}
+	std::cout << "Phase switch ratio: " << (sframes+eframes)/(sframes+eframes+uframes) << std::endl;
+	/*TEST
+	std::cout << "length of succ was " << sframes << " ,unsuc " << uframes << " esuc " << eframes << std::endl;
+	int g{0},h{0};
+	for(auto i : sizesb){
+		std::cout << i << ",";
+		h+=i;
+	}
+	std::cout << std::endl;
+	for(auto i : sizes){
+		std::cout << i << ",";
+		g+=i;
+	}
+	std::cout << std::endl;
+	std::cout << g << "," << h << std::endl;
+	*/
+	
 }
 void PressureProcessor::openStreams(){
 	for (int i = 0;i<12;i++){
@@ -299,6 +409,7 @@ void PressureProcessor::closeStreams(){
 void PressureProcessor::clearPhases(){
 	sPhases.clear();
 	uPhases.clear();
+	ePhases.clear();
 	sections.clear();
 	section.clear();	
 }
@@ -445,6 +556,7 @@ void PressureProcessor::autoBins(int n){
 	std::sort(distrSorter.begin(),distrSorter.end(),[] (const std::array<double,2> &a, const std::array<double,2> &b){
 		return a[0] < b[0];
 	});
+		std::cout << "Empty Bin" << std::endl;
 	int binLength = distrSorter.size()/(1+n);
 	for(int i = 1; i < n;i++){
 		std::vector<double> binedVec;
@@ -454,6 +566,7 @@ void PressureProcessor::autoBins(int n){
 		}
 		goalDistributions.push_back(binedVec);
 	}
+		std::cout << "Empty Bin" << std::endl;
 }	
 void PressureProcessor::printBins(){
 	int i = 0;

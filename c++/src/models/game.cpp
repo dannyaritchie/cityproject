@@ -11,6 +11,7 @@
 #include<array>
 #include<algorithm>
 #include"../ReadTrackingData/include/FOOTBALL/Football.h"
+#include"../helpers/functions.h"
 //Game::Game(){
 //	filepath = "/pc2014-data1/lah/data/data_files/987881";
 //}
@@ -163,7 +164,7 @@ bool Game::readNewFile(std::vector<int> teamids, int & ateamid, int & hteamid){
 			for(int i=0; i<oneFrame.HOMETEAM.get_playersInTeam().size();i++){
 					Football::Player tplayer = oneFrame.HOMETEAM.get_playersInTeam()[i];
 					double x = tplayer.get_posX();
-					std::cout << x << ",";
+		//			std::cout << x << ",";
 					if(x<-2000){
 						leftCount ++;
 					}
@@ -171,7 +172,7 @@ bool Game::readNewFile(std::vector<int> teamids, int & ateamid, int & hteamid){
 						rightCount ++;
 					}
 			}
-			std::cout << std::endl;
+		//	std::cout << std::endl;
 			if (leftCount>0&&rightCount ==0){
 				homeSide = 'L';
 			}
@@ -507,3 +508,203 @@ int Game::getY(){
 char Game::getHomeSide(){
 	return homeSide;
 }
+void Game::setFramesPlayersDistance(double radius){
+	for(auto frameit = frames.begin();frameit<frames.end();++frameit){
+		(*frameit)->setPlayerDistance(radius);
+	}
+}
+void Game::setFramesPlayersVelocity(){
+	double previousFid{0};
+	std::array<std::array<std::vector<double>,28>,28> allInfo;
+	for(auto frameit = frames.begin();frameit<frames.end();++frameit){
+		if((*frameit)->getFid() == previousFid + 1){
+			std::vector<Player*> aplayers = (*frameit)->getPlayers();
+			for(auto playerit = aplayers.begin();playerit<aplayers.end();++playerit){
+				if((*playerit)->getTeam()==(*frameit)->getAttacking()){
+					int pid = (*playerit)->getMappedPid();
+					for(int i = 0; i < 28; i ++){
+						if((*playerit)->getPlayerPlayerDistance(i) != 0){
+						//	std::cout << pid << "," << i << "," << (*playerit)->getPlayerPlayerDistance(i) << "AAAAA" << std::endl;
+							if((*playerit)->getTeam() == 0){
+								allInfo[pid][i].push_back((*playerit)->getPlayerPlayerDistance(i));
+							}
+							else{allInfo[i][pid].push_back((*playerit)->getPlayerPlayerDistance(i));}
+						}
+						else{
+							if((*playerit)->getTeam() == 0){
+								allInfo[pid][i].clear();
+								}
+
+							else{allInfo[i][pid].clear();}
+						}							
+					}
+				}
+			}
+		}
+		else{
+			for(int i = 0;i<28;i++){
+				for(int j = 0;j<28;j++){
+					allInfo[i][j].clear();
+				}
+			}
+		}
+		for(int i = 0;i<28;i++){
+			for(int j = 0;j<28;j++){
+				if(allInfo[i][j].size() > 3){
+					allInfo[i][j].erase(allInfo[i][j].begin());
+				}
+				if(allInfo[i][j].size() == 3){
+					double velocity = allInfo[i][j][0]-allInfo[i][j][2];
+				//	std::cout << "AFTER";
+				//	std::cout << (*(frameit))->getFid();
+				//	std::vector<Player*> playersss = (*frameit)->getPlayers();
+				//	for(auto l : playersss){
+				//		std::cout << l->getMappedPid() << ",";
+				//	}
+				//	std::cout << std::endl;
+				//	std::cout << "," << frames[frames.size()-1]->getFid() << std::endl;
+					if((*frameit)->getAttacking() == (*frameit)->findPid(i)->getTeam()){
+						(*(frameit-1))->findPid(i)->setPlayerPlayerVelocity(velocity,j);
+					}
+					else{
+				//		std::cout << "pooo" << std::endl;
+						(*(frameit-1))->findPid(j)->setPlayerPlayerVelocity(velocity,i);
+					}
+				}
+			}
+		}	
+		previousFid = (*frameit)->getFid();
+
+	}
+}
+void Game::setAllGoalPos(){
+	//Comented is a test function for goal side check
+//	std::array<double,28> count = {0};
+	for(auto it = frames.begin();it<frames.end();++it){
+		(*it)->setGoalPos(homeSide);
+	/*	std::vector<Player*> players = (*it)->getPlayers();
+		double mindist{5000};
+		int minPlayer;
+		for(auto pit = players.begin();pit<players.end();pit++){
+			std::array<double,2> G = {-5250,0};
+			if(distance((*pit)->getPos(),G)<mindist){
+				mindist = distance((*pit)->getPos(),G);
+				minPlayer = (*pit)->getMappedPid();
+			}
+		}
+		count[minPlayer] ++;
+	*/}/*
+	for(auto i : count){
+		std::cout << i << ",";
+	}
+	std::cout << std::endl;*/
+}
+std::vector<std::array<int,4>> Game::getPhases(int minDefA, double minDefVel, int minFrames,int postPressDistance){
+	int previousFid {-1};
+	int previousPossession {0};
+	int length{0};
+	bool postPress{false};
+	int timeToGo;
+	int endType;
+	int startFrame;
+	std::vector<std::array<int,4>> startLengthTypes;
+	std::array<int,4> startLengthType;
+	for(auto frameit = frames.begin();frameit<frames.end();++frameit){
+		if(length == 0){
+			startFrame = (*frameit)->getFid();
+			postPress = false;
+		}
+		if(!postPress){
+			if((*frameit)->getAttacking()==previousPossession){
+				if((*frameit)->getRunningForward(minDefVel)>minDefA){
+					length++;
+				}
+				else{
+					if(length<minFrames){
+						length = 0;
+					}
+					else{
+						timeToGo = postPressDistance;
+						postPress = true;
+					}
+				}
+			}
+			else{
+				length = 0;
+			}
+		}
+		else{
+			if((*frameit)->getAttacking()==previousPossession){
+				if((*frameit)->getFid()!=previousFid+1){
+					std::cout<< "no possession change but frame jump" << previousPossession << "," << (*frameit)->getAttacking() << "," << previousFid << "," << (*frameit)->getFid() << std::endl;
+					endType = 1;
+					startLengthType = {startFrame,length,endType,previousPossession};
+					length = 0;
+					startLengthTypes.push_back(startLengthType);
+				}
+				else{
+					length ++;
+					if(timeToGo>0){
+						timeToGo --;
+					}
+					else{
+						endType = 0;
+						startLengthType = {startFrame,length,endType,previousPossession};
+						length = 0;
+						startLengthTypes.push_back(startLengthType);
+					}
+				}
+			}
+			else{
+				if((*frameit)->getFid()!=previousFid+1){
+					endType = 1;
+				}
+				else{
+					endType = 2;
+				}
+				startLengthType = {startFrame,length,endType,previousPossession};
+				startLengthTypes.push_back(startLengthType);
+				length = 0;
+			}
+		}	
+		previousPossession = (*frameit)->getAttacking();
+		previousFid = (*frameit)->getFid();
+	}
+	return startLengthTypes;
+}
+
+std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, double radius, int type){
+	std::vector<Frame*>::iterator frameit = frames.begin();
+	double startBallDistance{0};
+	double endBallDistance{0};
+	double pressure;
+	std::vector<std::array<double,2>> pressureBallDists;
+	for(auto phaseit = startSizes.begin(); phaseit<startSizes.end();++phaseit){
+		while((*frameit)->getFid()!=(*phaseit)[0]){
+			std::advance(frameit,1);
+		}
+		std::advance(frameit,startLookingDistance);
+		pressure = (*frameit)->getPressure(radius);
+		if(type == 0){
+			startBallDistance = (*frameit)->getBallDistance();
+			std::advance(frameit,lookingLength);
+			endBallDistance = (*frameit)->getBallDistance();
+		}
+		std::array<double,2> pressureBallDist = {pressure,endBallDistance - startBallDistance};
+		pressureBallDists.push_back(pressureBallDist);
+	}
+	return pressureBallDists;
+}
+std::array<int,2> Game::getPossessionTimes(){
+	std::array<int,3> count = {};
+	for (auto frameit = frames.begin();frameit<frames.end();++frameit){
+		count[(*frameit)->getAttacking()] ++;
+	}
+	std::array<int,2> results = {count[0],count[1]};
+	return results;
+}
+
+
+		
+
+	

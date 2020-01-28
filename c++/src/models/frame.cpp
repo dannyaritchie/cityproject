@@ -59,9 +59,11 @@ std::vector<Player*> Frame::getPlayers() {
 	return players;
 }
 Player* Frame::findPid(int pid) {
+//	std::cout << std::endl << pid << ": ";
 	bool foundNum{ true };
-	int j = 0;
+	int j{0};
 	while (foundNum && j < players.size()) {
+//		std::cout << j << "-" << players[j]->getMappedPid() << ",";
 		if (players[j]->getMappedPid() == pid) {
 			return players[j];
 		}
@@ -155,4 +157,176 @@ bool Frame::writeScalar(std::ostream & os){
     os << std::endl;
     return true;
 }
+void Frame::setGoalPos(char homeSide){
+	if(possession == 0){
+		if(homeSide == 'L'){
+			goalX = 5250;
+		}
+		else{goalX = -5250;}
+	}
+	else{
+		if(possession == 1){
+			if(homeSide == 'L'){
+				goalX = -5250;
+			}else{goalX = 5250;}
+		}
+		else{std::cout <<  "Error setting goalX for frame " << fid<< ", undertermined possession" << std::endl; 
+			goalX = 0;
+		}
+	}
+}
+double Frame::getGoalPos(){
+	return goalX;
+}
 
+bool Frame::setAttackersInFrontOfBall(){
+	double ballX = getBall()->getPos()[0];
+	for(auto playerit = players.begin();playerit<players.end();++playerit){
+//		std::cout << (*playerit)->getNum();
+		if((*playerit)->getTeam()==possession){
+		//	std::cout << (*playerit)->getTeam() << "," << possession << std::endl`;
+			double playerX = (*playerit)->getPos()[0];
+			if (goalX == 5250){
+		//		std::cout << "G:" << goalX << "P:" << playerX << "B:" << ballX << std::endl;
+				(*playerit)->setDistanceInFrontOfBall(playerX-ballX);
+			}
+			else{
+				if(goalX == -5250){
+		//			std::cout << "G:" << goalX << "P:" << playerX << "B:" << ballX << std::endl;
+					(*playerit)->setDistanceInFrontOfBall(ballX-playerX);
+				}
+				else{
+					std::cout << "Error in players in front of ball, goal position was not set" << std::endl;
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+int Frame::getAttackersInFrontOfBall(double threshold){
+	int count{0};
+	for(auto playerit = players.begin();playerit<players.end();++playerit){
+		if((*playerit)->getTeam()==possession){
+			if((*playerit)->getDistanceInFrontOfBall()>threshold){
+				count++;
+			}
+		}
+	}
+	return count;
+}
+bool Frame::isInside(double min, double max){
+	std::array<double,2> goal = {goalX,0};
+	if(distance(getBall()->getPos(),goal)>min&&distance(getBall()->getPos(),goal)<max){
+		return true;
+	}else{return false;}
+}
+
+std::vector<Player*> Frame::attackersInRadius(double radius){
+	std::vector<Player*> playerss;
+	std::array<double,2> ballPos = getBall()->getPos();
+	for(auto playerit = players.begin();playerit<players.end();++playerit){
+		if((*playerit)->getTeam() == possession){
+			if(distance((*playerit)->getPos(),ballPos)<radius){
+				playerss.push_back(*playerit);
+			}
+		}
+	}
+	return playerss;
+}
+
+int Frame::attackersBallTime(double radius, std::vector<double> & times){
+	int unmarkedPlayers{0};
+	std::vector<Player*> playerss = attackersInRadius(radius);
+	for(auto playerit = playerss.begin();playerit<playerss.end();++playerit){
+		double ttime;
+		if((*playerit)->getShortestTime(ttime) == true){
+			times.push_back(ttime);
+		}
+		else{
+			unmarkedPlayers++;
+		}
+	}
+	return unmarkedPlayers;
+}
+		
+void Frame::setPlayerDistance(double radius){
+	for(auto playerita = players.begin();playerita<players.end();++playerita){
+		if((*playerita)->getTeam() == possession){
+			for(auto playeritd = players.begin();playeritd<players.end();++playeritd){
+				if((*playeritd)->getTeam()!=possession){
+		//			std::cout << "D" << distance((*playerita)->getPos(),(*playeritd)->getPos())<< std::endl;
+					if(distance((*playerita)->getPos(),(*playeritd)->getPos())<radius){
+						double pdistance = distance((*playerita)->getPos(),(*playeritd)->getPos());
+						(*playerita)->setPlayerPlayerDistance(pdistance,(*playeritd)->getMappedPid());
+					}
+				}
+			}
+		}
+	}
+}	
+
+int Frame::getRunningForward(double minVelocity){
+	int count{0};
+	for(auto playerit = players.begin();playerit<players.end();++playerit){
+		if((*playerit)->getTeam()!=possession){
+			if((*playerit)->getVelocity()>minVelocity){
+				if((*playerit)->getVelocityVector()[0]*goalX<0){
+					count ++;
+				}
+			}
+		}
+	}
+	return count;
+}
+Player* Frame::closestPlayerToBall(){
+	double minDist{9999};
+	std::array<double,2> ballPos = getBall()->getPos();
+	Player* closestPlayer;
+	for(auto playerit = players.begin();playerit<players.end();++playerit){
+		if((*playerit)->getTeam()==possession){
+			double ballDistance = distance((*playerit)->getPos(),ballPos);
+			if(ballDistance<minDist){
+				minDist = ballDistance;
+				closestPlayer = (*playerit);
+			}
+		}
+	}
+	return closestPlayer;
+}
+			
+double Frame::getPressure(double radius){
+	std::vector<double> times;
+	double closestPlayerTime;
+	double largestTimes{0};
+	if(closestPlayerToBall()->getShortestTime(closestPlayerTime)==true){
+		int unmarked = attackersBallTime(radius, times);
+		std::sort(times.begin(),times.end());
+		if(times.size()>2){
+			for(auto it = times.end()-3;it<times.end();it++){
+				largestTimes+= (*it);
+			}
+		}
+		if(times.size()==2){
+			largestTimes = times[0] + 2* times[1];
+		}
+		if(times.size()==1){
+			largestTimes = 3*times[0];
+		}
+		if(times.size()==0){
+			std::cout << "No players where in radius of ball" <<std::endl;
+			largestTimes = 0.1;
+		}
+		return pow(closestPlayerTime*largestTimes,-1);
+	}
+	else{return 0;}
+}
+
+double Frame::getBallDistance(){
+	std::array<double,2> ballPos = getBall()->getPos();
+	std::array<double,2> goalPos = {goalX,0};
+	return distance(ballPos,goalPos);
+}
+
+
+	

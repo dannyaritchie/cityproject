@@ -246,12 +246,31 @@ void pressuresum::addPressureA(std::array<double,8> temp, int pos){
 }
 void pressuresum::addPressureU(std::array<double,8> temp, int pos,int tip){
 	double goalRank;
-	if (interestingTeam ==1||interestingTeam == 0){
+/*	if (interestingTeam ==1||interestingTeam == 0){
 		if (tip==interestingTeam){
 			pressure[2] = -1;
 			return;
 		}
+	}*/
+	double vel,dist;
+	if(temp[1] < 0.1){
+		if (temp[1] >=-1){
+			vel = 0.1;
+		}
+		else{
+			if(dist<2){
+				pressure[0] +=3;
+			}
+		}
 	}
+	else{
+		vel = temp[1];
+	}
+	if(temp[0] < 0.1){
+		dist =0.1;
+	}
+	else{dist = temp[0];}
+
 	if(ra == 0){
 		goalRank = 1;
 	}
@@ -260,11 +279,13 @@ void pressuresum::addPressureU(std::array<double,8> temp, int pos,int tip){
 	std::array<double,8> notgg = {-1,-1,-1,-1,-1,-1,-1,-1};
 	if (temp!=notgg){
 
-		if(temp[1] > 3&&temp[2]<30*3.1419/180){
+//		if(temp[1] > 1&&temp[2]<30*3.1419/180){
 		for(int i = 0;i<1;i++){
-pressure[0] += pow(pow(temp[2],ddg)+1,-1)*pow(temp[6],dpv)*pow(pow(temp[4],bp) + 1,-1)*(pow(10,dw)*pow( pow(temp[0],dp) +1, -1) + pow(pow(temp[0],dvp)+1,-1)*pow(temp[1],vp))/goalRank;//(1+temp[4]);
+//pressure[0] += pow(pow(temp[2],ddg)+1,-1)*pow(temp[6],dpv)*pow(pow(temp[4],bp) + 1,-1)*(pow(10,dw)*pow( pow(temp[0],dp) +1, -1) + pow(pow(temp[0],dvp)+1,-1)*pow(temp[1],vp))/goalRank;//(1+temp[4]);
+
+pressure[0] +=vel/dist;//(1+temp[4]);
 		}
-		}
+//		}
 	}
 }
 

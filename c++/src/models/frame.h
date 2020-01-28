@@ -5,6 +5,7 @@
 #include<iostream>
 #include "player.h"
 #include "ball.h"
+#include<algorithm>
 class Frame 
 {
 private:
@@ -14,6 +15,7 @@ private:
 	bool firstFrame;
 	double anglePotential[720] = {0};
 	int possession;
+	double goalX;
 public:
 	Frame();
 	~Frame();
@@ -44,6 +46,19 @@ public:
     //width ri
     bool writeScalar(std::ostream & os);
     //write team id on line one followed by anglepotential[i] on line i+1
+	bool setAttackersInFrontOfBall();
+	int getAttackersInFrontOfBall(double threshold);
+	void setGoalPos(char homeside);
+	double getGoalPos();
+	bool isInside(double min, double max);//checks if ball is within thisrange of distancefrom defending goal
+	int attackersBallTime(double radius, std::vector<double> & times);//sets vector to mimimum time to attackers in radius, counts unmarked players
+	std::vector<Player*> attackersInRadius(double radius);//return vector of attackers that are within a radius of the ball
+	void setPlayerDistance(double radius);//stores all distance <15m of pairs of players in a structure owened by attacking player
+	Player* closestPlayerToBall();
+	int getRunningForward(double minVelocity);
+	double getPressure(double radius);
+	double getBallDistance();
+
 
 };
 #endif
