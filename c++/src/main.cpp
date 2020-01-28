@@ -74,8 +74,9 @@ int main(){
 	int minFrames = 15;
 	int maxPostPressTime =25;
 	double playerRadius = 1500;
-	bool useGroups{true};
+	bool useGroups{false};
 	int numberOfGames = 15;
+	double closePressure = 0.3;
 	std::string dataDestination = "../data/newdata/testing";
 	//CREATE 2017 GAME VECTOR
 	std::vector<int> midsb;
@@ -268,11 +269,11 @@ int main(){
 			//(no groups)
 			if(!useGroups){
 				std::vector<std::array<double,2>> temp;
-				temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0);
+				temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure);
 				pressureBallDist.insert(pressureBallDist.begin(),temp.begin(),temp.end()); 
-				temp = tgame->getPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength, ballRadius,1);
+				temp = tgame->getPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength, ballRadius,1, closePressure);
 				pressureBallDistPosChange.insert(pressureBallDistPosChange.begin(),temp.begin(),temp.end()); 
-				temp = tgame->getPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength, ballRadius,2);
+				temp = tgame->getPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength, ballRadius,2, closePressure);
 				pressureBallDistFrameJump.insert(pressureBallDistFrameJump.begin(),temp.begin(),temp.end()); 
 			}
 			//
@@ -281,8 +282,8 @@ int main(){
 				std::array<std::vector<std::array<double,2>>,3> homePhasesPressureBallDist;
 				std::array<std::vector<std::array<double,2>>,3> awayPhasesPressureBallDist;
 				for(int i = 0; i < 3; i++){
-					homePhasesPressureBallDist[i] = tgame->getPhaseInformation(homePhases[i],startLookingDistance,lookingLength,ballRadius,i);
-					awayPhasesPressureBallDist[i] = tgame->getPhaseInformation(awayPhases[i],startLookingDistance,lookingLength,ballRadius,i);
+					homePhasesPressureBallDist[i] = tgame->getPhaseInformation(homePhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure);
+					awayPhasesPressureBallDist[i] = tgame->getPhaseInformation(awayPhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure);
 				}
 				bool foundGroupB{false};
 				for (int j = 0;j<groups.size();j++){
