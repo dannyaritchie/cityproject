@@ -40,8 +40,8 @@ int main(){
 	double ball_pow = 0;
 	double dist_weight= 1;
 	double dist_pow =  1;
-	double vel_pow = 0;
-	double distvel_pow = 0;
+	double vel_pow = 1;
+	double distvel_pow = 1;
 	double ranking = 0;
 	double minBallFromDefGoal =  1000;
 	double maxBallFromDefGoal = 9000;
@@ -62,10 +62,13 @@ int main(){
 	//number o phases graph
 	std::ofstream numberofphasesos;
 	numberofphasesos.open("../data/numberofphases.txt");
+	
+	std::array<double,2> parameters = {vel_pow, distvel_pow};
+
 	std::array<int,100> normal = {};
 	std::array<int,100> poschange = {};
 	std::array<int,100> framejump = {};
-
+	
 	int minDefNum = 4;
 	double minDefVel = 1;
 	double ballRadius = 2000;
@@ -269,11 +272,11 @@ int main(){
 			//(no groups)
 			if(!useGroups){
 				std::vector<std::array<double,2>> temp;
-				temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure);
+				temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure, parameters);
 				pressureBallDist.insert(pressureBallDist.begin(),temp.begin(),temp.end()); 
-				temp = tgame->getPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength, ballRadius,1, closePressure);
+				temp = tgame->getPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength, ballRadius,1, closePressure, parameters);
 				pressureBallDistPosChange.insert(pressureBallDistPosChange.begin(),temp.begin(),temp.end()); 
-				temp = tgame->getPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength, ballRadius,2, closePressure);
+				temp = tgame->getPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength, ballRadius,2, closePressure, parameters);
 				pressureBallDistFrameJump.insert(pressureBallDistFrameJump.begin(),temp.begin(),temp.end()); 
 			}
 			//
@@ -282,8 +285,8 @@ int main(){
 				std::array<std::vector<std::array<double,2>>,3> homePhasesPressureBallDist;
 				std::array<std::vector<std::array<double,2>>,3> awayPhasesPressureBallDist;
 				for(int i = 0; i < 3; i++){
-					homePhasesPressureBallDist[i] = tgame->getPhaseInformation(homePhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure);
-					awayPhasesPressureBallDist[i] = tgame->getPhaseInformation(awayPhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure);
+					homePhasesPressureBallDist[i] = tgame->getPhaseInformation(homePhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure, parameters);
+					awayPhasesPressureBallDist[i] = tgame->getPhaseInformation(awayPhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure, parameters);
 				}
 				bool foundGroupB{false};
 				for (int j = 0;j<groups.size();j++){
@@ -316,7 +319,7 @@ int main(){
 		delete tgame;
 	}
 
-	usedParametersAndResults << "number of games " << numberOfGames << std::endl << "minimum number of defender " << minDefNum << std::endl << "minimum defender velocity" << minDefVel << std::endl << "minimum number of frames " << minFrames << std::endl << "maximum post press looking time " << maxPostPressTime << std::endl << "ball radius " << ballRadius << std::endl << "start looking distance " << startLookingDistance<< std::endl << "looking length" << lookingLength << std::endl << "player radius" << playerRadius << std::endl << std::endl;
+	usedParametersAndResults << "number of games " << numberOfGames << std::endl << "minimum number of defender " << minDefNum << std::endl << "minimum defender velocity " << minDefVel << std::endl << "minimum number of frames " << minFrames << std::endl << "maximum post press looking time " << maxPostPressTime << std::endl << "ball radius " << ballRadius << std::endl << "start looking distance " << startLookingDistance<< std::endl << "looking length " << lookingLength << std::endl << "player radius " << playerRadius << std::endl << "close pressure addition " << std::endl << std::endl;
 	//in case of no groups
 	if(!useGroups){
 		usedParametersAndResults << "number of no possession change phases " << numberOfNormalPhases << std::endl << "number of possession change phases " << numberOfPossessionChangePhases<< std::endl << "number of frame jump phases " << numberOfFrameJumpPhases << std::endl;

@@ -57,7 +57,7 @@ public:
 	Player* closestPlayerToBall();
 	int getRunningForward(double minVelocity);
 	double getPressure(double radius);
-	double getPressureB(double closePressure);
+	double getPressureB(double closePressure, std::array<double, 2> parameters);
 	double getBallDistance();
 
 

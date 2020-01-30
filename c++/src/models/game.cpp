@@ -673,7 +673,7 @@ std::vector<std::array<int,4>> Game::getPhases(int minDefA, double minDefVel, in
 	return startLengthTypes;
 }
 
-std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, double radius, int type, double closePressure){
+std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, double radius, int type, double closePressure, std::array<double, 2> parameters){
 	std::vector<Frame*>::iterator frameit = frames.begin();
 	double startBallDistance{0};
 	double endBallDistance{0};
@@ -685,7 +685,7 @@ std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::arr
 		}
 		std::advance(frameit,startLookingDistance);
 //		pressure = (*frameit)->getPressure(radius);
-		pressure = (*frameit)->getPressureB(closePressure);
+		pressure = (*frameit)->getPressureB(closePressure, parameters);
 		if(type == 0){
 			startBallDistance = (*frameit)->getBallDistance();
 			std::advance(frameit,lookingLength);

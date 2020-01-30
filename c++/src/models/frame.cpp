@@ -328,7 +328,7 @@ double Frame::getBallDistance(){
 	return distance(ballPos,goalPos);
 }
 
-double Frame::getPressureB(double closePressure){
+double Frame::getPressureB(double closePressure, std::array<double,2> parameters){
 	double pressure{0};
 	for(auto playerita = players.begin();playerita<players.end();++playerita){
 		if((*playerita)->getTeam()==possession){
@@ -340,7 +340,7 @@ double Frame::getPressureB(double closePressure){
 						pressure += closePressure;
 					}
 					if(playerPlayerVelocity > 0 && playerPlayerDistance >= 1){
-						pressure += playerPlayerVelocity/playerPlayerDistance;
+						pressure += pow(playerPlayerVelocity, parameters[0]) / pow(playerPlayerDistance, parameters[1]);
 					}
 				}
 			}
