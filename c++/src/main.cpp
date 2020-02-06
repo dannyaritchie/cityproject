@@ -64,10 +64,13 @@ int main(){
 	numberofphasesos.open("../data/numberofphases.txt");
 	
 	std::array<double,2> parameters = {vel_pow, distvel_pow};
-
-	std::array<int,100> normal = {};
-	std::array<int,100> poschange = {};
-	std::array<int,100> framejump = {};
+	//object to store information of number of phases as parameters are varied - used in numberPositionAnalysis
+	std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> allNumbers	
+	//flags
+	bool useGroups{false};
+	bool analyse{false}; //whether to get information about phase
+	bool results{false};	//whether to get results from phases
+	bool numberPositionAnalysis{true} //whether number and position of phases should be analysed
 	
 	int minDefNum = 4;
 	double minDefVel = 1;
@@ -77,10 +80,9 @@ int main(){
 	int minFrames = 15;
 	int maxPostPressTime =25;
 	double playerRadius = 1500;
-	bool useGroups{false};
 	int numberOfGames = 15;
 	double closePressure = 0.3;
-	std::string dataDestination = "../data/newdata/testing";
+	std::string dataDestination = "../data/newdata/numbers/";
 	//CREATE 2017 GAME VECTOR
 	std::vector<int> midsb;
 	for (auto i = 918893;i<919271;++i){
@@ -152,7 +154,7 @@ int main(){
 	//	}
 		std::vector<int> groupa = {3,6,1,14,43,8}; //High
 		std::vector<int> groupb = {4,90,31,11,21,91,13}; //medium
-		std::vector<int> groupc = {19,80,57,35,38,110,36}; //low
+		std::vector<int> groupc = {20,80,57,35,38,110,36}; //low
 		groups.push_back(groupa);
 		groups.push_back(groupb);
 		groups.push_back(groupc);
@@ -198,292 +200,354 @@ int main(){
 			tgame->setFramesPlayersVelocity();
 			tgame->setAllGoalPos();
 			tgame->addVelocities();
-	//		PHASE CHOICE
-	//all methods return a vector of 3-arrays of doubles specifying start and length of phase, and type of phase
-	//
-	//Method 1
-	//	When minDefNum  defenders running away at least 90 degrees from the goal with a positive velocity above minDefVel for more than minFrames frames and there has been no change in possession or frame jump a phase is defined. up untill maxPostPressTime frames are then looked at after this, if there is a possessionchange phase is given type 2, if there is a frame jump it is given type 1 and otherwise it is give type 0;
-			std::vector<std::array<int,4>> frameStartLengthType;
-			frameStartLengthType = tgame->getPhases(minDefNum,minDefVel,minFrames,maxPostPressTime); //METHOD 1
-	//Method 2
-	//uses the old method of calculating the pressure and selecting phases based on increasing pressure. to keep with compatability this caclulates pressure for every fram but still only returns phase information, although work is alrady done for getPhaseInformationOld as it just has to read of pressure
-	//Details of old method
-	//pressure is 1/(1+distance to ball^a) * (10^b*1/(1+distance betwen players^c) + distance dot^d/(1+distance^e))
-	//		frameStartLength = tgame->getPhasesOld(); //Method 2
-			
-			//split frameStartLengthType into 3 vectors by type
-			std::vector<std::array<int,2>> noPossessionChangePhases;
-			std::vector<std::array<int,2>> possessionChangePhases;
-			std::vector<std::array<int,2>> frameJumpPhases;
-			//in the case we are not cared about groups
-			std::array<std::vector<std::array<int,2>>,3> homePhases; //for groups but declaration must be outside of if/else statemet
-			std::array<std::vector<std::array<int,2>>,3> awayPhases; //"" ""
-			if(!useGroups){
-				splitByType(frameStartLengthType,noPossessionChangePhases,possessionChangePhases,frameJumpPhases);		
-				std::cout << "number Of Normal Phases:  " <<  noPossessionChangePhases.size() << std::endl;
-				std::cout << "number Of Possession Change Phases: " << possessionChangePhases.size() << std::endl;
-				std::cout << "number Of Frame Jump Phases: " << frameJumpPhases.size() << std::endl;
-				numberOfNormalPhases += noPossessionChangePhases.size();
-				numberOfPossessionChangePhases += possessionChangePhases.size();
-				numberOfFrameJumpPhases += frameJumpPhases.size();
-			}
-			//in the case we are cared about specific groups
-			else{
-				std::array<int,2> possessionTimes = tgame->getPossessionTimes(); // gets the number of frames home and away team are in possession of the ball
-				splitByTypeAndGroup(frameStartLengthType, awayPhases,homePhases);	
-				std::cout << "number Of Normal Phases:  " <<  awayPhases[0].size()+homePhases[0].size() << std::endl;
-				std::cout << "number Of Possession Change Phases: " << awayPhases[1].size()+homePhases[1].size() << std::endl;
-				std::cout << "number Of Frame Jump Phases: " << awayPhases[2].size()+homePhases[2].size() << std::endl;
-				bool foundGroup{false};
-				for (int j = 0;j<groups.size();j++){
-					if(!foundGroup){
-						std::vector<int>::iterator it = std::find(groups[j].begin(),groups[j].end(),awayID);
-						if(it!=groups[j].end()){
-							foundGroup = true;
-							groupPhaseSizeTime[j][0] += awayPhases[0].size();
-							groupPhaseSizeTime[j][1] += awayPhases[1].size();
-							groupPhaseSizeTime[j][2] += awayPhases[2].size();
-							groupPhaseSizeTime[j][3] += possessionTimes[0];
+			if(analyse){
+		//		PHASE CHOICE
+		//all methods return a vector of 3-arrays of doubles specifying start and length of phase, and type of phase
+		//
+		//Method 1
+		//	When minDefNum  defenders running away at least 90 degrees from the goal with a positive velocity above minDefVel for more than minFrames frames and there has been no change in possession or frame jump a phase is defined. up untill maxPostPressTime frames are then looked at after this, if there is a possessionchange phase is given type 2, if there is a frame jump it is given type 1 and otherwise it is give type 0;
+				std::vector<std::array<int,4>> frameStartLengthType;
+				frameStartLengthType = tgame->getPhases(minDefNum,minDefVel,minFrames,maxPostPressTime); //METHOD 1
+		//Method 2
+		//uses the old method of calculating the pressure and selecting phases based on increasing pressure. to keep with compatability this caclulates pressure for every fram but still only returns phase information, although work is alrady done for getPhaseInformationOld as it just has to read of pressure
+		//Details of old method
+		//pressure is 1/(1+distance to ball^a) * (10^b*1/(1+distance betwen players^c) + distance dot^d/(1+distance^e))
+		//		frameStartLength = tgame->getPhasesOld(); //Method 2
+				
+				//split frameStartLengthType into 3 vectors by type
+				std::vector<std::array<int,2>> noPossessionChangePhases;
+				std::vector<std::array<int,2>> possessionChangePhases;
+				std::vector<std::array<int,2>> frameJumpPhases;
+				//in the case we are not cared about groups
+				std::array<std::vector<std::array<int,2>>,3> homePhases; //for groups but declaration must be outside of if/else statemet
+				std::array<std::vector<std::array<int,2>>,3> awayPhases; //"" ""
+				if(!useGroups){
+					splitByType(frameStartLengthType,noPossessionChangePhases,possessionChangePhases,frameJumpPhases);		
+					std::cout << "number Of Normal Phases:  " <<  noPossessionChangePhases.size() << std::endl;
+					std::cout << "number Of Possession Change Phases: " << possessionChangePhases.size() << std::endl;
+					std::cout << "number Of Frame Jump Phases: " << frameJumpPhases.size() << std::endl;
+					numberOfNormalPhases += noPossessionChangePhases.size();
+					numberOfPossessionChangePhases += possessionChangePhases.size();
+					numberOfFrameJumpPhases += frameJumpPhases.size();
+				}
+				//in the case we are cared about specific groups
+				else{
+					std::array<int,2> possessionTimes = tgame->getPossessionTimes(); // gets the number of frames home and away team are in possession of the ball
+					splitByTypeAndGroup(frameStartLengthType, awayPhases,homePhases);	
+					std::cout << "number Of Normal Phases:  " <<  awayPhases[0].size()+homePhases[0].size() << std::endl;
+					std::cout << "number Of Possession Change Phases: " << awayPhases[1].size()+homePhases[1].size() << std::endl;
+					std::cout << "number Of Frame Jump Phases: " << awayPhases[2].size()+homePhases[2].size() << std::endl;
+					bool foundGroup{false};
+					for (int j = 0;j<groups.size();j++){
+						if(!foundGroup){
+							std::vector<int>::iterator it = std::find(groups[j].begin(),groups[j].end(),awayID);
+							if(it!=groups[j].end()){
+								foundGroup = true;
+								groupPhaseSizeTime[j][0] += awayPhases[0].size();
+								groupPhaseSizeTime[j][1] += awayPhases[1].size();
+								groupPhaseSizeTime[j][2] += awayPhases[2].size();
+								groupPhaseSizeTime[j][3] += possessionTimes[0];
+							}
+						}
+					}
+					foundGroup = false;
+					for (int j = 0;j<groups.size();j++){
+						if(!foundGroup){
+							std::vector<int>::iterator it = std::find(groups[j].begin(),groups[j].end(),homeID);
+							if(it!=groups[j].end()){
+								foundGroup = true;
+								groupPhaseSizeTime[j][0] += homePhases[0].size();
+								groupPhaseSizeTime[j][1] += homePhases[1].size();
+								groupPhaseSizeTime[j][2] += homePhases[2].size();
+								groupPhaseSizeTime[j][3] += possessionTimes[1];
+							}
 						}
 					}
 				}
-				foundGroup = false;
-				for (int j = 0;j<groups.size();j++){
-					if(!foundGroup){
-						std::vector<int>::iterator it = std::find(groups[j].begin(),groups[j].end(),homeID);
-						if(it!=groups[j].end()){
-							foundGroup = true;
-							groupPhaseSizeTime[j][0] += homePhases[0].size();
-							groupPhaseSizeTime[j][1] += homePhases[1].size();
-							groupPhaseSizeTime[j][2] += homePhases[2].size();
-							groupPhaseSizeTime[j][3] += possessionTimes[1];
-						}
-					}
-				}
-			}
-			//`
+				//
 
-			/*Getting frame information
-			 * method returns a vector of two arrays that are the pressure and thechange in distance between the goal and the ball
-			 * change in distance is calculated as from startLookingDistance after the beginning of the frame and lookingLength after that
-			 * pressure is calculated for the frame at startLookingDistance as follows. find the shortest 'time' for players in ballRadius of ball and sum it for the longest numberOfAttackers. multiply this by shortest time for player closest to ball and return 1/ this for pressure
-			 * MAKE SURE startLookingDistance + lookingLength < minFrames.
-			 */
-			//(no groups)
-			if(!useGroups){
-				std::vector<std::array<double,2>> temp;
-				temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure, parameters);
-				pressureBallDist.insert(pressureBallDist.begin(),temp.begin(),temp.end()); 
-				temp = tgame->getPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength, ballRadius,1, closePressure, parameters);
-				pressureBallDistPosChange.insert(pressureBallDistPosChange.begin(),temp.begin(),temp.end()); 
-				temp = tgame->getPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength, ballRadius,2, closePressure, parameters);
-				pressureBallDistFrameJump.insert(pressureBallDistFrameJump.begin(),temp.begin(),temp.end()); 
+				/*Getting frame information
+				 * method returns a vector of two arrays that are the pressure and thechange in distance between the goal and the ball
+				 * change in distance is calculated as from startLookingDistance after the beginning of the frame and lookingLength after that
+				 * pressure is calculated for the frame at startLookingDistance as follows. find the shortest 'time' for players in ballRadius of ball and sum it for the longest numberOfAttackers. multiply this by shortest time for player closest to ball and return 1/ this for pressure
+				 * MAKE SURE startLookingDistance + lookingLength < minFrames.
+				 */
+				//(no groups)
+				if(!useGroups){
+					std::vector<std::array<double,2>> temp;
+					temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure, parameters);
+					pressureBallDist.insert(pressureBallDist.begin(),temp.begin(),temp.end()); 
+					temp = tgame->getPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength, ballRadius,1, closePressure, parameters);
+					pressureBallDistPosChange.insert(pressureBallDistPosChange.begin(),temp.begin(),temp.end()); 
+					temp = tgame->getPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength, ballRadius,2, closePressure, parameters);
+					pressureBallDistFrameJump.insert(pressureBallDistFrameJump.begin(),temp.begin(),temp.end()); 
+				}
+				//
+				//In case where we have groups
+				else{
+					std::array<std::vector<std::array<double,2>>,3> homePhasesPressureBallDist;
+					std::array<std::vector<std::array<double,2>>,3> awayPhasesPressureBallDist;
+					for(int i = 0; i < 3; i++){
+						homePhasesPressureBallDist[i] = tgame->getPhaseInformation(homePhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure, parameters);
+						awayPhasesPressureBallDist[i] = tgame->getPhaseInformation(awayPhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure, parameters);
+					}
+					bool foundGroupB{false};
+					for (int j = 0;j<groups.size();j++){
+						if(!foundGroupB){
+							std::vector<int>::iterator it = std::find(groups[j].begin(),groups[j].end(),awayID);
+							if(it!=groups[j].end()){
+								foundGroupB = true;
+								groupPhasePressureBallDist[j][0].insert(groupPhasePressureBallDist[j][0].begin(),awayPhasesPressureBallDist[0].begin(),awayPhasesPressureBallDist[0].end());
+								groupPhasePressureBallDist[j][1].insert(groupPhasePressureBallDist[j][1].begin(),awayPhasesPressureBallDist[1].begin(),awayPhasesPressureBallDist[1].end());
+								groupPhasePressureBallDist[j][2].insert(groupPhasePressureBallDist[j][2].begin(),awayPhasesPressureBallDist[2].begin(),awayPhasesPressureBallDist[2].end());
+							}
+						}
+					}
+					foundGroupB = false;
+					for (int j = 0;j<groups.size();j++){
+						if(!foundGroupB){
+							std::vector<int>::iterator it = std::find(groups[j].begin(),groups[j].end(),homeID);
+							if(it!=groups[j].end()){
+								foundGroupB = true;
+								groupPhasePressureBallDist[j][0].insert(groupPhasePressureBallDist[j][0].begin(),homePhasesPressureBallDist[0].begin(),homePhasesPressureBallDist[0].end());
+								groupPhasePressureBallDist[j][1].insert(groupPhasePressureBallDist[j][1].begin(),homePhasesPressureBallDist[1].begin(),homePhasesPressureBallDist[1].end());
+								groupPhasePressureBallDist[j][2].insert(groupPhasePressureBallDist[j][2].begin(),homePhasesPressureBallDist[2].begin(),homePhasesPressureBallDist[2].end());
+							}
+						}
+					}
+				}
 			}
-			//
-			//In case where we have groups
 			else{
-				std::array<std::vector<std::array<double,2>>,3> homePhasesPressureBallDist;
-				std::array<std::vector<std::array<double,2>>,3> awayPhasesPressureBallDist;
-				for(int i = 0; i < 3; i++){
-					homePhasesPressureBallDist[i] = tgame->getPhaseInformation(homePhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure, parameters);
-					awayPhasesPressureBallDist[i] = tgame->getPhaseInformation(awayPhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure, parameters);
-				}
-				bool foundGroupB{false};
-				for (int j = 0;j<groups.size();j++){
-					if(!foundGroupB){
-						std::vector<int>::iterator it = std::find(groups[j].begin(),groups[j].end(),awayID);
-						if(it!=groups[j].end()){
-							foundGroupB = true;
-							groupPhasePressureBallDist[j][0].insert(groupPhasePressureBallDist[j][0].begin(),awayPhasesPressureBallDist[0].begin(),awayPhasesPressureBallDist[0].end());
-							groupPhasePressureBallDist[j][1].insert(groupPhasePressureBallDist[j][1].begin(),awayPhasesPressureBallDist[1].begin(),awayPhasesPressureBallDist[1].end());
-							groupPhasePressureBallDist[j][2].insert(groupPhasePressureBallDist[j][2].begin(),awayPhasesPressureBallDist[2].begin(),awayPhasesPressureBallDist[2].end());
-						}
+				if(numberPositionAnalysis){
+					std::vector<int> minFrames;
+					for (int i = 5; i<40; i+=5){
+						minFrames.push_back(i);
 					}
-				}
-				foundGroupB = false;
-				for (int j = 0;j<groups.size();j++){
-					if(!foundGroupB){
-						std::vector<int>::iterator it = std::find(groups[j].begin(),groups[j].end(),homeID);
-						if(it!=groups[j].end()){
-							foundGroupB = true;
-							groupPhasePressureBallDist[j][0].insert(groupPhasePressureBallDist[j][0].begin(),homePhasesPressureBallDist[0].begin(),homePhasesPressureBallDist[0].end());
-							groupPhasePressureBallDist[j][1].insert(groupPhasePressureBallDist[j][1].begin(),homePhasesPressureBallDist[1].begin(),homePhasesPressureBallDist[1].end());
-							groupPhasePressureBallDist[j][2].insert(groupPhasePressureBallDist[j][2].begin(),homePhasesPressureBallDist[2].begin(),homePhasesPressureBallDist[2].end());
+					std::vector<int> postPressTimes;
+					for (int i = 5; i<40; i+=5){
+						postPressTimes.push_back(i);
+					}
+					std::vector<double> minVels;
+					for (double i = 1; i < 10; i ++){
+						minVels.push_back(i/10);
+					}
+					std::vector<int> minDefs;
+					for(int i = 1;i<9;i++){
+						minDefs.push_back(i);
+					}
+					std::vector<std::vector<std::vector<std::vector<std::array<int,3> numbers = tgame->getAllPhases(minDefs, minVels, minFrames, postPressTimes);
+					for(int i = 0;i<minDefs.size();i++){
+						for(int j = 0; j< minVels.size();j++){
+							for(int k = 0; k< minFrames.size();k++){
+								for(int l = 0; l<postPressTimes.size();l++){
+									for(int m = 0;m<3;m++){
+										allNumbers[i][j][k][l][m] += numbers[i][j][k][l][m];
+									}
+								}
+							}
 						}
 					}
 				}
 			}
-			//
+					
+				//
 
 		}
 		delete tgame;
 	}
 
-	usedParametersAndResults << "number of games " << numberOfGames << std::endl << "minimum number of defender " << minDefNum << std::endl << "minimum defender velocity " << minDefVel << std::endl << "minimum number of frames " << minFrames << std::endl << "maximum post press looking time " << maxPostPressTime << std::endl << "ball radius " << ballRadius << std::endl << "start looking distance " << startLookingDistance<< std::endl << "looking length " << lookingLength << std::endl << "player radius " << playerRadius << std::endl << "close pressure addition " << std::endl << std::endl;
-	//in case of no groups
-	if(!useGroups){
-		usedParametersAndResults << "number of no possession change phases " << numberOfNormalPhases << std::endl << "number of possession change phases " << numberOfPossessionChangePhases<< std::endl << "number of frame jump phases " << numberOfFrameJumpPhases << std::endl;
-		//std::cout << std::endl << "RESULTS" << std::endl << "Total number of no possession change phases " << numberOfNormalPhases << std::endl << "Total number of possession change phases " << numberOfPossessionChangePhases<< std::endl << "Total number of frame jump phases " << numberOfFrameJumpPhases << std::endl;
-	}
-	//
-	//in case of groups
-	else{
-		for(int i = 0; i<groups.size(); i ++){
-			usedParametersAndResults << "For group " << i << ":" << std::endl << "\tNumber of no possession change phases: " << groupPhaseSizeTime[i][0] << std::endl << "\tNumber of possession change phases: " << groupPhaseSizeTime[i][1]<< std::endl << "\tNumber of frame jump phases: " << groupPhaseSizeTime[i][2] << std::endl << "\tNumber of frames they were defending: " << groupPhaseSizeTime[i][3] << std::endl;
-			std::cout << "For group " << i << ":" << std::endl << "\tNumber of no possession change phases: " << groupPhaseSizeTime[i][0] << std::endl << "\tNumber of possession change phases: " << groupPhaseSizeTime[i][1]<< std::endl << "\tNumber of frame jump phases: " << groupPhaseSizeTime[i][2] << std::endl << "\tNumber of frames they were defending: " << groupPhaseSizeTime[i][3] << std::endl;
+	if(results){
+		usedParametersAndResults << "number of games " << numberOfGames << std::endl << "minimum number of defender " << minDefNum << std::endl << "minimum defender velocity " << minDefVel << std::endl << "minimum number of frames " << minFrames << std::endl << "maximum post press looking time " << maxPostPressTime << std::endl << "ball radius " << ballRadius << std::endl << "start looking distance " << startLookingDistance<< std::endl << "looking length " << lookingLength << std::endl << "player radius " << playerRadius << std::endl << "close pressure addition " << std::endl << std::endl;
+		//in case of no groups
+		if(!useGroups){
+			usedParametersAndResults << "number of no possession change phases " << numberOfNormalPhases << std::endl << "number of possession change phases " << numberOfPossessionChangePhases<< std::endl << "number of frame jump phases " << numberOfFrameJumpPhases << std::endl;
+			//std::cout << std::endl << "RESULTS" << std::endl << "Total number of no possession change phases " << numberOfNormalPhases << std::endl << "Total number of possession change phases " << numberOfPossessionChangePhases<< std::endl << "Total number of frame jump phases " << numberOfFrameJumpPhases << std::endl;
 		}
-	}
-		
-	//
-	
-	//get means in case of no groups
-	if(!useGroups){
-		double meanPressurePossessionChange = findMean(pressureBallDistPosChange);
-		double meanPressureFrameJump = findMean(pressureBallDistFrameJump);
-		std::array<std::array<double,2>,5> meanPressuresNoPossessionChange = findMeanOfBins(pressureBallDist);	
-		std::cout << "mean Pressure For No Possession Change: " << meanPressuresNoPossessionChange[0][0] << " and goal distance " << meanPressuresNoPossessionChange[0][1]<< std::endl;
-		usedParametersAndResults << "mean Pressure For No Possession Change: " << meanPressuresNoPossessionChange[0][0] << " and goal distance " << meanPressuresNoPossessionChange[0][1]<< std::endl;
-		std::cout << "mean Pressure For Possession Change: " << meanPressurePossessionChange << std::endl;
-		usedParametersAndResults << "mean Pressure For Possession Change: " << meanPressurePossessionChange << std::endl;
-		std::cout << "mean Pressure For Frame Jump: " << meanPressureFrameJump << std::endl;
-		usedParametersAndResults << "mean Pressure For Frame Jump: " << meanPressureFrameJump << std::endl;
-		std::cout << "mean Pressures and Goal Distances For No Possession Change: ";
-		for(auto i : meanPressuresNoPossessionChange){
-			for(auto j : i){
-				std::cout << j << ",";
-				usedParametersAndResults << j << ",";
+		//
+		//in case of groups
+		else{
+			for(int i = 0; i<groups.size(); i ++){
+				usedParametersAndResults << "For group " << i << ":" << std::endl << "\tNumber of no possession change phases: " << groupPhaseSizeTime[i][0] << std::endl << "\tNumber of possession change phases: " << groupPhaseSizeTime[i][1]<< std::endl << "\tNumber of frame jump phases: " << groupPhaseSizeTime[i][2] << std::endl << "\tNumber of frames they were defending: " << groupPhaseSizeTime[i][3] << std::endl;
+				std::cout << "For group " << i << ":" << std::endl << "\tNumber of no possession change phases: " << groupPhaseSizeTime[i][0] << std::endl << "\tNumber of possession change phases: " << groupPhaseSizeTime[i][1]<< std::endl << "\tNumber of frame jump phases: " << groupPhaseSizeTime[i][2] << std::endl << "\tNumber of frames they were defending: " << groupPhaseSizeTime[i][3] << std::endl;
 			}
-			std::cout << "\t";
-			usedParametersAndResults<< "\t";
 		}
-		std::cout << std::endl;
-		usedParametersAndResults<< std::endl;
-		usedParametersAndResults.close();
-	}
-	//
-	//in case of groups
-	else{
-		for(int i = 0;i<groups.size();i++){
-			double meanPressurePossessionChange = findMean(groupPhasePressureBallDist[i][1]);
-			double meanPressureFrameJump = findMean(groupPhasePressureBallDist[i][2]);
-			std::array<std::array<double,2>,5> meanPressuresNoPossessionChange = findMeanOfBins(groupPhasePressureBallDist[i][0]);	
-			std::cout << "For group " << i << ":" << "\tMean Pressure For No Possession Change: " << meanPressuresNoPossessionChange[0][0] << " and goal distance " << meanPressuresNoPossessionChange[0][1]<< std::endl;
-			usedParametersAndResults << "For group " << i << ":" << "\tMean Pressure For No Possession Change: " << meanPressuresNoPossessionChange[0][0] << " and goal distance " << meanPressuresNoPossessionChange[0][1]<< std::endl;
-			std::cout << "\tMean Pressure For Possession Change: " << meanPressurePossessionChange << std::endl;
-			usedParametersAndResults << "\tMean Pressure For Possession Change: " << meanPressurePossessionChange << std::endl;
-			std::cout << "\tMean Pressure For Frame Jump: " << meanPressureFrameJump << std::endl;
-			usedParametersAndResults << "\tMean Pressure For Frame Jump: " << meanPressureFrameJump << std::endl;
-			std::cout << "\tMean Pressures and Goal Distances For No Possession Change: ";
+			
+		//
+		
+		//get means in case of no groups
+		if(!useGroups){
+			double meanPressurePossessionChange = findMean(pressureBallDistPosChange);
+			double meanPressureFrameJump = findMean(pressureBallDistFrameJump);
+			std::array<std::array<double,2>,5> meanPressuresNoPossessionChange = findMeanOfBins(pressureBallDist);	
+			std::cout << "mean Pressure For No Possession Change: " << meanPressuresNoPossessionChange[0][0] << " and goal distance " << meanPressuresNoPossessionChange[0][1]<< std::endl;
+			usedParametersAndResults << "mean Pressure For No Possession Change: " << meanPressuresNoPossessionChange[0][0] << " and goal distance " << meanPressuresNoPossessionChange[0][1]<< std::endl;
+			std::cout << "mean Pressure For Possession Change: " << meanPressurePossessionChange << std::endl;
+			usedParametersAndResults << "mean Pressure For Possession Change: " << meanPressurePossessionChange << std::endl;
+			std::cout << "mean Pressure For Frame Jump: " << meanPressureFrameJump << std::endl;
+			usedParametersAndResults << "mean Pressure For Frame Jump: " << meanPressureFrameJump << std::endl;
+			std::cout << "mean Pressures and Goal Distances For No Possession Change: ";
 			for(auto i : meanPressuresNoPossessionChange){
 				for(auto j : i){
 					std::cout << j << ",";
 					usedParametersAndResults << j << ",";
 				}
-				std::cout << " ";
-				usedParametersAndResults<< " ";
+				std::cout << "\t";
+				usedParametersAndResults<< "\t";
 			}
 			std::cout << std::endl;
 			usedParametersAndResults<< std::endl;
+			usedParametersAndResults.close();
 		}
-		usedParametersAndResults.close();
-	}
+		//
+		//in case of groups
+		else{
+			for(int i = 0;i<groups.size();i++){
+				double meanPressurePossessionChange = findMean(groupPhasePressureBallDist[i][1]);
+				double meanPressureFrameJump = findMean(groupPhasePressureBallDist[i][2]);
+				std::array<std::array<double,2>,5> meanPressuresNoPossessionChange = findMeanOfBins(groupPhasePressureBallDist[i][0]);	
+				std::cout << "For group " << i << ":" << "\tMean Pressure For No Possession Change: " << meanPressuresNoPossessionChange[0][0] << " and goal distance " << meanPressuresNoPossessionChange[0][1]<< std::endl;
+				usedParametersAndResults << "For group " << i << ":" << "\tMean Pressure For No Possession Change: " << meanPressuresNoPossessionChange[0][0] << " and goal distance " << meanPressuresNoPossessionChange[0][1]<< std::endl;
+				std::cout << "\tMean Pressure For Possession Change: " << meanPressurePossessionChange << std::endl;
+				usedParametersAndResults << "\tMean Pressure For Possession Change: " << meanPressurePossessionChange << std::endl;
+				std::cout << "\tMean Pressure For Frame Jump: " << meanPressureFrameJump << std::endl;
+				usedParametersAndResults << "\tMean Pressure For Frame Jump: " << meanPressureFrameJump << std::endl;
+				std::cout << "\tMean Pressures and Goal Distances For No Possession Change: ";
+				for(auto i : meanPressuresNoPossessionChange){
+					for(auto j : i){
+						std::cout << j << ",";
+						usedParametersAndResults << j << ",";
+					}
+					std::cout << " ";
+					usedParametersAndResults<< " ";
+				}
+				std::cout << std::endl;
+				usedParametersAndResults<< std::endl;
+			}
+			usedParametersAndResults.close();
+		}
+				
+
+		//in case of no groups
+		if(!useGroups){
+			noPossessionChangeO << "Pressure, Change in distance between ball and goal" << std::endl;
+			for(auto i : pressureBallDist){
+				noPossessionChangeO << i[0] << "," << i[1] << std::endl;
+			}
+			possessionChangeO << "Pressure"<< std::endl;
+			for(auto i : pressureBallDistPosChange){
+				possessionChangeO << i[0] << std::endl;
+			}
+			frameJumpO << "Pressure" << std::endl;
+			for(auto i : pressureBallDistFrameJump){
+				frameJumpO << i[0] << std::endl;
+			}
+			noPossessionChangeO.close();
+			possessionChangeO.close();
+			frameJumpO.close();
+		}
+		//
+		//in case of groups MUST BE EXPLICITLY CHANGED TO COPE N = number of groups != 3
+		else{
+		/*	noPossessionChangeO << "Pressure, Change in distance between ball and goal" << std::endl;
+			possessionChangeO << "Pressure"<< std::endl;
+			frameJumpO << "Pressure" << std::endl;
+			for(int i = 0;i<groups.size();i++){
+				for(auto j : groupPhasePressureBallDist[i][0]){
+					noPossessionChangeO << j[0] << "," << j[1] << std::endl;
+				}
+				for(auto j : groupPhasePressureBallDist[i][2]){
+					frameJumpO << j[0] << "," << j[1] << std::endl;
+				}
+				for(auto j : groupPhasePressureBallDist[i][1]){
+					possessionChangeO << j[0] << "," << j[1] << std::endl;
+				}
+			}
+
+			*/
 			
+			//Group 1
+			noPossessionChangeGa << "Pressure, Change in distance between ball and goal" << std::endl;
+			for(auto i : groupPhasePressureBallDist[0][0]){
+				noPossessionChangeGa << i[0] << "," << i[1] << std::endl;
+			}
+			possessionChangeGa << "Pressure"<< std::endl;
+			for(auto i : groupPhasePressureBallDist[0][1]){
+				possessionChangeGa << i[0] << std::endl;
+			}
+			frameJumpGa << "Pressure" << std::endl;
+			for(auto i : groupPhasePressureBallDist[0][2]){
+				frameJumpGa << i[0] << std::endl;
+			}
+			noPossessionChangeGa.close();
+			possessionChangeGa.close();
+			frameJumpGa.close();
+			//
+			//Group 2
+			noPossessionChangeGb << "Pressure, Change in distance between ball and goal" << std::endl;
+			for(auto i : groupPhasePressureBallDist[1][0]){
+				noPossessionChangeGb << i[0] << "," << i[1] << std::endl;
+			}
+			possessionChangeGb << "Pressure"<< std::endl;
+			for(auto i : groupPhasePressureBallDist[1][1]){
+				possessionChangeGb << i[0] << std::endl;
+			}
+			frameJumpGb << "Pressure" << std::endl;
+			for(auto i : groupPhasePressureBallDist[1][2]){
+				frameJumpGb << i[0] << std::endl;
+			}
+			noPossessionChangeGb.close();
+			possessionChangeGb.close();
+			frameJumpGb.close();
+			//
+			//Group 2
+			noPossessionChangeGc << "Pressure, Change in distance between ball and goal" << std::endl;
+			for(auto i : groupPhasePressureBallDist[2][0]){
+				noPossessionChangeGc << i[0] << "," << i[1] << std::endl;
+			}
+			possessionChangeGc << "Pressure"<< std::endl;
+			for(auto i : groupPhasePressureBallDist[2][1]){
+				possessionChangeGc << i[0] << std::endl;
+			}
+			frameJumpGc << "Pressure" << std::endl;
+			for(auto i : groupPhasePressureBallDist[2][2]){
+				frameJumpGc << i[0] << std::endl;
+			}
+			noPossessionChangeGc.close();
+			possessionChangeGc.close();
+			frameJumpGc.close();
+			std::cout << dataDestination << std::endl;
+			
+		}
+	}
+	if(numberPositionAnalysis){
+		int defNumNum = allNumbers.size();
+		int velNum = allNumbers[0].size();
+		int frameNum = allNumbers[0][0].size();
+		int postNum = allNumbers[0][0][0].size();
+		dimensions = defNumNum*velNum*frameNum*postNum;
+		std::ofstream out;
+		std::string name = dataDestination;
+		numbersof.open(dataDestination + "numbers.txt");
+		numbersof << "[";
+		for (int i = 0;i< defNumNum;i++){
+			numbersof << "[";
+			for(int j = 0;j<velNum;j++){
+				numbersof << "[";
+				for (int k = 0;k<frameNum;k++){
+					numbersof << "[";
+					for(int l = 0;l<postNum;l++){
+						numbersof << allNumbers[i][j][k][l] << ",";
+					}
+					numbersof << "],";
+				}
+				numbersof << "],";
+			}
+			numbersof << "]," << std::endl;
+		}
+		numbersof << "]";
+	}
 
-	//in case of no groups
-	if(!useGroups){
-		noPossessionChangeO << "Pressure, Change in distance between ball and goal" << std::endl;
-		for(auto i : pressureBallDist){
-			noPossessionChangeO << i[0] << "," << i[1] << std::endl;
-		}
-		possessionChangeO << "Pressure"<< std::endl;
-		for(auto i : pressureBallDistPosChange){
-			possessionChangeO << i[0] << std::endl;
-		}
-		frameJumpO << "Pressure" << std::endl;
-		for(auto i : pressureBallDistFrameJump){
-			frameJumpO << i[0] << std::endl;
-		}
-		noPossessionChangeO.close();
-		possessionChangeO.close();
-		frameJumpO.close();
-	}
-	//
-	//in case of groups MUST BE EXPLICITLY CHANGED TO COPE N = number of groups != 3
-	else{
-	/*	noPossessionChangeO << "Pressure, Change in distance between ball and goal" << std::endl;
-		possessionChangeO << "Pressure"<< std::endl;
-		frameJumpO << "Pressure" << std::endl;
-		for(int i = 0;i<groups.size();i++){
-			for(auto j : groupPhasePressureBallDist[i][0]){
-				noPossessionChangeO << j[0] << "," << j[1] << std::endl;
-			}
-			for(auto j : groupPhasePressureBallDist[i][2]){
-				frameJumpO << j[0] << "," << j[1] << std::endl;
-			}
-			for(auto j : groupPhasePressureBallDist[i][1]){
-				possessionChangeO << j[0] << "," << j[1] << std::endl;
-			}
-		}
 
-		*/
-		
-		//Group 1
-		noPossessionChangeGa << "Pressure, Change in distance between ball and goal" << std::endl;
-		for(auto i : groupPhasePressureBallDist[0][0]){
-			noPossessionChangeGa << i[0] << "," << i[1] << std::endl;
-		}
-		possessionChangeGa << "Pressure"<< std::endl;
-		for(auto i : groupPhasePressureBallDist[0][1]){
-			possessionChangeGa << i[0] << std::endl;
-		}
-		frameJumpGa << "Pressure" << std::endl;
-		for(auto i : groupPhasePressureBallDist[0][2]){
-			frameJumpGa << i[0] << std::endl;
-		}
-		noPossessionChangeGa.close();
-		possessionChangeGa.close();
-		frameJumpGa.close();
-		//
-		//Group 2
-		noPossessionChangeGb << "Pressure, Change in distance between ball and goal" << std::endl;
-		for(auto i : groupPhasePressureBallDist[1][0]){
-			noPossessionChangeGb << i[0] << "," << i[1] << std::endl;
-		}
-		possessionChangeGb << "Pressure"<< std::endl;
-		for(auto i : groupPhasePressureBallDist[1][1]){
-			possessionChangeGb << i[0] << std::endl;
-		}
-		frameJumpGb << "Pressure" << std::endl;
-		for(auto i : groupPhasePressureBallDist[1][2]){
-			frameJumpGb << i[0] << std::endl;
-		}
-		noPossessionChangeGb.close();
-		possessionChangeGb.close();
-		frameJumpGb.close();
-		//
-		//Group 2
-		noPossessionChangeGc << "Pressure, Change in distance between ball and goal" << std::endl;
-		for(auto i : groupPhasePressureBallDist[2][0]){
-			noPossessionChangeGc << i[0] << "," << i[1] << std::endl;
-		}
-		possessionChangeGc << "Pressure"<< std::endl;
-		for(auto i : groupPhasePressureBallDist[2][1]){
-			possessionChangeGc << i[0] << std::endl;
-		}
-		frameJumpGc << "Pressure" << std::endl;
-		for(auto i : groupPhasePressureBallDist[2][2]){
-			frameJumpGc << i[0] << std::endl;
-		}
-		noPossessionChangeGc.close();
-		possessionChangeGc.close();
-		frameJumpGc.close();
-		std::cout << dataDestination << std::endl;
-		
-	}
-	for(int i = 0;i<100;i++){
-		numberofphasesos<<normal[i]<<","<<poschange[i]<<","<<framejump[i]<<std::endl;
-	}
-	numberofphasesos.close();
 	return 0;
 }
 

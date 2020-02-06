@@ -705,6 +705,36 @@ std::array<int,2> Game::getPossessionTimes(){
 	return results;
 }
 
+std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>>	Game::getAllPhases(std::vector<int> defenders, std::vector<double> velocities, std::vector<int> minimumFrames, std::vector<int> postPressTimes){
+	std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> numbers;
+	for(auto minDef = defenders.begin();minDef<defenders.end();++minDef){
+		std::vector<std::vector<std::vector<std::array<int,3>>> velNumber;
+		for(auto minVel = velocities.begin(); minVel< velocities.end(); ++minVel){
+			std::vector<std::vector<std::array<int,3>>> frameNumber;
+			for(auto minFrames = minimumFrames.begin();minFrames<minimumFrames.end();++minimumFrames){
+				std::vector<std::array<int,3>> postNumber;
+				for(auto postPressTime = postPressTimes.begin();postPressTime<postPressTimes.end(); ++postPressTime){
+					std::vector<std::array<int,4>> frameStartLengthType;
+					frameStartLengthType = tgame->getPhases(*minDef,*minVel,*minFrames,*postPressTime);
+					std::vector<std::array<int,2>> noPossessionChangePhases;
+					std::vector<std::array<int,2>> possessionChangePhases;
+					std::vector<std::array<int,2>> frameJumpPhases;
+					splitByType(frameStartLengthType,noPossessionChangePhases,possessionChangePhases,frameJumpPhases);		
+					std::array<int,3> temp = {noPossessionChangePhases.size(),possessionChangePhases.size(),frameJumpPhases.size()};
+					postNumber.push_back(temp);
+				}
+				frameNumber.push_back(postNumber);
+			}
+			velNumber.push_back(frameNumber);
+		}
+		numbers.push_back(frameNumber);
+	}
+	return numbers;
+}
+
+					
+
+
 
 		
 
