@@ -65,12 +65,13 @@ int main(){
 	
 	std::array<double,2> parameters = {vel_pow, distvel_pow};
 	//object to store information of number of phases as parameters are varied - used in numberPositionAnalysis
-	std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> allNumbers	
+	std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> allNumbers = {};
+	bool firstRun =true;
 	//flags
 	bool useGroups{false};
 	bool analyse{false}; //whether to get information about phase
-	bool results{false};	//whether to get results from phases
-	bool numberPositionAnalysis{true} //whether number and position of phases should be analysed
+	bool doResults{false};	//whether to get results from phases
+	bool numberPositionAnalysis{true}; //whether number and position of phases should be analysed
 	
 	int minDefNum = 4;
 	double minDefVel = 1;
@@ -320,28 +321,34 @@ int main(){
 			else{
 				if(numberPositionAnalysis){
 					std::vector<int> minFrames;
-					for (int i = 5; i<40; i+=5){
+					for (int i = 30; i<40; i+=5){
 						minFrames.push_back(i);
 					}
 					std::vector<int> postPressTimes;
-					for (int i = 5; i<40; i+=5){
+					for (int i = 30; i<40; i+=5){
 						postPressTimes.push_back(i);
 					}
 					std::vector<double> minVels;
-					for (double i = 1; i < 10; i ++){
+					for (double i = 8; i < 10; i ++){
 						minVels.push_back(i/10);
 					}
 					std::vector<int> minDefs;
-					for(int i = 1;i<9;i++){
+					for(int i = 7;i<9;i++){
 						minDefs.push_back(i);
 					}
-					std::vector<std::vector<std::vector<std::vector<std::array<int,3> numbers = tgame->getAllPhases(minDefs, minVels, minFrames, postPressTimes);
+					std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> numbers = tgame->getAllPhases(minDefs, minVels, minFrames, postPressTimes);
 					for(int i = 0;i<minDefs.size();i++){
 						for(int j = 0; j< minVels.size();j++){
 							for(int k = 0; k< minFrames.size();k++){
 								for(int l = 0; l<postPressTimes.size();l++){
 									for(int m = 0;m<3;m++){
-										allNumbers[i][j][k][l][m] += numbers[i][j][k][l][m];
+										if(firstRun == true){
+											allNumbers = numbers;
+											firstRun = false;
+										}
+										else{
+											allNumbers[i][j][k][l][m] += numbers[i][j][k][l][m];
+										}
 									}
 								}
 							}
@@ -356,7 +363,7 @@ int main(){
 		delete tgame;
 	}
 
-	if(results){
+	if(doResults){
 		usedParametersAndResults << "number of games " << numberOfGames << std::endl << "minimum number of defender " << minDefNum << std::endl << "minimum defender velocity " << minDefVel << std::endl << "minimum number of frames " << minFrames << std::endl << "maximum post press looking time " << maxPostPressTime << std::endl << "ball radius " << ballRadius << std::endl << "start looking distance " << startLookingDistance<< std::endl << "looking length " << lookingLength << std::endl << "player radius " << playerRadius << std::endl << "close pressure addition " << std::endl << std::endl;
 		//in case of no groups
 		if(!useGroups){
@@ -524,8 +531,7 @@ int main(){
 		int velNum = allNumbers[0].size();
 		int frameNum = allNumbers[0][0].size();
 		int postNum = allNumbers[0][0][0].size();
-		dimensions = defNumNum*velNum*frameNum*postNum;
-		std::ofstream out;
+		std::ofstream numbersof;
 		std::string name = dataDestination;
 		numbersof.open(dataDestination + "numbers.txt");
 		numbersof << "[";
@@ -536,7 +542,7 @@ int main(){
 				for (int k = 0;k<frameNum;k++){
 					numbersof << "[";
 					for(int l = 0;l<postNum;l++){
-						numbersof << allNumbers[i][j][k][l] << ",";
+						numbersof << allNumbers[i][j][k][l][0] << ",";
 					}
 					numbersof << "],";
 				}
