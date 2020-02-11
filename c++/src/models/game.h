@@ -54,6 +54,8 @@ class Game {
 		std::vector<std::array<double,2>> getPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, double radius, int type, double closePressure, std::array<double, 2> parameters);
 		std::array<int,2> getPossessionTimes();
 		std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> getAllPhases(std::vector<int> defenders, std::vector<double> velocities, std::vector<int> minimumFrames, std::vector<int> postPressTimes);
+		std::vector<double> getPhasePosition(std::vector<std::array<int,2>> startSizes);
+		std::vector::<std::vector<std:vector<std::array<std::vector<std::array<int,2>>,3>>>> getBinnedPosition(std::vector<int> defenders, std::vector<double> velocities, std::vector<int> minimumFrames, int postPressTime);
 
 };
 #endif

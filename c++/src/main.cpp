@@ -64,14 +64,15 @@ int main(){
 	numberofphasesos.open("../data/numberofphases.txt");
 	
 	std::array<double,2> parameters = {vel_pow, distvel_pow};
-	//object to store information of number of phases as parameters are varied - used in numberPositionAnalysis
+	//object to store information of number of phases as parameters are varied - used in numberAnalysis and position Analysis
 	std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> allNumbers = {};
 	bool firstRun =true;
 	//flags
 	bool useGroups{false};
 	bool analyse{false}; //whether to get information about phase
 	bool doResults{false};	//whether to get results from phases
-	bool numberPositionAnalysis{true}; //whether number and position of phases should be analysed
+	bool numberAnalysis{false}; //whether number and position of phases should be analysed
+	bool positionAnalysis{true};
 	
 	int minDefNum = 4;
 	double minDefVel = 1;
@@ -319,7 +320,7 @@ int main(){
 				}
 			}
 			else{
-				if(numberPositionAnalysis){
+				if(numberAnalysis || positionAnalysis){
 					std::vector<int> minFrames;
 					for (int i = 30; i<40; i+=5){
 						minFrames.push_back(i);
@@ -336,24 +337,107 @@ int main(){
 					for(int i = 7;i<9;i++){
 						minDefs.push_back(i);
 					}
-					std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> numbers = tgame->getAllPhases(minDefs, minVels, minFrames, postPressTimes);
-					for(int i = 0;i<minDefs.size();i++){
-						for(int j = 0; j< minVels.size();j++){
-							for(int k = 0; k< minFrames.size();k++){
-								for(int l = 0; l<postPressTimes.size();l++){
-									for(int m = 0;m<3;m++){
-										if(firstRun == true){
-											allNumbers = numbers;
-											firstRun = false;
-										}
-										else{
-											allNumbers[i][j][k][l][m] += numbers[i][j][k][l][m];
+					if(numberAnalysis){
+						std::ofstream numberLabels;
+						numberLabels.open(dataDestination + "labels.txt");
+						numberLabels << "Defenders, Velocity, Length, Post" << std::endl;
+						for(auto i : minDefs){
+							if(i!=minDefs.back()){
+								numberLabels << i << ",";
+							}else{numberLabels << i;}
+						}
+						numberLabels << std::endl;
+						for(auto i : minVels){
+							if(i!=minVels.back()){
+								numberLabels << i << ",";
+							}else{numberLabels << i;}
+						}
+						numberLabels << std::endl;
+						for(auto i : minFrames){
+							if(i!=minFrames.back()){
+								numberLabels << i << ",";
+							}else{numberLabels << i;}
+						}
+						numberLabels << std::endl;
+						for(auto i : postPressTimes){
+							if(i!=postPressTimes.back()){
+								numberLabels << i << ",";
+							}else{numberLabels << i;}
+						}
+						numberLabels << std::endl;
+						numberLabels << "No Possession, Possession, Frame Jump" << std::endl;
+						numberLabels.close();
+						std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> numbers = tgame->getAllPhases(minDefs, minVels, minFrames, postPressTimes);
+						for(int i = 0;i<minDefs.size();i++){
+							for(int j = 0; j< minVels.size();j++){
+								for(int k = 0; k< minFrames.size();k++){
+									for(int l = 0; l<postPressTimes.size();l++){
+										for(int m = 0;m<3;m++){
+											if(firstRun == true){
+												allNumbers = numbers;
+												firstRun = false;
+											}
+											else{
+												allNumbers[i][j][k][l][m] += numbers[i][j][k][l][m];
+											}
 										}
 									}
 								}
 							}
 						}
 					}
+					if(positionAnalysis){
+						std::ofstream positionLabels;
+						positionLabels.open(dataDestination + "positionlabels.txt");
+						positionLabels << "Defenders, Velocity, Length" << std::endl;
+						for(auto i : minDefs){
+							if(i!=minDefs.back()){
+								positionLabels << i << ",";
+							}else{positionLabels << i;}
+						}
+						positionLabels << std::endl;
+						for(auto i : minVels){
+							if(i!=minVels.back()){
+								positionLabels << i << ",";
+							}else{positionLabels << i;}
+						}
+						positionLabels << std::endl;
+						for(auto i : minFrames){
+							if(i!=minFrames.back()){
+								positionLabels << i << ",";
+							}else{positionLabels << i;}
+						}
+						positionLabels << std::endl;
+						for(auto i : postPressTimes){
+							if(i!=postPressTimes.back()){
+								positionLabels << i << ",";
+							}else{positionLabels << i;}
+						}
+						positionLabels << std::endl;
+						positionLabels << "No Possession, Possession, Frame Jump" << std::endl;
+						positionLabels.close();
+						//inner most array [0] is pitch position  and [1] is position of phases near that pitch position. Bins are chosen as 10 wide, vector of these for all positions, array of these for all phase types, then 3 vectors for phase length, minimum velocity and minimum defenders/
+						std::vector<std::vector<std::vector<std::array<std::vector<std::array<int,2>>,3>>>> binnedPosition = tgame->getBinnedPosition(minDefs, minVels, minFrames, postPressTimes);
+						for(int i = 0;i<minDefs.size();i++){
+							for(int j = 0; j< minVels.size();j++){
+								for(int k = 0; k< minFrames.size();k++){
+									for(int m = 0;m<3;m++){
+										if(firstRun == true){
+											allBinnedPosition = binnedPosition;
+											firstRun = false;
+										}
+										else{
+											for(int l = 0; binnedPosition.size();l++){
+												allBinnedPosition[i][j][k][m][l][1] += binnedPosition[i][j][k][m][l][1];
+											}
+										}
+									}
+								}
+							}
+						}
+
+					}
+
 				}
 			}
 					
@@ -526,7 +610,7 @@ int main(){
 			
 		}
 	}
-	if(numberPositionAnalysis){
+	if(numberAnalysis){
 		int defNumNum = allNumbers.size();
 		int velNum = allNumbers[0].size();
 		int frameNum = allNumbers[0][0].size();
@@ -551,6 +635,45 @@ int main(){
 			numbersof << "]," << std::endl;
 		}
 		numbersof << "]";
+	}
+	if(positionAnalysis){
+		int defNumNum = allNumbers.size();
+		int velNum = allNumbers[0].size();
+		int frameNum = allNumbers[0][0].size();
+		int binNum = allNumbers[0][0][0][0].size();
+		std::ofstream positionof;
+		std::string name = dataDestination;
+		positionof.open(dataDestination + "position.txt");
+		positionof << "[";
+                for (int i = 0;i< defNumNum;i++){
+                        positionof << "[";
+                        for(int j = 0;j<velNum;j++){
+                                positionof << "[";
+                                for (int k = 0;k<frameNum;k++){
+                                        positionof << "[";
+					for(int l = 0;l<3;l++){
+						positionof << "[";
+						for(int m = 0;l<binNum-1;l++){
+							positionof << "[" << allBinnedPosition[i][j][k][l][m][1] <<  "]" << ",";
+						}
+						positionof << "[" << allBinnedPosition[i][j][k][l][binNum-1][1] << "]" ;
+						if(l!=2){
+							positionof << "],";
+						}else{positionof << "]";} 
+					}
+                                        if(k!=frameNum-1){
+                                                positionof << "],";
+                                        }else{positionof << "]";} 
+                                }
+                                if(j!=velNum-1){
+                                        positionof << "],";
+                                }else{positionof << "]";} 
+                        }
+                        if(i!=defNumNum-1){
+                                positionof << "]," << std::endl;
+                        }else{positionof<<"]" << std::endl;}
+                }
+                positionof << "]";
 	}
 
 

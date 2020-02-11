@@ -696,6 +696,19 @@ std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::arr
 	}
 	return pressureBallDists;
 }
+std::vector<double> Game::getPhasePosition(std::vector<std::array<int,2>> startSizes){
+	std::vector<Frame*>::iterator frameit = frames.begin();
+	std::vector<double> positions;
+	for (auto phaseit = startSizes.begin();phaseit<startSizes.end();++phaseit){
+		while((*frameit)->getFid()!=(*phaseit)[0]){
+			std::advance(frameit,1);
+		}
+		positions.push_back((*frameit)->getBall()->getPos()[0]/100);
+		std::cout << (*frameit)->getBall()->getPos()[0] << std::endl;
+	}
+	return positions;
+}
+
 std::array<int,2> Game::getPossessionTimes(){
 	std::array<int,3> count = {};
 	for (auto frameit = frames.begin();frameit<frames.end();++frameit){
@@ -733,6 +746,45 @@ std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>>	Game::getA
 	return numbers;
 }
 
+std::vector::<std::vector<std:vector<std::array<std::vector<std::array<int,2>>,3>>>> Game::getBinnedPosition(std::vector<int> defenders, std::vector<double> velocities, std::vector<int> minimumFrames, int postPressTime){
+	std::vector<std::vector<std::vector<std::array<std::vector<std::array<int,2>>,3>>>> defNumPos;
+	for(auto minDef = defenders.begin();minDef<defenders.end();++minDef){
+		std::vector<std::vector<std::array<std::vector<std::array<int,2>>,3>>> velPos;
+		for(auto minVel = velocities.begin(); minVel< velocities.end(); ++minVel){
+			std::vector<std::array<std::vector<std::array<int,2>>,3>> framePos;
+			for(auto minFrames = minimumFrames.begin();minFrames<minimumFrames.end();++minFrames){
+				std::cout << "A" <<std::endl;
+				frameStartLengthType = getPhases(*minDef,*minVel,*minFrames,postPressTime);
+				std::array<std::vector<std::array<int,2>>,3> allPhases;
+				splitByType(frameStartLengthType,allPhases[0],allPhases[1],allPhases[2]);		
+				std::array<std::vector<double>,3> allPos;
+				for(int i = 0;i<3;i++){
+					allPos[i] = getPhasePosition(allPhases[i]);
+				}
+				std::array<std::vector<std::array<int,2>>,3> locationNumber;
+				for(int j = 0;j<3;j++){
+					for(int i = -60; i<=60; i+=10){
+						std::array<int,2> temp = {i,0};
+						locationNumber[i].push_back(temp);
+					}
+					for(double pos : allPos[j]){
+						int count = 0;
+						while(pos>-60){
+							pos = pos - 10;
+							count ++;
+						}
+						locationNumber[j][count][1] += 1;
+						std::cout << locationNumber[j][count][0] << "," << pos+count*10 << std::endl;
+					}	
+				}
+				framePos.push_back(locationNumber);
+			}
+			velPos.push_back(frameNumber);
+		}
+		defNumPos.push_back(velPos);
+	}
+	return defNumPos;
+}
 					
 
 
