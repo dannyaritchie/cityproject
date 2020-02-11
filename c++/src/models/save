@@ -673,8 +673,7 @@ std::vector<std::array<int,4>> Game::getPhases(int minDefA, double minDefVel, in
 	return startLengthTypes;
 }
 
-std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, double radius, int type, double closePressure, std::array<double, 2> parameters){
-	//
+std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, double radius, int type){
 	std::vector<Frame*>::iterator frameit = frames.begin();
 	double startBallDistance{0};
 	double endBallDistance{0};
@@ -685,10 +684,7 @@ std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::arr
 			std::advance(frameit,1);
 		}
 		std::advance(frameit,startLookingDistance);
-//		want to make some sort of collective pressure within a phase
-//		maybe using the old phase weighting 
-//		pressure = (*frameit)->getPressure(radius);
-		pressure = (*frameit)->getPressureB(closePressure, parameters);
+		pressure = (*frameit)->getPressure(radius);
 		if(type == 0){
 			startBallDistance = (*frameit)->getBallDistance();
 			std::advance(frameit,lookingLength);
@@ -707,37 +703,6 @@ std::array<int,2> Game::getPossessionTimes(){
 	std::array<int,2> results = {count[0],count[1]};
 	return results;
 }
-
-std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>>	Game::getAllPhases(std::vector<int> defenders, std::vector<double> velocities, std::vector<int> minimumFrames, std::vector<int> postPressTimes){
-	std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> numbers;
-	for(auto minDef = defenders.begin();minDef<defenders.end();++minDef){
-		std::vector<std::vector<std::vector<std::array<int,3>>>> velNumber;
-		for(auto minVel = velocities.begin(); minVel< velocities.end(); ++minVel){
-			std::vector<std::vector<std::array<int,3>>> frameNumber;
-			for(auto minFrames = minimumFrames.begin();minFrames<minimumFrames.end();++minFrames){
-				std::vector<std::array<int,3>> postNumber;
-				for(auto postPressTime = postPressTimes.begin();postPressTime<postPressTimes.end(); ++postPressTime){
-					std::vector<std::array<int,4>> frameStartLengthType;
-					std::cout << "A" <<std::endl;
-					frameStartLengthType = getPhases(*minDef,*minVel,*minFrames,*postPressTime);
-					std::vector<std::array<int,2>> noPossessionChangePhases;
-					std::vector<std::array<int,2>> possessionChangePhases;
-					std::vector<std::array<int,2>> frameJumpPhases;
-					splitByType(frameStartLengthType,noPossessionChangePhases,possessionChangePhases,frameJumpPhases);		
-					std::array<int,3> temp = {noPossessionChangePhases.size(),possessionChangePhases.size(),frameJumpPhases.size()};
-					postNumber.push_back(temp);
-				}
-				frameNumber.push_back(postNumber);
-			}
-			velNumber.push_back(frameNumber);
-		}
-		numbers.push_back(velNumber);
-	}
-	return numbers;
-}
-
-					
-
 
 
 		
