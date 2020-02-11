@@ -69,18 +69,18 @@ int main(){
 	std::array<int,100> poschange = {};
 	std::array<int,100> framejump = {};
 	
-	int minDefNum = 4;
-	double minDefVel = 1;
-	double ballRadius = 2000;
+	int minDefNum = 3;
+	double minDefVel = 2.5;
+	double ballRadius = 1500;
 	int startLookingDistance = 15;
-	int lookingLength = 24;
-	int minFrames = 15;
-	int maxPostPressTime =25;
+	int lookingLength = 25;
+	int minFrames = 25;
+	int maxPostPressTime = 50;
 	double playerRadius = 1500;
-	bool useGroups{false};
+	bool useGroups{true};
 	int numberOfGames = 15;
 	double closePressure = 0.3;
-	std::string dataDestination = "../data/newdata/testing";
+	std::string dataDestination = "../data/sem2/individualTeams/testingVariablesA/";
 	//CREATE 2017 GAME VECTOR
 	std::vector<int> midsb;
 	for (auto i = 918893;i<919271;++i){
@@ -91,7 +91,14 @@ int main(){
 	for (int i : bad2017games){
 		midsb.erase(std::remove(midsb.begin(), midsb.end(), i), midsb.end());
 	}
-	//
+	
+	//CREATE 2018 GAME VECTOR
+	/*std::vector<int> midsa;
+	for (auto i = 987592; i < 987971; ++i){midsa.push_back(i);}
+
+	std::vector<int> bad2018Games = {987621, 987872}; // games that cause the program to crash
+	for (int i : bad2018Games) {midsa.erase(std::remove(midsa.begin(), midsa.end(), i), midsa.end());}
+	*/
 	//open data files (no groups)	
 //	if(!useGroups){
 		std::ofstream noPossessionChangeO;	
@@ -125,12 +132,14 @@ int main(){
 	//open results file
 	std::ofstream usedParametersAndResults;
 	usedParametersAndResults.open(dataDestination + "usedParametersAndResults.txt");
-	//
-	//Load game
+	
+	//Load game - specify which year here
+	//std::string rempatha = "/pc2014-data1/lah/data_msgpk_031219/2018/PremierLeague/";
 	std::string rempathb= "/pc2014-data1/lah/data_msgpk_031219/2017/PremierLeague/";
-	//
-	//set which teams we are interested int
-	std::vector<int> teamIDs = {3,13,36,43,8,90,31,38,11,110,1,21,4,6,20,80,57,14,35,91};//for multiple groups this should be all teams
+	
+	//set which teams we are interested in
+	std::vector<int> teamIDs = {43, 14, 35};//for multiple groups this should be all teams
+	//std::vector<int> teamIDs = {3,13,36,43,8,90,31,38,11,110,1,21,4,6,20,80,57,14,35,91};//for multiple groups this should be all teams
 	//
 	//define counters for amount of phase (no groups)
 //	if(!useGroups){
@@ -150,9 +159,9 @@ int main(){
 	//		std::vector<int> t = {i};
 	//		groups.push_back(t);
 	//	}
-		std::vector<int> groupa = {3,6,1,14,43,8}; //High
-		std::vector<int> groupb = {4,90,31,11,21,91,13}; //medium
-		std::vector<int> groupc = {19,80,57,35,38,110,36}; //low
+		std::vector<int> groupa = {43}; // {3,6,1,14,43,8}; //High
+		std::vector<int> groupb = {14}; // {4,90,31,11,21,91,13}; //medium
+		std::vector<int> groupc = {35}; // {19,80,57,35,38,110,36}; //low
 		groups.push_back(groupa);
 		groups.push_back(groupb);
 		groups.push_back(groupc);
@@ -178,13 +187,18 @@ int main(){
 		std::vector<std::array<std::vector<std::array<double,2>>,3>> groupPhasePressureBallDist;
 		groupPhasePressureBallDist.resize(groups.size());
 //	}
-	//
-
 	
-	for(int i = 0; i <numberOfGames;i++){ //for userset number of games
-	//for(int i = 0;i < midsb.size();i++){ //for all games
+	// comment below depending on wanting a specified number of games vs all games
+	//for(int i = 0; i <numberOfGames;i++){ //for userset number of game
+	
+	// FOR 2017
+	for (int i = 0;i < midsb.size();i++){ //for all games
 		std::cout << "Match ID: " << midsb[i] << std::endl;
-		Game * tgame = new Game(midsb[i], rempathb);
+		Game * tgame = new Game(midsb[i], rempathb); 
+	// FOR 2018
+	/*for (int i = 0; i < midsa.size(); i++){
+		std::cout << "Match ID: " << midsa[i] << std::endl;
+		Game * tgame = new Game(midsa[i], rempatha);*/
 		//
 		//Choose teams that are interesting	
 		int homeID{-1}, awayID{-1};

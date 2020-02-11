@@ -674,6 +674,7 @@ std::vector<std::array<int,4>> Game::getPhases(int minDefA, double minDefVel, in
 }
 
 std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, double radius, int type, double closePressure, std::array<double, 2> parameters){
+	//
 	std::vector<Frame*>::iterator frameit = frames.begin();
 	double startBallDistance{0};
 	double endBallDistance{0};
@@ -684,6 +685,8 @@ std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::arr
 			std::advance(frameit,1);
 		}
 		std::advance(frameit,startLookingDistance);
+//		want to make some sort of collective pressure within a phase
+//		maybe using the old phase weighting 
 //		pressure = (*frameit)->getPressure(radius);
 		pressure = (*frameit)->getPressureB(closePressure, parameters);
 		if(type == 0){
