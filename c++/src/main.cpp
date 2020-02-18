@@ -65,14 +65,15 @@ int main(){
 	
 	std::array<double,2> parameters = {vel_pow, distvel_pow};
 	//object to store information of number of phases as parameters are varied - used in numberAnalysis and position Analysis
-	std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> allNumbers = {};
+	std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> allNumbers;
+	std::vector<std::vector<std::vector<std::array<std::vector<std::array<int,2>>,3>>>> allBinnedPosition;
 	bool firstRun =true;
 	//flags
 	bool useGroups{false};
 	bool analyse{false}; //whether to get information about phase
 	bool doResults{false};	//whether to get results from phases
-	bool numberAnalysis{false}; //whether number and position of phases should be analysed
-	bool positionAnalysis{true};
+	bool numberAnalysis{true}; //whether number and position of phases should be analysed
+	bool positionAnalysis{false};
 	
 	int minDefNum = 4;
 	double minDefVel = 1;
@@ -82,9 +83,9 @@ int main(){
 	int minFrames = 15;
 	int maxPostPressTime =25;
 	double playerRadius = 1500;
-	int numberOfGames = 15;
+	int numberOfGames = 30;
 	double closePressure = 0.3;
-	std::string dataDestination = "../data/newdata/numbers/";
+	std::string dataDestination = "../data/newdata/zoomedlength/";
 	//CREATE 2017 GAME VECTOR
 	std::vector<int> midsb;
 	for (auto i = 918893;i<919271;++i){
@@ -101,9 +102,11 @@ int main(){
 		std::ofstream noPossessionChangeO;	
 		std::ofstream possessionChangeO;	
 		std::ofstream frameJumpO;	
+	if(doResults){
 		noPossessionChangeO.open(dataDestination + "nopossessionchange.txt");
 		possessionChangeO.open(dataDestination + "possessionchange.txt");
 		frameJumpO.open(dataDestination + "framejump.txt");
+	}
 //	}
 	//open data files (groups)
 //	else{
@@ -116,6 +119,7 @@ int main(){
 		std::ofstream noPossessionChangeGc;	
 		std::ofstream possessionChangeGc;	
 		std::ofstream frameJumpGc;	
+	if(doResults){
 		noPossessionChangeGa.open(dataDestination + "nopossessionchangeGa.txt");
 		possessionChangeGa.open(dataDestination + "possessionchangeGa.txt");
 		frameJumpGa.open(dataDestination + "framejumpGa.txt");
@@ -125,6 +129,7 @@ int main(){
 		noPossessionChangeGc.open(dataDestination + "nopossessionchangeGc.txt");
 		possessionChangeGc.open(dataDestination + "possessionchangeGc.txt");
 		frameJumpGc.open(dataDestination + "framejumpGc.txt");
+	}
 //	}
 	//open results file
 	std::ofstream usedParametersAndResults;
@@ -185,8 +190,8 @@ int main(){
 	//
 
 	
-	for(int i = 0; i <numberOfGames;i++){ //for userset number of games
-	//for(int i = 0;i < midsb.size();i++){ //for all games
+	//for(int i = 0; i <numberOfGames;i++){ //for userset number of games
+	for(int i = 0;i < midsb.size();i++){ //for all games
 		std::cout << "Match ID: " << midsb[i] << std::endl;
 		Game * tgame = new Game(midsb[i], rempathb);
 		//
@@ -209,7 +214,7 @@ int main(){
 		//Method 1
 		//	When minDefNum  defenders running away at least 90 degrees from the goal with a positive velocity above minDefVel for more than minFrames frames and there has been no change in possession or frame jump a phase is defined. up untill maxPostPressTime frames are then looked at after this, if there is a possessionchange phase is given type 2, if there is a frame jump it is given type 1 and otherwise it is give type 0;
 				std::vector<std::array<int,4>> frameStartLengthType;
-				frameStartLengthType = tgame->getPhases(minDefNum,minDefVel,minFrames,maxPostPressTime); //METHOD 1
+				frameStartLengthType = tgame->getPhases(minDefNum,minDefVel,minFrames,maxPostPressTime,true); //METHOD 1
 		//Method 2
 		//uses the old method of calculating the pressure and selecting phases based on increasing pressure. to keep with compatability this caclulates pressure for every fram but still only returns phase information, although work is alrady done for getPhaseInformationOld as it just has to read of pressure
 		//Details of old method
@@ -321,25 +326,30 @@ int main(){
 			}
 			else{
 				if(numberAnalysis || positionAnalysis){
+					int minimumFrames = 10;
 					std::vector<int> minFrames;
-					for (int i = 30; i<40; i+=5){
+					for (int i = 10; i<50; i+=15){
 						minFrames.push_back(i);
 					}
 					std::vector<int> postPressTimes;
-					for (int i = 30; i<40; i+=5){
+					for (int i = 10; i<40; i+=10){
 						postPressTimes.push_back(i);
 					}
+					std::vector<int> lengthBins;
+					for(int i = minimumFrames;i<60;i+=4){
+						lengthBins.push_back(i);
+					}
 					std::vector<double> minVels;
-					for (double i = 8; i < 10; i ++){
+					for (double i = 20; i < 60; i+=10){
 						minVels.push_back(i/10);
 					}
 					std::vector<int> minDefs;
-					for(int i = 7;i<9;i++){
+					for(int i = 1;i<8;i+=2){
 						minDefs.push_back(i);
 					}
 					if(numberAnalysis){
 						std::ofstream numberLabels;
-						numberLabels.open(dataDestination + "labels.txt");
+						numberLabels.open(dataDestination + "numberlabels.txt");
 						numberLabels << "Defenders, Velocity, Length, Post" << std::endl;
 						for(auto i : minDefs){
 							if(i!=minDefs.back()){
@@ -353,12 +363,19 @@ int main(){
 							}else{numberLabels << i;}
 						}
 						numberLabels << std::endl;
-						for(auto i : minFrames){
-							if(i!=minFrames.back()){
+						for(auto i : lengthBins){
+							if(i!=lengthBins.size()){
 								numberLabels << i << ",";
-							}else{numberLabels << i;}
+							}
+							else{numberLabels << i;}
 						}
 						numberLabels << std::endl;
+					//	for(auto i : minFrames){
+					//		if(i!=minFrames.back()){
+					//			numberLabels << i << ",";
+					//		}else{numberLabels << i;}
+					//	}
+					//	numberLabels << std::endl;
 						for(auto i : postPressTimes){
 							if(i!=postPressTimes.back()){
 								numberLabels << i << ",";
@@ -367,11 +384,11 @@ int main(){
 						numberLabels << std::endl;
 						numberLabels << "No Possession, Possession, Frame Jump" << std::endl;
 						numberLabels.close();
-						std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> numbers = tgame->getAllPhases(minDefs, minVels, minFrames, postPressTimes);
+						std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> numbers = tgame->getAllPhasesB(minDefs, minVels, minimumFrames, postPressTimes, lengthBins);
 						for(int i = 0;i<minDefs.size();i++){
 							for(int j = 0; j< minVels.size();j++){
-								for(int k = 0; k< minFrames.size();k++){
-									for(int l = 0; l<postPressTimes.size();l++){
+								for(int k = 0; k<postPressTimes.size();k++){
+									for(int l = 0; l< lengthBins.size();l++){
 										for(int m = 0;m<3;m++){
 											if(firstRun == true){
 												allNumbers = numbers;
@@ -387,9 +404,10 @@ int main(){
 						}
 					}
 					if(positionAnalysis){
+						std::cout << "here" << std::endl;
 						std::ofstream positionLabels;
 						positionLabels.open(dataDestination + "positionlabels.txt");
-						positionLabels << "Defenders, Velocity, Length" << std::endl;
+						positionLabels << "Defenders, Velocity, Length, Type" << std::endl;
 						for(auto i : minDefs){
 							if(i!=minDefs.back()){
 								positionLabels << i << ",";
@@ -402,32 +420,38 @@ int main(){
 							}else{positionLabels << i;}
 						}
 						positionLabels << std::endl;
+						for(auto i : lengthBins){
+							if(i!=lengthBins.size()){
+								positionLabels << i << ",";
+							}
+							else{positionLabels << i;}
+						}
+						positionLabels << std::endl;
 						for(auto i : minFrames){
 							if(i!=minFrames.back()){
 								positionLabels << i << ",";
 							}else{positionLabels << i;}
 						}
 						positionLabels << std::endl;
-						for(auto i : postPressTimes){
-							if(i!=postPressTimes.back()){
-								positionLabels << i << ",";
-							}else{positionLabels << i;}
-						}
-						positionLabels << std::endl;
 						positionLabels << "No Possession, Possession, Frame Jump" << std::endl;
-						positionLabels.close();
 						//inner most array [0] is pitch position  and [1] is position of phases near that pitch position. Bins are chosen as 10 wide, vector of these for all positions, array of these for all phase types, then 3 vectors for phase length, minimum velocity and minimum defenders/
-						std::vector<std::vector<std::vector<std::array<std::vector<std::array<int,2>>,3>>>> binnedPosition = tgame->getBinnedPosition(minDefs, minVels, minFrames, postPressTimes);
+						std::vector<std::vector<std::vector<std::array<std::vector<std::array<int,2>>,3>>>> binnedPosition = tgame->getBinnedPosition(minDefs, minVels, minFrames, 25);
+						for (int i =0; i < binnedPosition[0][0][0][0].size()-1;i++){
+							positionLabels << binnedPosition[0][0][0][0][i][0] << ",";
+						}
+						positionLabels << binnedPosition[0][0][0][0][binnedPosition[0][0][0][0].size()-1][0] <<std::endl;
+						positionLabels.close();
 						for(int i = 0;i<minDefs.size();i++){
 							for(int j = 0; j< minVels.size();j++){
-								for(int k = 0; k< minFrames.size();k++){
+								for(int k = 0; k< lengthBins.size();k++){
 									for(int m = 0;m<3;m++){
 										if(firstRun == true){
 											allBinnedPosition = binnedPosition;
 											firstRun = false;
+											std::cout << "here"<< std::endl;
 										}
 										else{
-											for(int l = 0; binnedPosition.size();l++){
+											for(int l = 0; l<binnedPosition[i][j][k][m].size();l++){
 												allBinnedPosition[i][j][k][m][l][1] += binnedPosition[i][j][k][m][l][1];
 											}
 										}
@@ -611,6 +635,7 @@ int main(){
 		}
 	}
 	if(numberAnalysis){
+		std::cout << "here" << std::endl;
 		int defNumNum = allNumbers.size();
 		int velNum = allNumbers[0].size();
 		int frameNum = allNumbers[0][0].size();
@@ -625,22 +650,29 @@ int main(){
 				numbersof << "[";
 				for (int k = 0;k<frameNum;k++){
 					numbersof << "[";
-					for(int l = 0;l<postNum;l++){
-						numbersof << allNumbers[i][j][k][l][0] << ",";
+					for(int l = 0;l<postNum-1;l++){
+						numbersof << "[" << allNumbers[i][j][k][l][0] << "," << allNumbers[i][j][k][l][1] << "," << allNumbers[i][j][k][l][2] << "],";
 					}
-					numbersof << "],";
+					numbersof << "[" << allNumbers[i][j][k][postNum-1][0] << "," << allNumbers[i][j][k][postNum-1][1] << "," << allNumbers[i][j][k][postNum-1][2] << "]";
+					if(k!=frameNum-1){
+						numbersof << "],";
+					}else{numbersof << "]";}
 				}
-				numbersof << "],";
+				if(j!=velNum-1){
+					numbersof << "],";
+				}else{numbersof << "]";};
 			}
-			numbersof << "]," << std::endl;
+			if(i!=defNumNum-1){
+				numbersof << "]," << std::endl;
+			}else{numbersof << "]" << std::endl;}
 		}
-		numbersof << "]";
+		numbersof << "]" << std::endl;
 	}
 	if(positionAnalysis){
-		int defNumNum = allNumbers.size();
-		int velNum = allNumbers[0].size();
-		int frameNum = allNumbers[0][0].size();
-		int binNum = allNumbers[0][0][0][0].size();
+		std::cout << "poo" << std::endl;
+		int defNumNum = allBinnedPosition.size();
+		int velNum = allBinnedPosition[0].size();
+		int frameNum = allBinnedPosition[0][0].size();
 		std::ofstream positionof;
 		std::string name = dataDestination;
 		positionof.open(dataDestination + "position.txt");
@@ -653,10 +685,10 @@ int main(){
                                         positionof << "[";
 					for(int l = 0;l<3;l++){
 						positionof << "[";
-						for(int m = 0;l<binNum-1;l++){
+						for(int m = 0;m<allBinnedPosition[i][j][k][l].size()-1;m++){
 							positionof << "[" << allBinnedPosition[i][j][k][l][m][1] <<  "]" << ",";
 						}
-						positionof << "[" << allBinnedPosition[i][j][k][l][binNum-1][1] << "]" ;
+						positionof << "[" << allBinnedPosition[i][j][k][l][allBinnedPosition[i][j][k][l].size()-1][1] << "]" ;
 						if(l!=2){
 							positionof << "],";
 						}else{positionof << "]";} 
