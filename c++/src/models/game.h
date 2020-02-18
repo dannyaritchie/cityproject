@@ -51,7 +51,7 @@ class Game {
 		void setFramesPlayersVelocity();
 		void setAllGoalPos();
 		std::vector<std::array<int,4>> getPhases(int minDefA, double minDefVel, int minFrames, int postPressTime);
-		std::vector<std::array<double,2>> getPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, double radius, int type, double closePressure, std::array<double, 2> parameters);
+		std::vector<std::array<double,2>> getPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, double radius, int type, double closePressure, std::array<double, 7> parameters, double playerRadius);
 		std::array<int,2> getPossessionTimes();
 		std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> getAllPhases(std::vector<int> defenders, std::vector<double> velocities, std::vector<int> minimumFrames, std::vector<int> postPressTimes);
 

@@ -320,6 +320,7 @@ double Frame::getPressure(double radius){
 		return pow(closestPlayerTime*largestTimes,-1);
 	}
 	else{return 0;}
+
 }
 
 double Frame::getBallDistance(){
@@ -328,19 +329,69 @@ double Frame::getBallDistance(){
 	return distance(ballPos,goalPos);
 }
 
-double Frame::getPressureB(double closePressure, std::array<double,2> parameters){
+double Frame::getPressureB(double closePressure, std::array<double, 7> parameters, double playerRadius){
 	double pressure{0};
-	for(auto playerita = players.begin();playerita<players.end();++playerita){
-		if((*playerita)->getTeam()==possession){
+	// components of parameters = {vel_pow, distvel_pow, ball_pow, dist_weight, dist_pow, ranking, frame_weighting}	
+
+	// for all players in the attacking team
+	for(auto playerita = players.begin();playerita<players.end();++playerita)
+	{
+		if((*playerita)->getTeam()==possession)
+		{ // if the team is in possession, sort the distance of all the defending players
+			std::vector<defenderdistance> sorter;
+			for(auto playeritd = players.begin();playeritd<players.end();++playeritd)
+			{
+				if((*playeritd)->getTeam()!=possession)
+				{
+					double d = (*playerita)->getPlayerPlayerDistance((*playeritd)->getMappedPid());
+					defenderdistance temp;
+				       	temp.distance = d;
+					temp.defender = *playeritd;
+					sorter.push_back(temp);
+				}
+			}
+			std::sort(sorter.begin(), sorter.end(), [](const defenderdistance &a, const defenderdistance &b)
+			{
+				return a.distance < b.distance;
+			});
+
+			// for all players in the defending team
+			std::array<double, 2> playerAPos = (*playerita)->getPos(); // xy position of playerita
+			std::array<double, 2> ballPos = ball->getPos(); // xy position of ball
+			double relBallPos = distance(playerAPos, ballPos); //relative position of the ball to attacker
+
 			for(auto playeritd = players.begin();playeritd<players.end();++playeritd){
-				if((*playeritd)->getTeam()!=possession){
-					double playerPlayerDistance = (*playerita)->getPlayerPlayerDistance((*playeritd)->getMappedPid());	
-					double playerPlayerVelocity = (*playerita)->getPlayerPlayerVelocity((*playeritd)->getMappedPid());	
-					if(playerPlayerDistance < 1 && playerPlayerDistance>0){
-						pressure += closePressure;
-					}
-					if(playerPlayerVelocity > 0 && playerPlayerDistance >= 1){
-						pressure += pow(playerPlayerVelocity, parameters[0]) / pow(playerPlayerDistance, parameters[1]);
+				if((*playeritd)->getTeam()!=possession){ // if the team is NOT in possession
+					// get the distance and relative velocity off the defender to the attacker
+					double playerPlayerDistance = (*playerita)->getPlayerPlayerDistance((*playeritd)->getMappedPid());
+					double playerPlayerVelocity = (*playerita)->getPlayerPlayerVelocity((*playeritd)->getMappedPid());
+
+					if(playerPlayerDistance !=0 && playerPlayerDistance <= playerRadius)
+					{
+						if(playerPlayerVelocity > 0 && playerPlayerDistance < 100)
+						{
+							pressure += closePressure;
+						}
+						if(playerPlayerVelocity > 0 && playerPlayerDistance >= 100)
+						{
+							//ld pressure function
+							std::vector<defenderdistance>::iterator it;
+							int index = 0;
+							bool found{false};
+							it = sorter.begin();
+							while(it != sorter.end() && !found)
+							{	
+								std::cout << index << ", " << sorter.size() << std::endl;
+								if((*it).defender == *playeritd)
+								{
+								       found = true;
+								}
+								index ++;
+								++it;
+						 	}	
+
+							pressure +=  pow(pow(index + 1, parameters[5]), -1) * pow(pow(relBallPos, parameters[2]), -1) * (pow(10, parameters[3]) / pow(playerPlayerDistance, parameters[4]) + 1) * (pow(playerPlayerVelocity, parameters[0]) / pow(playerPlayerDistance, parameters[1]));
+						}
 					}
 				}
 			}
@@ -348,6 +399,4 @@ double Frame::getPressureB(double closePressure, std::array<double,2> parameters
 	}
 	return pressure;
 }
-				
-
 	

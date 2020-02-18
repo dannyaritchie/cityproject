@@ -57,10 +57,15 @@ public:
 	Player* closestPlayerToBall();
 	int getRunningForward(double minVelocity);
 	double getPressure(double radius);
-	double getPressureB(double closePressure, std::array<double, 2> parameters);
+	double getPressureB(double closePressure, std::array<double, 7> parameters, double playerRadius);
 	double getBallDistance();
 
 
+};
+struct defenderdistance
+{
+	Player* defender;
+	double distance;
 };
 #endif
     
