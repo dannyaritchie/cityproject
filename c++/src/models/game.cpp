@@ -1,4 +1,3 @@
-
 #include "game.h"
 #include <stdlib.h>
 #include "frame.h"
@@ -698,8 +697,8 @@ std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::arr
 		std::advance(frameit,startLookingDistance);
 //		want to make some sort of collective pressure within a phase
 //		maybe using the old phase weighting 
-//		pressure = (*frameit)->getPressure(radius);
-		pressure = (*frameit)->getPressureB(closePressure, parameters);
+		pressure = (*frameit)->getPressure(radius);
+//		pressure = (*frameit)->getPressureB(closePressure, parameters);
 		if(type == 0){
 			startBallDistance = (*frameit)->getBallDistance();
 			std::advance(frameit,lookingLength);

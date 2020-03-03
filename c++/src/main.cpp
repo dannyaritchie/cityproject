@@ -1,4 +1,5 @@
 #include "models/game.h"
+#include "models/parsers/jsonparser.h"
 #include "models/briantable/allclosest.h"
 #include "models/briantable/pressureprocessor.h"
 #include "helpers/functions.h"
@@ -70,23 +71,24 @@ int main(){
 	bool firstRun =true;
 	//flags
 	bool useGroups{false};
-	bool analyse{false}; //whether to get information about phase
-	bool doResults{false};	//whether to get results from phases
-	bool numberAnalysis{true}; //whether number and position of phases should be analysed
+	bool analyse{true}; //whether to get information about phase
+	bool doResults{true};	//whether to get results from phases
+	bool numberAnalysis{false}; //whether number and position of phases should be analysed
 	bool positionAnalysis{false};
+	bool storeGroups{true}; //if not using groups sais whether teamwill also be stored
+	bool jsonOutput{true};
 	
 	int minDefNum = 3;
-	double minDefVel = 2.5;
-	double ballRadius = 1500;
+	double minDefVel = 2;
+	double ballRadius = 2000;
 	int startLookingDistance = 15;
-	int lookingLength = 25;
-	int minFrames = 25;
-	int maxPostPressTime = 50;
+	int lookingLength = 20;
+	int minFrames = 20;
+	int maxPostPressTime = 15;
 	double playerRadius = 1500;
-	bool useGroups{true};
-	int numberOfGames = 15;
+	int numberOfGames = 10;
 	double closePressure = 0.3;
-	std::string dataDestination = "../data/newdata/zoomedlength/";
+	std::string dataDestination = "../data/newdata/groupedB/17small";
 	//CREATE 2017 GAME VECTOR
 	std::vector<int> midsb;
 	for (auto i = 918893;i<919271;++i){
@@ -110,7 +112,7 @@ int main(){
 		std::ofstream noPossessionChangeO;	
 		std::ofstream possessionChangeO;	
 		std::ofstream frameJumpO;	
-	if(doResults){
+	if(doResults&&!useGroups){
 		noPossessionChangeO.open(dataDestination + "nopossessionchange.txt");
 		possessionChangeO.open(dataDestination + "possessionchange.txt");
 		frameJumpO.open(dataDestination + "framejump.txt");
@@ -127,7 +129,7 @@ int main(){
 		std::ofstream noPossessionChangeGc;	
 		std::ofstream possessionChangeGc;	
 		std::ofstream frameJumpGc;	
-	if(doResults){
+	if(doResults&&useGroups){
 		noPossessionChangeGa.open(dataDestination + "nopossessionchangeGa.txt");
 		possessionChangeGa.open(dataDestination + "possessionchangeGa.txt");
 		frameJumpGa.open(dataDestination + "framejumpGa.txt");
@@ -148,8 +150,8 @@ int main(){
 	std::string rempathb= "/pc2014-data1/lah/data_msgpk_031219/2017/PremierLeague/";
 	
 	//set which teams we are interested in
-	std::vector<int> teamIDs = {43, 14, 35};//for multiple groups this should be all teams
-	//std::vector<int> teamIDs = {3,13,36,43,8,90,31,38,11,110,1,21,4,6,20,80,57,14,35,91};//for multiple groups this should be all teams
+	//std::vector<int> teamIDs = {43, 14, 35};//for multiple groups this should be all teams
+	std::vector<int> teamIDs = {3,13,36,43,8,90,31,38,11,110,1,21,4,6,20,80,57,14,35,91};//for multiple groups this should be all teams
 	//
 	//define counters for amount of phase (no groups)
 //	if(!useGroups){
@@ -192,6 +194,9 @@ int main(){
 		std::vector<std::array<double,2>> pressureBallDist;
 		std::vector<std::array<double,2>> pressureBallDistPosChange;
 		std::vector<std::array<double,2>> pressureBallDistFrameJump;
+		std::vector<std::array<double,3>> pressureBallDistG;
+		std::vector<std::array<double,3>> pressureBallDistPosChangeG;
+		std::vector<std::array<double,3>> pressureBallDistFrameJumpG;
 //	}
 	//
 	//or in case of groups
@@ -201,10 +206,10 @@ int main(){
 //	}
 	
 	// comment below depending on wanting a specified number of games vs all games
-	//for(int i = 0; i <numberOfGames;i++){ //for userset number of game
+	for(int i = 0; i <numberOfGames;i++){ //for userset number of game
 	
 	// FOR 2017
-	for (int i = 0;i < midsb.size();i++){ //for all games
+//	for (int i = 0;i < midsb.size();i++){ //for all games
 		std::cout << "Match ID: " << midsb[i] << std::endl;
 		Game * tgame = new Game(midsb[i], rempathb); 
 	// FOR 2018
@@ -298,13 +303,39 @@ int main(){
 				 */
 				//(no groups)
 				if(!useGroups){
-					std::vector<std::array<double,2>> temp;
-					temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure, parameters);
-					pressureBallDist.insert(pressureBallDist.begin(),temp.begin(),temp.end()); 
-					temp = tgame->getPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength, ballRadius,1, closePressure, parameters);
-					pressureBallDistPosChange.insert(pressureBallDistPosChange.begin(),temp.begin(),temp.end()); 
-					temp = tgame->getPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength, ballRadius,2, closePressure, parameters);
-					pressureBallDistFrameJump.insert(pressureBallDistFrameJump.begin(),temp.begin(),temp.end()); 
+					if(storeGroups){
+						std::vector<std::array<double,2>> temp;
+						temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure, parameters);
+						std::vector<std::array<double,3>> temdp;
+						for(auto i : temp){
+							std::array<double,3> vtemp = {i[0],i[1],awayID};
+							temdp.push_back(vtemp);
+						}
+						pressureBallDistG.insert(pressureBallDistG.begin(),temdp.begin(),temdp.end()); 
+						temp = tgame->getPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength, ballRadius,1, closePressure, parameters);
+						temdp.clear();
+						for(auto i : temp){
+							std::array<double,3> vtemp = {i[0],i[1],awayID};
+							temdp.push_back(vtemp);
+						}
+						pressureBallDistPosChangeG.insert(pressureBallDistPosChangeG.begin(),temdp.begin(),temdp.end()); 
+						temp = tgame->getPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength, ballRadius,2, closePressure, parameters);
+						temdp.clear();
+						for(auto i : temp){
+							std::array<double,3> vtemp = {i[0],i[1],awayID};
+							temdp.push_back(vtemp);
+						}
+						pressureBallDistFrameJumpG.insert(pressureBallDistFrameJumpG.begin(),temdp.begin(),temdp.end()); 
+					}
+					else{	
+						std::vector<std::array<double,2>> temp;
+						temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure, parameters);
+						pressureBallDist.insert(pressureBallDist.begin(),temp.begin(),temp.end()); 
+						temp = tgame->getPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength, ballRadius,1, closePressure, parameters);
+						pressureBallDistPosChange.insert(pressureBallDistPosChange.begin(),temp.begin(),temp.end()); 
+						temp = tgame->getPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength, ballRadius,2, closePressure, parameters);
+						pressureBallDistFrameJump.insert(pressureBallDistFrameJump.begin(),temp.begin(),temp.end()); 
+					}
 				}
 				//
 				//In case where we have groups
@@ -561,21 +592,59 @@ int main(){
 
 		//in case of no groups
 		if(!useGroups){
-			noPossessionChangeO << "Pressure, Change in distance between ball and goal" << std::endl;
-			for(auto i : pressureBallDist){
-				noPossessionChangeO << i[0] << "," << i[1] << std::endl;
+			if(storeGroups){
+				if(jsonOutput){
+					std::vector<std::array<double, 3>> fdata;
+					for(auto i : pressureBallDistG){
+						std::array<double,3> temp = {i[0],i[2],0};
+						fdata.push_back(temp);
+					}
+					for(auto i : pressureBallDistPosChangeG){
+						std::array<double,3> temp = {i[0],i[2],1};
+						fdata.push_back(temp);
+					}
+					for(auto i : pressureBallDistG){
+						std::array<double,3> temp = {i[0],i[2],2};
+						fdata.push_back(temp);
+					}
+					JsonParser output = JsonParser(dataDestination);
+					output.write("data.json", fdata);
+				}
+				else{
+					noPossessionChangeO << "Pressure, Change in distance between ball and goal, TeamID" << std::endl;
+					for(auto i : pressureBallDistG){
+						noPossessionChangeO << i[0] << "," << i[1] << "," << i[2] << std::endl;
+					}
+					possessionChangeO << "Pressure"<< std::endl;
+					for(auto i : pressureBallDistPosChangeG){
+						possessionChangeO << i[0] << "," << i[2] <<std::endl;
+					}
+					frameJumpO << "Pressure" << std::endl;
+					for(auto i : pressureBallDistFrameJumpG){
+						frameJumpO << i[0] << "," << i[2] <<std::endl;
+					}
+					noPossessionChangeO.close();
+					possessionChangeO.close();
+					frameJumpO.close();
+				}
 			}
-			possessionChangeO << "Pressure"<< std::endl;
-			for(auto i : pressureBallDistPosChange){
-				possessionChangeO << i[0] << std::endl;
+			else{
+				noPossessionChangeO << "Pressure, Change in distance between ball and goal" << std::endl;
+				for(auto i : pressureBallDist){
+					noPossessionChangeO << i[0] << "," << i[1] << std::endl;
+				}
+				possessionChangeO << "Pressure"<< std::endl;
+				for(auto i : pressureBallDistPosChange){
+					possessionChangeO << i[0] << std::endl;
+				}
+				frameJumpO << "Pressure" << std::endl;
+				for(auto i : pressureBallDistFrameJump){
+					frameJumpO << i[0] << std::endl;
+				}
+				noPossessionChangeO.close();
+				possessionChangeO.close();
+				frameJumpO.close();
 			}
-			frameJumpO << "Pressure" << std::endl;
-			for(auto i : pressureBallDistFrameJump){
-				frameJumpO << i[0] << std::endl;
-			}
-			noPossessionChangeO.close();
-			possessionChangeO.close();
-			frameJumpO.close();
 		}
 		//
 		//in case of groups MUST BE EXPLICITLY CHANGED TO COPE N = number of groups != 3
