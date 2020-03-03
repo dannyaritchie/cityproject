@@ -38,15 +38,15 @@ int main(){
 	double angle_threshold = 45;
 	*/
 	double goal_pow = 0;
-	double ball_pow = 0;
+	double ball_pow = 1.5;
 	double dist_weight= 1;
-	double dist_pow =  1;
-	double vel_pow = 1;
-	double distvel_pow = 1;
-	double ranking = 0;
+	double dist_pow =  3;
+	double vel_pow = 2;
+	double distvel_pow = 2;
+	double ranking = 1;
 	double minBallFromDefGoal =  1000;
 	double maxBallFromDefGoal = 9000;
-	double pressureLimit= 	0;
+	double pressureLimit = 0;
 	double timeLimit = 0.2;
 	double lookieLookie = 3;
 	double pos_time_limit =	5;
@@ -64,8 +64,8 @@ int main(){
 	std::ofstream numberofphasesos;
 	numberofphasesos.open("../data/numberofphases.txt");
 	
-	std::array<double,2> parameters = {vel_pow, distvel_pow};
-	//object to store information of number of phases as parameters are varied - used in numberAnalysis and position Analysis
+	std::array<double, 7> parameters = {vel_pow, distvel_pow, ball_pow, dist_weight, dist_pow, ranking, frame_weighting};
+	//object to store information of number of phases as parameters are varied - used in numberPositionAnalysis
 	std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> allNumbers;
 	std::vector<std::vector<std::vector<std::array<std::vector<std::array<int,2>>,3>>>> allBinnedPosition;
 	bool firstRun =true;
@@ -90,7 +90,7 @@ int main(){
 	double closePressure = 0.3;
 	std::string dataDestination = "../data/newdata/groupedB/17small";
 	//CREATE 2017 GAME VECTOR
-	std::vector<int> midsb;
+	/*std::vector<int> midsb;
 	for (auto i = 918893;i<919271;++i){
 			midsb.push_back(i);
 	}
@@ -99,14 +99,14 @@ int main(){
 	for (int i : bad2017games){
 		midsb.erase(std::remove(midsb.begin(), midsb.end(), i), midsb.end());
 	}
-	
+	*/
 	//CREATE 2018 GAME VECTOR
-	/*std::vector<int> midsa;
+	std::vector<int> midsa;
 	for (auto i = 987592; i < 987971; ++i){midsa.push_back(i);}
 
-	std::vector<int> bad2018Games = {987621, 987872}; // games that cause the program to crash
+	std::vector<int> bad2018Games = {987621, 987863, 987872}; // games that cause the program to crash
 	for (int i : bad2018Games) {midsa.erase(std::remove(midsa.begin(), midsa.end(), i), midsa.end());}
-	*/
+	
 	//open data files (no groups)	
 //	if(!useGroups){
 		std::ofstream noPossessionChangeO;	
@@ -146,13 +146,18 @@ int main(){
 	usedParametersAndResults.open(dataDestination + "usedParametersAndResults.txt");
 	
 	//Load game - specify which year here
-	//std::string rempatha = "/pc2014-data1/lah/data_msgpk_031219/2018/PremierLeague/";
-	std::string rempathb= "/pc2014-data1/lah/data_msgpk_031219/2017/PremierLeague/";
+	//FOR 2018
+	std::string rempatha = "/pc2014-data1/lah/data_msgpk_031219/2018/PremierLeague/";
+	//FOR 2017
+	//std::string rempathb= "/pc2014-data1/lah/data_msgpk_031219/2017/PremierLeague/";
 	
 	//set which teams we are interested in
-	//std::vector<int> teamIDs = {43, 14, 35};//for multiple groups this should be all teams
-	std::vector<int> teamIDs = {3,13,36,43,8,90,31,38,11,110,1,21,4,6,20,80,57,14,35,91};//for multiple groups this should be all teams
-	//
+	//std::vector<int> teamIDs = {43, 14, 35};//for multiple groups this should be all teams	
+	//FOR 2017
+	//std::vector<int> teamIDs = {43, 1, 6, 14, 8, 3, 90, 11, 13, 4, 31, 91, 21, 57, 36, 38, 20, 80, 110, 35};//for multiple groups this should be all teams
+	//FOR 2018
+	std::vector<int> teamIDs = {43, 14, 8, 6, 3, 1, 39, 11, 13, 21, 57, 31, 4, 91, 90, 20,36, 97, 54, 38};
+	
 	//define counters for amount of phase (no groups)
 //	if(!useGroups){
 		int numberOfNormalPhases{0};
@@ -171,10 +176,18 @@ int main(){
 	//		std::vector<int> t = {i};
 	//		groups.push_back(t);
 	//	}
-	
-		std::vector<int> groupa = {43};//ManCity // {3,6,1,14,43,8}; //High
-		std::vector<int> groupb = {14};//Liverpool // {4,90,31,11,21,91,13}; //medium
-		std::vector<int> groupc = {35};//WestBrom {38}//Huddersfield // {19,80,57,35,38,110,36}; //low
+		//FOR 2017
+		/*
+		std::vector<int> groupa = {43, 1, 6, 14, 8, 3}; //{43}//ManCity	//  //High
+		std::vector<int> groupb = {90, 11, 13, 4, 31, 91, 21}; //{14};//Liverpool	// //medium
+		std::vector<int> groupc = {57, 36, 38, 20, 80, 110, 35};//WestBrom {38}	// //low
+		*/
+		//FOR 2018 
+		
+		std::vector<int> groupa = {43, 14, 8, 6, 3, 1}; // High ManCity 43
+		std::vector<int> groupb = {39, 11, 13, 21, 57, 31, 4}; //Medium Liverpool 14
+		std::vector<int> groupc = {91, 90, 20, 36, 97, 54, 38}; //Low //Huddersfield 38
+		
 
 		groups.push_back(groupa);
 		groups.push_back(groupb);
@@ -209,13 +222,13 @@ int main(){
 	for(int i = 0; i <numberOfGames;i++){ //for userset number of game
 	
 	// FOR 2017
-//	for (int i = 0;i < midsb.size();i++){ //for all games
+	/*for (int i = 0;i < midsb.size();i++){ //for all games
 		std::cout << "Match ID: " << midsb[i] << std::endl;
-		Game * tgame = new Game(midsb[i], rempathb); 
+		Game * tgame = new Game(midsb[i], rempathb);*/ 
 	// FOR 2018
-	/*for (int i = 0; i < midsa.size(); i++){
+	//for (int i = 0; i < midsa.size(); i++){
 		std::cout << "Match ID: " << midsa[i] << std::endl;
-		Game * tgame = new Game(midsa[i], rempatha);*/
+		Game * tgame = new Game(midsa[i], rempatha);
 		//
 		//Choose teams that are interesting	
 		int homeID{-1}, awayID{-1};
@@ -292,6 +305,7 @@ int main(){
 							}
 						}
 					}
+					std::cout << "testing" << std::endl;
 				}
 				//
 
@@ -329,11 +343,11 @@ int main(){
 					}
 					else{	
 						std::vector<std::array<double,2>> temp;
-						temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure, parameters);
+						temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure, parameters, playerRadius);
 						pressureBallDist.insert(pressureBallDist.begin(),temp.begin(),temp.end()); 
-						temp = tgame->getPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength, ballRadius,1, closePressure, parameters);
+						temp = tgame->getPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength, ballRadius,1, closePressure, parameters, playerRadius);
 						pressureBallDistPosChange.insert(pressureBallDistPosChange.begin(),temp.begin(),temp.end()); 
-						temp = tgame->getPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength, ballRadius,2, closePressure, parameters);
+						temp = tgame->getPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength, ballRadius,2, closePressure, parameters, playerRadius);
 						pressureBallDistFrameJump.insert(pressureBallDistFrameJump.begin(),temp.begin(),temp.end()); 
 					}
 				}
@@ -343,9 +357,10 @@ int main(){
 					std::array<std::vector<std::array<double,2>>,3> homePhasesPressureBallDist;
 					std::array<std::vector<std::array<double,2>>,3> awayPhasesPressureBallDist;
 					for(int i = 0; i < 3; i++){
-						homePhasesPressureBallDist[i] = tgame->getPhaseInformation(homePhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure, parameters);
-						awayPhasesPressureBallDist[i] = tgame->getPhaseInformation(awayPhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure, parameters);
+						homePhasesPressureBallDist[i] = tgame->getPhaseInformation(homePhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure, parameters, playerRadius);
+						awayPhasesPressureBallDist[i] = tgame->getPhaseInformation(awayPhases[i],startLookingDistance,lookingLength,ballRadius,i, closePressure, parameters, playerRadius);
 					}
+					std::cout << "testing" << std::endl;
 					bool foundGroupB{false};
 					for (int j = 0;j<groups.size();j++){
 						if(!foundGroupB){
