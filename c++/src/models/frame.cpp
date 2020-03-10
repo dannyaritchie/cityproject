@@ -369,11 +369,11 @@ double Frame::getPressureB(double closePressure, std::array<double, 7> parameter
 
 					if(playerPlayerDistance !=0 && playerPlayerDistance <= playerRadius)
 					{
-						if(playerPlayerVelocity > 0 && playerPlayerDistance < 100)
-						{
-							pressure += closePressure;
-						}
-						if(playerPlayerVelocity > 0 && playerPlayerDistance >= 100)
+						//if(playerPlayerVelocity > 0 && playerPlayerDistance < 100)
+						//{
+						//	pressure += closePressure;
+						//}
+						if(playerPlayerVelocity > 0)// && playerPlayerDistance >= 100)
 						{
 							//ld pressure function
 							std::vector<defenderdistance>::iterator it;
@@ -382,7 +382,6 @@ double Frame::getPressureB(double closePressure, std::array<double, 7> parameter
 							it = sorter.begin();
 							while(it != sorter.end() && !found)
 							{	
-								std::cout << index << ", " << sorter.size() << std::endl;
 								if((*it).defender == *playeritd)
 								{
 								       found = true;
@@ -391,7 +390,7 @@ double Frame::getPressureB(double closePressure, std::array<double, 7> parameter
 								++it;
 						 	}	
 
-							pressure +=  pow(pow(index + 1, parameters[5]), -1) * pow(pow(relBallPos, parameters[2]), -1) * (pow(10, parameters[3]) / pow(playerPlayerDistance, parameters[4]) + 1) * (pow(playerPlayerVelocity, parameters[0]) / pow(playerPlayerDistance, parameters[1]));
+							pressure +=  pow(pow(index + 1, parameters[5]), -1) * pow(pow(0.01 * relBallPos, parameters[2]), -1) * (pow(10, parameters[3]) / pow(playerPlayerDistance, parameters[4]) + 1) * (pow(playerPlayerVelocity, parameters[0]) / pow(playerPlayerDistance, parameters[1]));
 						}
 					}
 				}
