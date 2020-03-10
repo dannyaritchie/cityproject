@@ -1,4 +1,3 @@
-
 #include "game.h"
 #include <stdlib.h>
 #include "frame.h"

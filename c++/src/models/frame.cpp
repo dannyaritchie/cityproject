@@ -317,7 +317,7 @@ double Frame::getPressure(double radius){
 			std::cout << "No players where in radius of ball" <<std::endl;
 			largestTimes = 0.1;
 		}
-		return pow(closestPlayerTime*largestTimes,-1);
+		return 1000*pow(closestPlayerTime*largestTimes,-1);
 	}
 	else{return 0;}
 
