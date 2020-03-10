@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
-from bokeh.plotting import figure
-from bokeh.io import output_notebook, show, output_file, export_png
-from bokeh.models import ColumnDataSource, HoverTool, Panel
-from bokeh.models.widgets import Tabs
+#from bokeh.plotting import figure
+#from bokeh.io import output_notebook, show, output_file, export_png
+#from bokeh.models import ColumnDataSource, HoverTool, Panel
+#from bokeh.models.widgets import Tabs
 from scipy.stats import gaussian_kde
 import matplotlib.pyplot as plt
 
@@ -15,7 +15,7 @@ class BokehHistogram():
             self.colors = colors
             self.height = height
             self.width = width
-
+'''
     def hist_hover(self, dataframe, column, bins=30, log_scale=False, show_plot=True, vrange=None):
 
         # build histogram data with Numpy
@@ -157,14 +157,14 @@ class BokehHistogram():
         if columna == 'Change in D Ball Goal/m':
             if smoothing == True:
                 print(dataframe[columna].quantile(0.05),dataframe[columna].quantile(0.95))
-                '''
+                
                 plt.imshow(Z.reshape(Xgrid.shape),
                            origin='lower', aspect='auto',
                            extent=[dataframe[columna].quantile(0.05), dataframe[columna].quantile(0.95),dataframe[columnb].quantile(0.05), dataframe[columnb].quantile(0.95)],
                            cmap='Blues')
                 cb = plt.colorbar()
                 cb.set_label("density")
-                '''
+                
             else:
                 dataframe=dataframe[dataframe['Phase Type']=='No Possession Change']
                 hist, xe, ye = np.histogram2d(dataframe[columna], dataframe[columnb], bins = bins, range = [[dataframe[columna].quantile(0.05), dataframe[columna].quantile(0.95)], [dataframe[columnb].quantile(0.05), dataframe[columnb].quantile(0.95)]])
@@ -220,7 +220,7 @@ class BokehHistogram():
             show(p)
         else:
             export_png(p, filename = filename + ".png")
-            
+'''
     def mat_scat(self,xs,ys,stdb,std,title,x_label,y_label,filename,show_plot,err_bar,vlines,vlinebool):
         plt.errorbar(xs,ys,ms=2,yerr=std, fmt=".k", ecolor='blue',capsize=5,elinewidth=2,markeredgewidth=2, label = 'SE')
         if stdb != 0:
