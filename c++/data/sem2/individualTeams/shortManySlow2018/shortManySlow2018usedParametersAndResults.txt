@@ -1,0 +1,38 @@
+number of games 15
+minimum number of defender 4
+minimum defender velocity 1
+minimum number of frames 15
+maximum post press looking time 25
+ball radius 2000
+start looking distance 15
+looking length 24
+player radius 1500
+close pressure addition 
+
+For group 0:
+	Number of no possession change phases: 1585
+	Number of possession change phases: 138
+	Number of frame jump phases: 364
+	Number of frames they were defending: 237519
+For group 1:
+	Number of no possession change phases: 1298
+	Number of possession change phases: 138
+	Number of frame jump phases: 410
+	Number of frames they were defending: 278072
+For group 2:
+	Number of no possession change phases: 1075
+	Number of possession change phases: 165
+	Number of frame jump phases: 510
+	Number of frames they were defending: 333010
+For group 0:	Mean Pressure For No Possession Change: 0.897618 and goal distance -336.005
+	Mean Pressure For Possession Change: 1.04896
+	Mean Pressure For Frame Jump: 1.08544
+0.897618,-336.005, 0.238587,-350.525, 0.552983,-304.317, 0.891863,-368.445, 1.9045,-320.773, 
+For group 1:	Mean Pressure For No Possession Change: 0.951088 and goal distance -504.069
+	Mean Pressure For Possession Change: 1.30725
+	Mean Pressure For Frame Jump: 1.22874
+0.951088,-504.069, 0.262052,-422.992, 0.591731,-491.989, 0.98946,-571.165, 1.95491,-529.972, 
+For group 2:	Mean Pressure For No Possession Change: 0.981728 and goal distance -416.395
+	Mean Pressure For Possession Change: 1.05141
+	Mean Pressure For Frame Jump: 1.12026
+0.981728,-416.395, 0.241681,-285.556, 0.569683,-391.309, 0.989262,-564.659, 2.11361,-423.97, 

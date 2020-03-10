@@ -1,4 +1,3 @@
-
 #include "game.h"
 #include <stdlib.h>
 #include "frame.h"
@@ -599,7 +598,7 @@ void Game::setAllGoalPos(){
 	}
 	std::cout << std::endl;*/
 }
-std::vector<std::array<int,4>> Game::getPhases(int minDefA, double minDefVel, int minFrames,int postPressDistance){
+std::vector<std::array<int,4>> Game::getPhases(int minDefA, double minDefVel, int minFrames,int postPressDistance,bool errorMsg){
 	int previousFid {-1};
 	int previousPossession {0};
 	int length{0};
@@ -615,7 +614,7 @@ std::vector<std::array<int,4>> Game::getPhases(int minDefA, double minDefVel, in
 			postPress = false;
 		}
 		if(!postPress){
-			if((*frameit)->getAttacking()==previousPossession){
+			if((*frameit)->getAttacking()==previousPossession&&(*frameit)->getFid()==previousFid+1){
 				if((*frameit)->getRunningForward(minDefVel)>minDefA){
 					length++;
 				}
@@ -630,20 +629,31 @@ std::vector<std::array<int,4>> Game::getPhases(int minDefA, double minDefVel, in
 				}
 			}
 			else{
+				if(length>=minFrames){
+					if((*frameit)->getFid()==previousFid+1){
+						startLengthType = {startFrame,length,2,previousPossession};
+						startLengthTypes.push_back(startLengthType);
+					}
+					else{
+						startLengthType = {startFrame,length,1,previousPossession};
+						startLengthTypes.push_back(startLengthType);
+					}
+				}
 				length = 0;
 			}
 		}
 		else{
 			if((*frameit)->getAttacking()==previousPossession){
 				if((*frameit)->getFid()!=previousFid+1){
-					std::cout<< "no possession change but frame jump" << previousPossession << "," << (*frameit)->getAttacking() << "," << previousFid << "," << (*frameit)->getFid() << std::endl;
+					if(errorMsg){
+						std::cout<< "no possession change but frame jump" << previousPossession << "," << (*frameit)->getAttacking() << "," << previousFid << "," << (*frameit)->getFid() << std::endl;
+					}
 					endType = 1;
 					startLengthType = {startFrame,length,endType,previousPossession};
 					length = 0;
 					startLengthTypes.push_back(startLengthType);
 				}
 				else{
-					length ++;
 					if(timeToGo>0){
 						timeToGo --;
 					}
@@ -673,7 +683,8 @@ std::vector<std::array<int,4>> Game::getPhases(int minDefA, double minDefVel, in
 	return startLengthTypes;
 }
 
-std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, double radius, int type, double closePressure, std::array<double, 2> parameters){
+std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, double radius, int type, double closePressure, std::array<double, 7> parameters, double playerRadius){
+	//
 	std::vector<Frame*>::iterator frameit = frames.begin();
 	double startBallDistance{0};
 	double endBallDistance{0};
@@ -684,8 +695,10 @@ std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::arr
 			std::advance(frameit,1);
 		}
 		std::advance(frameit,startLookingDistance);
+//		want to make some sort of collective pressure within a phase
+//		maybe using the old phase weighting 
 //		pressure = (*frameit)->getPressure(radius);
-		pressure = (*frameit)->getPressureB(closePressure, parameters);
+		pressure = (*frameit)->getPressureB(closePressure, parameters, playerRadius);
 		if(type == 0){
 			startBallDistance = (*frameit)->getBallDistance();
 			std::advance(frameit,lookingLength);
@@ -703,8 +716,8 @@ std::vector<double> Game::getPhasePosition(std::vector<std::array<int,2>> startS
 		while((*frameit)->getFid()!=(*phaseit)[0]){
 			std::advance(frameit,1);
 		}
-		positions.push_back((*frameit)->getBall()->getPos()[0]/100);
-		std::cout << (*frameit)->getBall()->getPos()[0] << std::endl;
+		std::array<double,2> goal = {(*frameit)->getGoalPos(),0};
+		positions.push_back(distance((*frameit)->getBall()->getPos(),goal)/100);
 	}
 	return positions;
 }
@@ -719,6 +732,7 @@ std::array<int,2> Game::getPossessionTimes(){
 }
 
 std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>>	Game::getAllPhases(std::vector<int> defenders, std::vector<double> velocities, std::vector<int> minimumFrames, std::vector<int> postPressTimes){
+	//this function should probably be deleted
 	std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> numbers;
 	for(auto minDef = defenders.begin();minDef<defenders.end();++minDef){
 		std::vector<std::vector<std::vector<std::array<int,3>>>> velNumber;
@@ -728,8 +742,7 @@ std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>>	Game::getA
 				std::vector<std::array<int,3>> postNumber;
 				for(auto postPressTime = postPressTimes.begin();postPressTime<postPressTimes.end(); ++postPressTime){
 					std::vector<std::array<int,4>> frameStartLengthType;
-					std::cout << "A" <<std::endl;
-					frameStartLengthType = getPhases(*minDef,*minVel,*minFrames,*postPressTime);
+					frameStartLengthType = getPhases(*minDef,*minVel,*minFrames,*postPressTime,false);
 					std::vector<std::array<int,2>> noPossessionChangePhases;
 					std::vector<std::array<int,2>> possessionChangePhases;
 					std::vector<std::array<int,2>> frameJumpPhases;
@@ -746,16 +759,47 @@ std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>>	Game::getA
 	return numbers;
 }
 
-std::vector::<std::vector<std:vector<std::array<std::vector<std::array<int,2>>,3>>>> Game::getBinnedPosition(std::vector<int> defenders, std::vector<double> velocities, std::vector<int> minimumFrames, int postPressTime){
+std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>>	Game::getAllPhasesB(std::vector<int> defenders, std::vector<double> velocities, int minimumFrames, std::vector<int> postPressTimes, std::vector<int> lengthBins){
+	std::vector<std::vector<std::vector<std::vector<std::array<int,3>>>>> numbers;
+	for(auto minDef = defenders.begin();minDef<defenders.end();++minDef){
+		std::vector<std::vector<std::vector<std::array<int,3>>>> velNumber;
+		for(auto minVel = velocities.begin(); minVel< velocities.end(); ++minVel){
+			std::vector<std::vector<std::array<int,3>>> postNumber;
+			for(auto postPressTime = postPressTimes.begin();postPressTime<postPressTimes.end(); ++postPressTime){
+				std::vector<std::array<int,4>> frameStartLengthType;
+				frameStartLengthType = getPhases(*minDef,*minVel,minimumFrames,*postPressTime,false);
+				std::vector<std::array<int,2>> noPossessionChangePhases;
+				std::vector<std::array<int,2>> possessionChangePhases;
+				std::vector<std::array<int,2>> frameJumpPhases;
+				splitByType(frameStartLengthType,noPossessionChangePhases,possessionChangePhases,frameJumpPhases);		
+				std::vector<std::vector<std::array<int,2>>> sortNoPos = lengthSort(noPossessionChangePhases,lengthBins);
+				std::vector<std::vector<std::array<int,2>>> sortPos = lengthSort(possessionChangePhases,lengthBins);
+				std::vector<std::vector<std::array<int,2>>> sortFrame = lengthSort(frameJumpPhases,lengthBins);
+				std::vector<std::array<int,3>> lengthTypeNumber;
+				for(int i = 0; i < sortNoPos.size();i++){
+					std::array<int,3> typeNumber = {sortNoPos[i].size(),sortPos[i].size(),sortFrame[i].size()};
+					lengthTypeNumber.push_back(typeNumber);
+				}
+				postNumber.push_back(lengthTypeNumber);
+			}
+			velNumber.push_back(postNumber);
+		}
+		numbers.push_back(velNumber);
+	}
+	return numbers;
+}
+
+std::vector<std::vector<std::vector<std::array<std::vector<std::array<int,2>>,3>>>> Game::getBinnedPosition(std::vector<int> defenders, std::vector<double> velocities, std::vector<int> minimumFrames, int postPressTime){
 	std::vector<std::vector<std::vector<std::array<std::vector<std::array<int,2>>,3>>>> defNumPos;
 	for(auto minDef = defenders.begin();minDef<defenders.end();++minDef){
 		std::vector<std::vector<std::array<std::vector<std::array<int,2>>,3>>> velPos;
 		for(auto minVel = velocities.begin(); minVel< velocities.end(); ++minVel){
 			std::vector<std::array<std::vector<std::array<int,2>>,3>> framePos;
 			for(auto minFrames = minimumFrames.begin();minFrames<minimumFrames.end();++minFrames){
-				std::cout << "A" <<std::endl;
-				frameStartLengthType = getPhases(*minDef,*minVel,*minFrames,postPressTime);
+				std::vector<std::array<int,4>> frameStartLengthType;
+				frameStartLengthType = getPhases(*minDef,*minVel,*minFrames,postPressTime,false);
 				std::array<std::vector<std::array<int,2>>,3> allPhases;
+				std::cout << "Phases: " << *minDef << "," << *minVel << ","<< *minFrames << "," << postPressTime << ": " <<  frameStartLengthType.size() << std::endl;
 				splitByType(frameStartLengthType,allPhases[0],allPhases[1],allPhases[2]);		
 				std::array<std::vector<double>,3> allPos;
 				for(int i = 0;i<3;i++){
@@ -763,28 +807,48 @@ std::vector::<std::vector<std:vector<std::array<std::vector<std::array<int,2>>,3
 				}
 				std::array<std::vector<std::array<int,2>>,3> locationNumber;
 				for(int j = 0;j<3;j++){
-					for(int i = -60; i<=60; i+=10){
+					for(int i = 0; i<=110; i+=10){
 						std::array<int,2> temp = {i,0};
-						locationNumber[i].push_back(temp);
+						locationNumber[j].push_back(temp);
 					}
 					for(double pos : allPos[j]){
 						int count = 0;
-						while(pos>-60){
+						while(pos>0){
 							pos = pos - 10;
 							count ++;
 						}
 						locationNumber[j][count][1] += 1;
-						std::cout << locationNumber[j][count][0] << "," << pos+count*10 << std::endl;
 					}	
 				}
 				framePos.push_back(locationNumber);
 			}
-			velPos.push_back(frameNumber);
+			velPos.push_back(framePos);
 		}
 		defNumPos.push_back(velPos);
 	}
 	return defNumPos;
 }
+std::vector<std::vector<std::array<int,2>>> Game::lengthSort(std::vector<std::array<int,2>> lengths, std::vector<int> bins){
+	std::vector<std::vector<std::array<int,2>>> vectoredLengths;
+	vectoredLengths.resize(bins.size());
+	for(auto i : lengths){
+		int j{0};
+		bool unfound{true};
+		while(j<bins.size()&&unfound){
+			if(i[1]<bins[j]){
+				vectoredLengths[j].push_back(i);
+				unfound = false;
+			}
+			j++;
+		}
+		if(unfound == true){
+			std::cout << "Phaselength greater than final bin" << std::endl;
+		}
+	}
+	return vectoredLengths;
+}
+	
+
 					
 
 
