@@ -699,9 +699,7 @@ std::vector<std::array<double,2>> Game::getPhaseInformation(std::vector<std::arr
 //		want to make some sort of collective pressure within a phase
 //		maybe using the old phase weighting 
 //		pressure = (*frameit)->getPressure(radius);
-		std::cout << "pre_pressure" << std::endl;
 		pressure = (*frameit)->getPressureB(closePressure, parameters, playerRadius);
-		std::cout << "post_pressure" << std::endl;
 		if(type == 0){
 			startBallDistance = (*frameit)->getBallDistance();
 			std::advance(frameit,lookingLength);
