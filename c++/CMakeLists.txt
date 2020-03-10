@@ -21,6 +21,7 @@ add_executable(Nproject src/main.cpp
 	src/models/briantable/pressureprocessor.cpp
 	src/models/idmap.cpp
 	src/STATS/runningstats.cpp
+	src/models/parsers/jsonparser.cpp
 	#src/models/wholeplayer.cpp 
     	#src/models/angmod/computeangle.cpp
 	)

@@ -59,8 +59,10 @@ public:
 	double getPressure(double radius);
 	double getPressureB(double closePressure, std::array<double, 7> parameters, double playerRadius);
 	double getBallDistance();
-
-
+	std::vector<double> getPressureComponents();
+	double dBallNearestA();
+	double dBallNearestD();
+	double summedDistance(double radius);
 };
 struct defenderdistance
 {

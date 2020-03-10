@@ -58,6 +58,7 @@ class Game {
 		std::vector<double> getPhasePosition(std::vector<std::array<int,2>> startSizes);
 		std::vector<std::vector<std::vector<std::array<std::vector<std::array<int,2>>,3>>>> getBinnedPosition(std::vector<int> defenders, std::vector<double> velocities, std::vector<int> minimumFrames, int postPressTime);
 		std::vector<std::vector<std::array<int,2>>> lengthSort(std::vector<std::array<int,2>> lengths, std::vector<int> bins);
+		std::vector<std::vector<double>> getVectoredPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, int type, int group);
 
 };
 #endif

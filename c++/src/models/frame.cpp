@@ -238,8 +238,9 @@ std::vector<Player*> Frame::attackersInRadius(double radius){
 int Frame::attackersBallTime(double radius, std::vector<double> & times){
 	int unmarkedPlayers{0};
 	std::vector<Player*> playerss = attackersInRadius(radius);
+	std::cout << playerss.size() << std::endl;
 	for(auto playerit = playerss.begin();playerit<playerss.end();++playerit){
-		double ttime;
+		double ttime;		
 		if((*playerit)->getShortestTime(ttime) == true){
 			times.push_back(ttime);
 		}
@@ -399,4 +400,68 @@ double Frame::getPressureB(double closePressure, std::array<double, 7> parameter
 	}
 	return pressure;
 }
+std::vector<double> Frame::getPressureComponents(){
+	std::vector<double> pressureComponents;
+	pressureComponents.push_back(dBallNearestA());
+	pressureComponents.push_back(dBallNearestD());
+	std::vector<double> times;
+	int unmarked = attackersBallTime(2000, times);
+	pressureComponents.push_back(unmarked*1.0);
+	double totalTime{0};
+	for(auto i : times){
+		totalTime+=i;
+	}
+	pressureComponents.push_back(totalTime);
+	pressureComponents.push_back(summedDistance(100));
+	pressureComponents.push_back(summedDistance(50));
+	pressureComponents.push_back(summedDistance(25));
+	pressureComponents.push_back(summedDistance(15));
+	return pressureComponents;
+}
 	
+double Frame::dBallNearestA(){
+	double d{999999};
+	for(auto it : players){
+		if(it->getTeam()==possession){
+			double td{distance(it->getPos(),ball->getPos())};
+			if(td<d){
+				d=td;
+			}
+		}
+	}
+	return d;
+}
+double Frame::dBallNearestD(){
+	double d{999999};
+	for(auto it : players){
+		if(it->getTeam()!=possession){
+			double td{distance(it->getPos(),ball->getPos())};
+			if(td<d){
+				d=td;
+			}
+		}
+	}
+	return d; 
+}
+double Frame::summedDistance(double radius){
+	double summedDistance{0};
+	for(auto p : players){
+		if(p->getTeam() == possession){
+			if(distance(p->getPos(),ball->getPos())<=radius*100){
+				double smallestDistance{99999};
+				for(auto dp : players){
+					if(dp->getTeam()!=possession){
+						double d{distance(dp->getPos(),p->getPos())};
+						if(d<smallestDistance){
+							smallestDistance = d;
+						}
+					}
+				}
+				summedDistance += smallestDistance;
+			}
+		}
+	}
+	return summedDistance;
+}
+
+

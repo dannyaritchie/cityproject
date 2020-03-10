@@ -848,7 +848,39 @@ std::vector<std::vector<std::array<int,2>>> Game::lengthSort(std::vector<std::ar
 	return vectoredLengths;
 }
 	
-
+std::vector<std::vector<double>> Game::getVectoredPhaseInformation(std::vector<std::array<int,2>> startSizes, int startLookingDistance, int lookingLength, int type,int group){
+	//
+	std::vector<Frame*>::iterator frameit = frames.begin();
+	double startBallDistance{0};
+	double endBallDistance{0};
+	double pressure;
+	std::vector<std::vector<double>> pressureBallDists;
+	for(auto phaseit = startSizes.begin(); phaseit<startSizes.end();++phaseit){
+		while((*frameit)->getFid()!=(*phaseit)[0]){
+			std::advance(frameit,1);
+		}
+		std::advance(frameit,startLookingDistance);
+//		want to make some sort of collective pressure within a phase
+//		maybe using the old phase weighting 
+//		pressure = (*frameit)->getPressure(radius);
+//		pressure = (*frameit)->getPressureB(closePressure, parameters, playerRadius);
+		std::vector<double> pressures = (*frameit)->getPressureComponents();
+		if(type == 0){
+			startBallDistance = (*frameit)->getBallDistance();
+			std::advance(frameit,lookingLength);
+			endBallDistance = (*frameit)->getBallDistance();
+		}
+		std::vector<double> pressureBallDist;
+		pressureBallDist.push_back(1.0*type);
+		pressureBallDist.push_back(1.0*group);
+		pressureBallDist.push_back((endBallDistance-startBallDistance)/100);
+		for(auto i : pressures){
+			pressureBallDist.push_back(i);
+		}
+		pressureBallDists.push_back(pressureBallDist);
+	}
+	return pressureBallDists;
+}
 					
 
 
