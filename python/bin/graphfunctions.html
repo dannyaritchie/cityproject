@@ -1,0 +1,85 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+    
+      <meta charset="utf-8">
+      <title>Bokeh Plot</title>
+      
+      
+        
+          
+        
+        
+          
+        <script type="text/javascript" src="https://cdn.pydata.org/bokeh/release/bokeh-1.4.0.min.js"></script>
+        <script type="text/javascript">
+            Bokeh.set_log_level("info");
+        </script>
+        
+      
+      
+    
+  </head>
+  
+  
+  <body>
+    
+      
+        
+          
+          
+            
+              <div class="bk-root" id="a80226a1-aeeb-40a3-8b70-1c9bab5c7964" data-root-id="1001"></div>
+            
+          
+        
+      
+      
+        <script type="application/json" id="1187">
+          {"776f3376-e63b-45a6-b4c7-402e68cd906d":{"roots":{"references":[{"attributes":{"ticker":{"id":"1013","type":"BasicTicker"}},"id":"1016","type":"Grid"},{"attributes":{},"id":"1010","type":"LinearScale"},{"attributes":{"below":[{"id":"1012","type":"LinearAxis"}],"center":[{"id":"1016","type":"Grid"},{"id":"1021","type":"Grid"},{"id":"1041","type":"Whisker"}],"left":[{"id":"1017","type":"LinearAxis"}],"plot_height":400,"plot_width":800,"renderers":[{"id":"1038","type":"GlyphRenderer"}],"title":{"id":"1002","type":"Title"},"toolbar":{"id":"1028","type":"Toolbar"},"x_range":{"id":"1004","type":"DataRange1d"},"x_scale":{"id":"1008","type":"LinearScale"},"y_range":{"id":"1006","type":"DataRange1d"},"y_scale":{"id":"1010","type":"LinearScale"}},"id":"1001","subtype":"Figure","type":"Plot"},{"attributes":{"data_source":{"id":"1035","type":"ColumnDataSource"},"glyph":{"id":"1036","type":"Circle"},"hover_glyph":null,"muted_glyph":null,"nonselection_glyph":{"id":"1037","type":"Circle"},"selection_glyph":null,"view":{"id":"1039","type":"CDSView"}},"id":"1038","type":"GlyphRenderer"},{"attributes":{"axis_label":"Change in D Ball Goal/m","formatter":{"id":"1047","type":"BasicTickFormatter"},"ticker":{"id":"1013","type":"BasicTicker"}},"id":"1012","type":"LinearAxis"},{"attributes":{"bottom_units":"screen","fill_alpha":{"value":0.5},"fill_color":{"value":"lightgrey"},"left_units":"screen","level":"overlay","line_alpha":{"value":1.0},"line_color":{"value":"black"},"line_dash":[4,4],"line_width":{"value":2},"render_mode":"css","right_units":"screen","top_units":"screen"},"id":"1054","type":"BoxAnnotation"},{"attributes":{"level":"underlay","size":10},"id":"1048","type":"TeeHead"},{"attributes":{},"id":"1023","type":"WheelZoomTool"},{"attributes":{},"id":"1045","type":"BasicTickFormatter"},{"attributes":{},"id":"1025","type":"SaveTool"},{"attributes":{"callback":null,"data":{"base":[1.885,-4.637,-11.158999999999999,8.4075,14.93,-30.7575,-17.681,-24.203,21.451999999999998,27.974],"lower":[8504.201351745767,8414.379020307904,8442.667556912525,8368.235488500599,8216.331236784825,7321.3935759655305,8013.726449876423,7853.674077981239,7955.579925124182,7931.808913982424],"upper":[12796.127382993407,12848.622899609956,12846.305630067036,12630.602436747304,12528.623920053318,11473.217025127366,12711.397329193343,11945.84092201876,12565.67752542527,12215.355950882438]},"selected":{"id":"1053","type":"Selection"},"selection_policy":{"id":"1052","type":"UnionRenderers"}},"id":"1040","type":"ColumnDataSource"},{"attributes":{"axis_label":"Summed attacker space within 100m","formatter":{"id":"1045","type":"BasicTickFormatter"},"ticker":{"id":"1018","type":"BasicTicker"}},"id":"1017","type":"LinearAxis"},{"attributes":{"callback":null},"id":"1004","type":"DataRange1d"},{"attributes":{},"id":"1027","type":"HelpTool"},{"attributes":{},"id":"1050","type":"UnionRenderers"},{"attributes":{"overlay":{"id":"1054","type":"BoxAnnotation"}},"id":"1024","type":"BoxZoomTool"},{"attributes":{"dimension":1,"ticker":{"id":"1018","type":"BasicTicker"}},"id":"1021","type":"Grid"},{"attributes":{"fill_color":{"value":"red"},"line_alpha":{"value":0},"line_color":{"value":"red"},"size":{"units":"screen","value":5},"x":{"field":"x"},"y":{"field":"y"}},"id":"1036","type":"Circle"},{"attributes":{},"id":"1008","type":"LinearScale"},{"attributes":{"fill_alpha":{"value":0.1},"fill_color":{"value":"#1f77b4"},"line_alpha":{"value":0.1},"line_color":{"value":"#1f77b4"},"size":{"units":"screen","value":5},"x":{"field":"x"},"y":{"field":"y"}},"id":"1037","type":"Circle"},{"attributes":{"active_drag":"auto","active_inspect":"auto","active_multi":null,"active_scroll":"auto","active_tap":"auto","tools":[{"id":"1022","type":"PanTool"},{"id":"1023","type":"WheelZoomTool"},{"id":"1024","type":"BoxZoomTool"},{"id":"1025","type":"SaveTool"},{"id":"1026","type":"ResetTool"},{"id":"1027","type":"HelpTool"}]},"id":"1028","type":"Toolbar"},{"attributes":{},"id":"1053","type":"Selection"},{"attributes":{"text":"Change in D Ball Goal/m binned with constant bin width vs mean and standard error of Summed attacker space within 100m."},"id":"1002","type":"Title"},{"attributes":{},"id":"1022","type":"PanTool"},{"attributes":{},"id":"1047","type":"BasicTickFormatter"},{"attributes":{},"id":"1013","type":"BasicTicker"},{"attributes":{},"id":"1051","type":"Selection"},{"attributes":{"source":{"id":"1035","type":"ColumnDataSource"}},"id":"1039","type":"CDSView"},{"attributes":{},"id":"1026","type":"ResetTool"},{"attributes":{"level":"underlay","size":10},"id":"1049","type":"TeeHead"},{"attributes":{"callback":null,"data":{"x":[1.885,-4.637,-11.158999999999999,8.4075,14.93,-30.7575,-17.681,-24.203,21.451999999999998,27.974],"y":[10650.164367369587,10631.50095995893,10644.48659348978,10499.418962623951,10372.477578419072,9397.305300546448,10362.561889534883,9899.7575,10260.628725274726,10073.582432432431]},"selected":{"id":"1051","type":"Selection"},"selection_policy":{"id":"1050","type":"UnionRenderers"}},"id":"1035","type":"ColumnDataSource"},{"attributes":{},"id":"1018","type":"BasicTicker"},{"attributes":{},"id":"1052","type":"UnionRenderers"},{"attributes":{"base":{"field":"base","units":"data"},"lower":{"field":"lower","units":"data"},"lower_head":{"id":"1049","type":"TeeHead"},"source":{"id":"1040","type":"ColumnDataSource"},"upper":{"field":"upper","units":"data"},"upper_head":{"id":"1048","type":"TeeHead"}},"id":"1041","type":"Whisker"},{"attributes":{"callback":null},"id":"1006","type":"DataRange1d"}],"root_ids":["1001"]},"title":"Bokeh Application","version":"1.4.0"}}
+        </script>
+        <script type="text/javascript">
+          (function() {
+            var fn = function() {
+              Bokeh.safely(function() {
+                (function(root) {
+                  function embed_document(root) {
+                    
+                  var docs_json = document.getElementById('1187').textContent;
+                  var render_items = [{"docid":"776f3376-e63b-45a6-b4c7-402e68cd906d","roots":{"1001":"a80226a1-aeeb-40a3-8b70-1c9bab5c7964"}}];
+                  root.Bokeh.embed.embed_items(docs_json, render_items);
+                
+                  }
+                  if (root.Bokeh !== undefined) {
+                    embed_document(root);
+                  } else {
+                    var attempts = 0;
+                    var timer = setInterval(function(root) {
+                      if (root.Bokeh !== undefined) {
+                        clearInterval(timer);
+                        embed_document(root);
+                      } else {
+                        attempts++;
+                        if (attempts > 100) {
+                          clearInterval(timer);
+                          console.log("Bokeh: ERROR: Unable to run BokehJS code because BokehJS library is missing");
+                        }
+                      }
+                    }, 10, root)
+                  }
+                })(window);
+              });
+            };
+            if (document.readyState != "loading") fn();
+            else document.addEventListener("DOMContentLoaded", fn);
+          })();
+        </script>
+    
+  </body>
+  
+</html>

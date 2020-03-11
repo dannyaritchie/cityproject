@@ -32,7 +32,7 @@ def return_binstatistics(df, binned_column, stat_columns, constant_number_bins, 
 '''
 def mat_scat(xs,ys,stdb,std,title,x_label,y_label,filename,show_plot,err_bar,vlines,vlinebool):
         plt.errorbar(xs,ys,ms=2,yerr=std, fmt=".k", ecolor='blue',capsize=5,elinewidth=2,markeredgewidth=2, label = 'SE')
-        if stdb != 0:
+        if stdb[0] != 0:
             plt.errorbar(xs,ys,ms=2,yerr=stdb, fmt=".k", ecolor='red',capsize=5,elinewidth=2,markeredgewidth=2, label = 'SD')
         plt.xlabel(x_label)
         plt.ylabel(y_label)
@@ -102,8 +102,8 @@ def return_binstatistic(df, binned_column, stat_column, number_of_bins, folder, 
     err_strs="D"
     frame_str = ""
     frame_strs = ""
-    std = 0
-    stdb = 0
+    stds= []
+    stdbs = []
     discreet = False
     vlinebool= False
     if binned_column == "Number unmarked within 20m":
@@ -157,14 +157,14 @@ def return_binstatistic(df, binned_column, stat_column, number_of_bins, folder, 
             means.append(mean)
             std = stdb/np.sqrt(len(sub_df.index))
             if discreet == True:
-                print("poos")
                 std = stats.sem(sub_df[stat_column])
                 plot_error=1
                 stdb = 0
+            stdbs.append(stdb)
             lower_bounds.append(mean - std)
+            stds.append(std)
             upper_bounds.append(mean + std) 
             if discreet == False:
-                print("poo")
                 lower_boundsb.append(mean-stdb)
                 upper_boundsb.append(mean+stdb)
     all_lower.append(lower_bounds)
@@ -180,7 +180,7 @@ def return_binstatistic(df, binned_column, stat_column, number_of_bins, folder, 
     title = binned_column + bin_str + " vs " + stat_column + "." + frame_strs
     filename = folder + "/" + err_strs + bin_strs + hotfixb + str(number_of_bins) + frame_str + test + '.png'
     #h.single_stat_scatter(centres,means,all_lower,all_upper,title, binned_column, stat_column,filename, show, plot_error)
-    mat_scat(centres,means,stdb,std,title,binned_column,stat_column,filename, show, plot_error, bins, vlinebool)
+    mat_scat(centres,means,stdbs,stds,title,binned_column,stat_column,filename, show, plot_error, bins, vlinebool)
     if show == True:
             plt.show()
     else:
@@ -204,7 +204,7 @@ def all_binstatistic(df, binned_columns, number_of_bins, folder, SE=False, cutq=
 
 #MAIN
 #First read in the data to a panda dataframe
-myDataFile = '../../c++/data/groupedsplit/17adata.json'
+myDataFile = '../../c++/data/newdata/groupedsplit/17adata.json'
 df = pd.read_json(myDataFile,orient='split')
 
 #Then we want to check what each colum means, the following line will output the header of each column
@@ -215,26 +215,21 @@ print(list(df.columns))
 
 #This function will plot both hexagon and gaussian smoothed for the provided columns and save in folder_path. Note if column plotted is changed to a slice (4:) would select all columns after and including 4 the [] around list must be deleted.
 
+column_plotted = 5
+folder_path = "../data/Number_Unmarked/"
+
 '''
-column_plotted = 7
-folder_path = "../data/test"
 df = df[df['Phase Type'] == 'No Possession Change']
 for i,graph_type in zip([100,20],[True,False]):
     all_2d(df,[list(df.columns)[column_plotted]],'Change in D Ball Goal/m',folder_path,bins=i,smoothed=graph_type,show_plot=False)
-'''
+    '''
 
 #This function will plot histogram of column specified on x axis against both success ratio and chnage in D ball goal, for constant bin width and bin number, and for the case of success ratio including and not including frame jump phases. make sure df = df[df['Phase Type'] == 'No Possession Change'] has been commented out
-
 '''
-column_plotted = 7
-folder_path = "../data/test"
 all_binstatistic(df, [list(df.columns)[column_plotted]], 25, folder_path)
 '''
 
 #This function is for instead binning change in D ball goal (will not work for success ratio)
-
-column_plotted = 7
-folder_path = "../data/test"
 for cut in True, False:
     a = df[df['Phase Type'] == 'No Possession Change'].copy(deep = True)
     return_binstatistic(a, "Change in D Ball Goal/m", list(df.columns)[column_plotted], 10, folder_path, vrange=[0.05,0.95], cutq=cut, show = False)
