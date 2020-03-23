@@ -319,21 +319,21 @@ int main(){
 				if(!useGroups){
 					if(storeGroups){
 						std::vector<std::array<double,2>> temp;
-						temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure, parameters);
+						temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure, parameters, playerRadius);
 						std::vector<std::array<double,3>> temdp;
 						for(auto i : temp){
 							std::array<double,3> vtemp = {i[0],i[1],awayID};
 							temdp.push_back(vtemp);
 						}
 						pressureBallDistG.insert(pressureBallDistG.begin(),temdp.begin(),temdp.end()); 
-						temp = tgame->getPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength, ballRadius,1, closePressure, parameters);
+						temp = tgame->getPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength, ballRadius,1, closePressure, parameters, playerRadius);
 						temdp.clear();
 						for(auto i : temp){
 							std::array<double,3> vtemp = {i[0],i[1],awayID};
 							temdp.push_back(vtemp);
 						}
 						pressureBallDistPosChangeG.insert(pressureBallDistPosChangeG.begin(),temdp.begin(),temdp.end()); 
-						temp = tgame->getPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength, ballRadius,2, closePressure, parameters);
+						temp = tgame->getPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength, ballRadius,2, closePressure, parameters, playerRadius);
 						temdp.clear();
 						for(auto i : temp){
 							std::array<double,3> vtemp = {i[0],i[1],awayID};
