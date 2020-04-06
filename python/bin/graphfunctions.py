@@ -46,7 +46,7 @@ def mat_scat(xs,ys,stdb,std,title,x_label,y_label,filename,show_plot,err_bar,vli
         #show(p)
 
 
-def custom_2d(dataframe,columna,columnb,title,vrange,bins,filename,show_plot,smoothed):
+def custom_2d(dataframe,columna,columnb,title,x_range,y_range,bins,filename,show_plot,smoothed):
     plt.xlabel(columna)
     plt.ylabel(columnb)
     plt.title(title)
@@ -54,13 +54,13 @@ def custom_2d(dataframe,columna,columnb,title,vrange,bins,filename,show_plot,smo
         data = np.vstack((dataframe[columna],dataframe[columnb]))
         kde = gaussian_kde(data)
         # evaluate on a regular grid
-        xgrid = np.linspace(dataframe[columna].quantile(vrange[0]), dataframe[columna].quantile(vrange[1]), bins)
-        ygrid = np.linspace(dataframe[columnb].quantile(vrange[0]), dataframe[columnb].quantile(vrange[1]), bins)
+        xgrid = np.linspace(dataframe[columna].quantile(x_range[0]), dataframe[columna].quantile(x_range[1]), bins)
+        ygrid = np.linspace(dataframe[columnb].quantile(y_range[0]), dataframe[columnb].quantile(y_range[1]), bins)
         Xgrid, Ygrid = np.meshgrid(xgrid, ygrid)
         Z = kde.evaluate(np.vstack([Xgrid.ravel(), Ygrid.ravel()]))
         plt.imshow(Z.reshape(Xgrid.shape),
            origin='lower', aspect='auto',
-           extent=[dataframe[columna].quantile(vrange[0]),dataframe[columna].quantile(vrange[1]), dataframe[columnb].quantile(vrange[0]),dataframe[columnb].quantile(0.95)],
+           extent=[dataframe[columna].quantile(x_range[0]),dataframe[columna].quantile(x_range[1]), dataframe[columnb].quantile(y_range[0]),dataframe[columnb].quantile(y_range[1])],
            cmap='Blues')
         cb = plt.colorbar()
         cb.set_label("Density, smoothed by gaussian kernels")
@@ -80,14 +80,14 @@ def custom_2d(dataframe,columna,columnb,title,vrange,bins,filename,show_plot,smo
         plt.savefig(filename,format="png")
     plt.close()
 
-def all_2d(dataframe,columnas,columnb,folder,vrange=[0.1,0.9],bins=10,show_plot=False,smoothed=False):
+def all_2d(dataframe,columnas,columnb,folder,x_range=[0.1,0.9],y_range=[0.1,0.9],bins=10,show_plot=False,smoothed=False):
     for columna in columnas:
         title = "Density plot of success(" + columnb + ") vs custom metric"
         filename= folder + "/smoothed_2D.png"
         if smoothed == False:
             title = "Density plot of success(" + columnb + ") vs custom metric"
             filename= folder + "/hex_2D.png"
-        custom_2d(dataframe,columna,columnb,title,vrange,bins,filename,show_plot,smoothed)
+        custom_2d(dataframe,columna,columnb,title,x_range,y_range,bins,filename,show_plot,smoothed)
 
 def return_binstatistic(df, binned_column, stat_column, number_of_bins, folder, vrange=[0,1],SE=False, cutq=True, show = True, include_frame = True, test="", discreet=0):
     hotfix = binned_column
@@ -146,7 +146,6 @@ def return_binstatistic(df, binned_column, stat_column, number_of_bins, folder, 
         df = df[df[binned_column]<=df[binned_column].quantile(vrange[1])]
         df = df[df[binned_column]>=df[binned_column].quantile(vrange[0])]
         df['Bin'], bins = pd.qcut(df[binned_column], q = number_of_bins, retbins= True)
-        print("POO")
     else:
         bin_str = " binned with constant bin width"
         bin_strs = "cw_"
@@ -203,8 +202,8 @@ def return_binstatistic(df, binned_column, stat_column, number_of_bins, folder, 
 def all_binstatistic(df, binned_columns, number_of_bins, folder, SE=False, cutq=True, show = False, include_frame = True, every=True,vrange=[0,1], test="", discreet = 0):
     if every == True:
         for cut in False,True:
-            if cut == True:
-                number_of_bins=number_of_bins-15
+    #        if cut == True:
+        #        number_of_bins=number_of_bins-15
             for stat_column in ["Change in D Ball Goal/m","Phase Type"]:
                 for binned_column in binned_columns:
                     if stat_column == "Change in D Ball Goal/m":
@@ -254,7 +253,7 @@ def seperated_2D(df, columna, columnb,show_frame=True,foldername="",maxvala=1,ma
         dft.drop(drop, inplace=True)
     for dft in dfs:
         print("poo",dft[columna].max())
-        '''
+levels = [0,0.1,0.25,0.5,0.68, 0.95, 0.975,1]        '''
     #plot possession change
     fig, ax = plt.subplots(2,2,constrained_layout = True)
     selection = "Possession Change phases"
@@ -305,7 +304,7 @@ def seperated_2D(df, columna, columnb,show_frame=True,foldername="",maxvala=1,ma
     if show_plot == True:
         plt.show()
     else:
-        filename = foldername + columna + "_" + columnb + "_" + "__" + "kde-2D.png"
+        filename = foldername + columna + "_" + columnb + "_2D.png"
         plt.savefig(filename, format = "png")
 
 def seabornplot(df,columna,columnb,plot_type, show_plot,title,filename = None,gridsize=20):
@@ -340,7 +339,9 @@ def seabornplot(df,columna,columnb,plot_type, show_plot,title,filename = None,gr
         plt.show()
     return ax
 
-def columnDist(df,column,save_plot=False,filepath=None,maximum = 0):
+def columnDist(df,column,save_plot=False,filepath=None,maximum = 0,vrange=[0,1]):
+    df = df[df[column]>=df[column].quantile(vrange[0])]
+    df = df[df[column]<=df[column].quantile(vrange[1])]
     df_pos = df[df['Phase Type']=="Possession Change"].copy(deep = True)
     m=(df["Phase Type"]=="Frame Jump")|(df["Phase Type"]=="Possession Change")
     df_posframe = df[df["Phase Type"] == "Frame Jump"].copy(deep = True).append(df[df["Phase Type"] == "Possession Change"])
@@ -349,6 +350,7 @@ def columnDist(df,column,save_plot=False,filepath=None,maximum = 0):
     if maximum != 0:
         df_posframe = df_posframe[df_posframe[column]<=maximum]
         df_npos = df_npos[df_npos[column]<=maximum]
+    print(df_npos[column])
     sns.distplot( df_posframe[column] , color="skyblue", label="Successful (inc F)")
     sns.distplot( df_npos[column] , color="red", label="Unsuccessful`")
     plt.legend()
@@ -364,26 +366,27 @@ myDataFile = '../../c++/data/newdata/groupedsplit/17adata.json'
 df = pd.read_json(myDataFile,orient='split')
 
 #Then we want to check what each colum means, the following line will output the header of each column
-print(list(df.columns))
+for i,v in enumerate(list(df.columns)):
+    print(i,",",v)
 
 #Grouped Plotters
 #Hopefully the following functions should allow multiple graphs to be generated, however individual parameters may need to be specified for aesthetics
 
 #these variable are often required by the functions below
-column_plotted = 3
-folder_path = "../data/Seperated-2D/"
+column_plotted = 10
+folder_path = "../data/Summed_X/25/"
+#folder_path = "../data/Combined-1D/rund/"
 
 '''
 #This function will plot both hexagon and gaussian smoothed for the provided columns and save in folder_path. Note if column plotted is changed to a slice (4:) would select all columns after and including 4, the [] around list must also be deleted as the current slice speciefier ofasingle integer returns a single element rather than a list of length one.
 df = df[df['Phase Type'] == 'No Possession Change']
 for i,graph_type in zip([100,20],[True,False]):
     all_2d(df,[list(df.columns)[column_plotted]],'Change in D Ball Goal/m',folder_path,bins=i,smoothed=graph_type,show_plot=False,vrange=[0,1])
-'''
+    '''
+all_2d(df,[list(df.columns)[column_plotted]],'Change in D Ball Goal/m',folder_path,bins=100,smoothed=True,show_plot=False,x_range=[0.01,0.99],y_range=[0.2,0.8])
 
-'''
 #This function will plot histogram of column specified on x axis against both success ratio and change in D ball goal, for constant bin width and bin number, and for the case of success ratio including and not including frame jump phases. make sure df = df[df['Phase Type'] == 'No Possession Change'] has been commented out
-all_binstatistic(df, [list(df.columns)[column_plotted]], 25, folder_path,discreet=2)
-'''  
+#all_binstatistic(df, [list(df.columns)[column_plotted]], 10, folder_path,discreet=0)
 
 '''
 #This function is for instead binning change in D ball goal (will not work for success ratio)
@@ -392,17 +395,45 @@ for cut in True, False:
     return_binstatistic(a, "Change in D Ball Goal/m", list(df.columns)[column_plotted], 10, folder_path, vrange=[0.05,0.95], cutq=cut, show = False)
 '''
 
+'''
 #this function will plot 2D densities for the unsuccessful and successful plots for proided columna and column b. Passing plot_type as a b or c returns countour, shaded or hexagon density plots respectively. maxvala specifies the percentile to plot - 0.8 would mean only bottom %80 is included, and 1 means all data isincluded. maxvala is for x axis, maxvalb is for y axis.
-columna = 3
-columnb = 9
+columna = 10
+columnb = 30
 a = "kde_contour"
 b = "kde_shaded"
 c = "hex"
-seperated_2D(df,list(df.columns)[columna],list(df.columns)[columnb],foldername=folder_path,maxvala=1,maxvalb=1,plot_type=a)
+print(df.iloc[14].isin([-np.inf,np.inf,np.nan]).sum())
+df_in = df[df.iloc[:,columnb]!=-1].copy(deep = True)
+seperated_2D(df_in,list(df.columns)[columna],list(df.columns)[columnb],foldername=folder_path,plot_type=a)
+'''
+
+'''
+#This function creates a new column equal to distance away from a set point.
+for i in range(10):
+    df["3_10_cntr"] = (((2200*i-0.3*df.iloc[:,3])**2)*(1950-df.iloc[:,4])**2)**0.5 
+    columnDist(df,"3_10_cntr",False,"../data/Combined-1D/")
+#columnDist(df,"D Ball Nearest A",True,"../data/Combined-1D/")
+#columnDist(df,"Summed attacker space within 25m",True,"../data/Combined-1D/")
+'''
+
+'''
+for i in range(30,31):
+    print(i)
+    df_in = df[df.iloc[:,i]!=-1].copy(deep = True)
+    df_out = df[df.iloc[:,i]==-1].copy(deep = True)
+    print(i-27, "'th attacker not within 25m of ball")
+    print("Succ",len(df_out[df_out["Phase Type"]=="Frame Jump"]) + len(df_out[df_out["Phase Type"]=="Possession Change"]))
+    print("USucc",len(df_out[df_out["Phase Type"]=="No Possession Change"]))
+    print(i-27, "'th attacker within 25m of ball")
+    print("Succ",len(df_in[df_in["Phase Type"]=="Frame Jump"]) + len(df_in[df_in["Phase Type"]=="Possession Change"]))
+    print("USucc",len(df_in[df_in["Phase Type"]=="No Possession Change"]))
+    columnDist(df_in,list(df.columns)[i],True,folder_path,vrange = [0.004,0.996])
+    '''
 
 '''
 #This function creates a new column equal to distance dba/Distance dbd, then plots kernel number density for both successful and unsuccessful phasetypes
 df["dAOdD"] =(df.iloc[:,3]+0.1)**-1*df.iloc[:,4]**2 
+
 df["CA"] = df["Summed attacker space within 100m"]*df["D Ball Nearest D"]
 print(df["CA"])
 columnDist(df,"dAOdD",True,"../data/Combined-1D/",0.01)
@@ -411,6 +442,7 @@ columnDist(df,"Summed attacker space within 100m",True,"../data/Combined-1D/")
 columnDist(df,"D Ball Nearest A",True,"../data/Combined-1D/")
 #for grouped groups-not implemented yet
 '''
+#columnDist(df,list(df.columns)[column_plotted],True,folder_path)
 
 '''
 group = [43,1,6,14,8,3,90,11,13,4,31,91,21,57,36,38,20,80,110,35]
