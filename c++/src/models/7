@@ -332,10 +332,6 @@ double Frame::getBallDistance(){
 
 double Frame::getPressureB(double closePressure, std::array<double, 7> parameters, double playerRadius){
 	double pressure{0};
-	double meanPressure{0};
-	double oldPressureMetric{0};
-	double pressureRanking{0};
-	int i{0};
 	// components of parameters = {vel_pow, distvel_pow, ball_pow, dist_weight, dist_pow, ranking, frame_weighting}	
 
 	// for all players in the attacking team
@@ -365,8 +361,6 @@ double Frame::getPressureB(double closePressure, std::array<double, 7> parameter
 			std::array<double, 2> ballPos = ball->getPos(); // xy position of ball
 			double relBallPos = distance(playerAPos, ballPos); //relative position of the ball to attacker
 
-			// amy 26-03-2020 repeat readings for only attackers within 20m of the ball here
-			if(relBallPos <= 2000){
 			for(auto playeritd = players.begin();playeritd<players.end();++playeritd){
 				if((*playeritd)->getTeam()!=possession){ // if the team is NOT in possession
 					// get the distance and relative velocity off the defender to the attacker
@@ -393,62 +387,63 @@ double Frame::getPressureB(double closePressure, std::array<double, 7> parameter
 								       found = true;
 								}
 								index ++;
-								++it;//go to next element in container of iterator
+								++it;
 						 	}	
-							
-							//amy 24-03-2020 changing the pressure to calculate the average instead of the sum
-							i ++;
 
-							//amy 24-03-2020 changing everything to the same units of metres
-							//oldPressureMetric +=  pow(pow(index + 1, parameters[5]), -1) * pow(pow(0.01 * relBallPos, parameters[2]), -1) * (pow(10, parameters[3]) / pow(0.01 * playerPlayerDistance, parameters[4]) + 1) * (pow(0.01 * playerPlayerVelocity, parameters[0]) / pow(0.01 * playerPlayerDistance, parameters[1]));
-
-							//amy 26-03-2020 change pressure metric to take into account everything 
-							//directly proportionally, continue with metres, not cm
-							//pressure += pow(0.01*playerPlayerVelocity, parameters[0]) * pow(0.01*playerPlayerDistance, parameters[1]) * pow(0.01*relBallPos, parameters[2]);
-							//amy 26-03-2020 for use when nor using the mean - defender distance ranking
-							pressureRanking += (pow(0.01*playerPlayerVelocity, parameters[0]) * pow(0.01*playerPlayerDistance, parameters[1]) * pow(0.01*relBallPos, parameters[2])) * pow(pow(index+1, parameters[5]), -1);
-
+							pressure +=  pow(pow(index + 1, parameters[5]), -1) * pow(pow(0.01 * relBallPos, parameters[2]), -1) * (pow(10, parameters[3]) / pow(playerPlayerDistance, parameters[4]) + 1) * (pow(playerPlayerVelocity, parameters[0]) / pow(playerPlayerDistance, parameters[1]));
 						}
 					}
 				}
 			}
-			//amy 26-03-2020 end of if statement below
-			}
 		}
 	}
-	//meanPressure = pressure / i;
-	//amy 24-03-2020 return the meanPressure instead of the actual pressure
-	//comment which one not in use
-	//this will get rid of the dependence on the number of defenders within the radius
-	//return oldPressureMetric;
-	//return pressure;
-	return pressureRanking;
-	//return meanPressure;
+	return pressure;
 }
 std::vector<double> Frame::getPressureComponents(){
 	std::vector<double> pressureComponents;
+	/*
+	pressureComponents.push_back(dBallNearestA());
+	pressureComponents.push_back(dBallNearestD());
+	std::vector<double> times;
+	int unmarked = attackersBallTime(2000, times);
+	pressureComponents.push_back(unmarked*1.0);
+	double totalTime{0};
+	for(auto i : times){
+		totalTime+=i;
+	}
+	pressureComponents.push_back(totalTime);
+	pressureComponents.push_back(summedDistance(100));
+	pressureComponents.push_back(summedDistance(50));
+	pressureComponents.push_back(summedDistance(25));
+	pressureComponents.push_back(summedDistance(15));
+	*/
 
-	pressureComponents.push_back(getPressureB(0, {0.2,0,0,0,0,1,0}, 1500));
-	pressureComponents.push_back(getPressureB(0, {0.5,0,0,0,0,1,0}, 1500));
-	pressureComponents.push_back(getPressureB(0, {1.0,0,0,0,0,1,0}, 1500));
-	pressureComponents.push_back(getPressureB(0, {1.5,0,0,0,0,1,0}, 1500));
-	pressureComponents.push_back(getPressureB(0, {2.0,0,0,0,0,1,0}, 1500));
+	// parameters - vel, distvel, ball, 10, dist, ranking
+	// positive parameters for the velocity
+	pressureComponents.push_back(getPressureB(0, {0.1,0,0,0,0,0,0}, 1500));
+	pressureComponents.push_back(getPressureB(0, {0.5,0,0,0,0,0,0}, 1500));
+	pressureComponents.push_back(getPressureB(0, {1.0,0,0,0,0,0,0}, 1500));
+	pressureComponents.push_back(getPressureB(0, {2.0,0,0,0,0,0,0}, 1500));
+
+	// another base pressure for a larger playerRadius	
+	pressureComponents.push_back(getPressureB(0, {0,0,0,0,0,0,0}, 2000));
 	
-	pressureComponents.push_back(getPressureB(0, {0,0.2,0,0,0,1,0}, 1500));
-	pressureComponents.push_back(getPressureB(0, {0,0.5,0,0,0,1,0}, 1500));
-	pressureComponents.push_back(getPressureB(0, {0,1.0,0,0,0,1,0}, 1500));
-	pressureComponents.push_back(getPressureB(0, {0,1.5,0,0,0,1,0}, 1500));
-	pressureComponents.push_back(getPressureB(0, {0,2.0,0,0,0,1,0}, 1500));
+	// amy 23-03-2020 attempt at subtracting the base pressure from the normal pressure functions
+	double res{0};
+	double base_pressure{0};
+        base_pressure = getPressureB(0, {0,0,0,0,0,0,0}, 1500);
+	auto dataSize = end(base_pressure) - begin(base_pressure);//std::size(base_pressure);
 
-	pressureComponents.push_back(getPressureB(0, {0,0,0.2,0,0,1,0}, 1500));
-	pressureComponents.push_back(getPressureB(0, {0,0,0.5,0,0,1,0}, 1500));
-	pressureComponents.push_back(getPressureB(0, {0,0,1.0,0,0,1,0}, 1500));
-	pressureComponents.push_back(getPressureB(0, {0,0,1.5,0,0,1,0}, 1500));
-	pressureComponents.push_back(getPressureB(0, {0,0,2.0,0,0,1,0}, 1500));
+	pressureComponents.push_back(std::transform(getPressureB(0,{0,0.1,0,0,0,0,0}, 1500), getPressureB(0,{0,0.1,0,0,0,0,0}, 1500) + dataSize, base_pressure, res, std::minus<double>()));
+	pressureComponents.push_back(std::transform(getPressureB(0,{0,1.0,0,0,0,0,0}, 1500), getPressureB(0,{0,1.0,0,0,0,0,0}, 1500) + dataSize, base_pressure, res, std::minus<double>()));
+	pressureComponents.push_back(std::transform(getPressureB(0,{0.1,0,0,0,0,0,0}, 1500), getPressureB(0,{0.1,0,0,0,0,0,0}, 1500) + dataSize, base_pressure, res, std::minus<double>()));
+	pressureComponents.push_back(std::transform(getPressureB(0,{1.0,0,0,0,0,0,0}, 1500), getPressureB(0,{1.0,0,0,0,0,0,0}, 1500) + dataSize, base_pressure, res, std::minus<double>());
+	pressureComponents.push_back(std::transform(getPressureB(0,{-0.2,0,0,0,0,0,0}, 1500), getPressureB(0,{-0.2,0,0,0,0,0,0}, 1500) + dataSize, base_pressure, res, std::minus<double>()));
+	pressureComponents.push_back(std::transform(getPressureB(0,{0,0,0.5,0,0,0,0}, 1500), getPressureB(0,{0,0,0.5,0,0,0,0}, 1500) + dataSize, base_pressure, res, std::minus<double>()));
+	pressureComponents.push_back(std::transform(getPressureB(0,{0,0,1.0,0,0,0,0}, 1500), getPressureB(0,{0,0,1.0,0,0,0,0}, 1500) + dataSize, base_pressure, res, std::minus<double>()));
+	pressureComponents.push_back(std::transform(getPressureB(0,{0,0,0,0,0,0.5,0}, 1500), getPressureB(0,{0,0,0,0,0,0.5,0}, 1500) + dataSize, base_pressure, res, std::minus<double>()));
+	pressureComponents.push_back(std::transform(getPressureB(0,{0,0,0,0,0,1.0,0}, 1500), getPressureB(0,{0,0,0,0,0,1.0,0}, 1500) + dataSize, base_pressure, res, std::minus<double>()));
 
-	pressureComponents.push_back(getPressureB(0, {0,0,0,0,0,0,0}, 1500));
-	pressureComponents.push_back(getPressureB(0, {0,0,0,0,0,1,0}, 1500));
-	
 	return pressureComponents;
 }
 	

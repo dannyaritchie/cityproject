@@ -81,14 +81,14 @@ int main(){
 	int minDefNum = 3;
 	double minDefVel = 2;
 	double ballRadius = 2000;
-	int startLookingDistance = 15;
-	int lookingLength = 24;
-	int minFrames = 32;
-	int maxPostPressTime = 25;
+	int startLookingDistance = 10;
+	int lookingLength = 29;
+	int minFrames = 20;
+	int maxPostPressTime = 20;
 	double playerRadius = 1500;
 	int numberOfGames = 10;
 	double closePressure = 0.3;
-	std::string dataDestination = "../data/sem2/parameterTests/distvel_pow/0.1/";
+	std::string dataDestination = "../data/groupedsplit/all17meanAin20mVBD_R2";
 	//CREATE 2017 GAME VECTOR
 	std::vector<int> midsb;
 	for (auto i = 918893;i<919271;++i){
@@ -210,6 +210,7 @@ int main(){
 		std::vector<std::array<double,3>> pressureBallDistG;
 		std::vector<std::array<double,3>> pressureBallDistPosChangeG;
 		std::vector<std::array<double,3>> pressureBallDistFrameJumpG;
+		std::vector<std::vector<double>> pressureBallDistGN;
 //	}
 	//
 	//or in case of groups
@@ -318,8 +319,15 @@ int main(){
 				//(no groups)
 				if(!useGroups){
 					if(storeGroups){
-						std::vector<std::array<double,2>> temp;
-						temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure, parameters, playerRadius);
+						std::vector<std::vector<double>> temp;
+						temp = tgame->getVectoredPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength,0,awayID);
+						pressureBallDistGN.insert(pressureBallDistGN.end(),temp.begin(),temp.end()); 
+						temp = tgame->getVectoredPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength,1,awayID);
+						pressureBallDistGN.insert(pressureBallDistGN.end(),temp.begin(),temp.end()); 
+						temp = tgame->getVectoredPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength,2,awayID);
+						pressureBallDistGN.insert(pressureBallDistGN.end(),temp.begin(),temp.end()); 
+						/*std::vector<std::array<double,2>> temp;
+						temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure, parameters);
 						std::vector<std::array<double,3>> temdp;
 						for(auto i : temp){
 							std::array<double,3> vtemp = {i[0],i[1],awayID};
@@ -339,7 +347,7 @@ int main(){
 							std::array<double,3> vtemp = {i[0],i[1],awayID};
 							temdp.push_back(vtemp);
 						}
-						pressureBallDistFrameJumpG.insert(pressureBallDistFrameJumpG.begin(),temdp.begin(),temdp.end()); 
+						pressureBallDistFrameJumpG.insert(pressureBallDistFrameJumpG.begin(),temdp.begin(),temdp.end()); */
 					}
 					else{	
 						std::vector<std::array<double,2>> temp;
@@ -609,7 +617,8 @@ int main(){
 		if(!useGroups){
 			if(storeGroups){
 				if(jsonOutput){
-					std::vector<std::array<double, 3>> fdata;
+					/*
+					std::vector<std::array<double,3>> fdata;
 					for(auto i : pressureBallDistG){
 						std::array<double,3> temp = {i[0],i[2],0};
 						fdata.push_back(temp);
@@ -624,6 +633,10 @@ int main(){
 					}
 					JsonParser output = JsonParser(dataDestination);
 					output.write("data.json", fdata);
+					*/
+					JsonParser output = JsonParser(dataDestination);
+					output.write("data.json", pressureBallDistGN);
+					std::cout << "poo" << std::endl;
 				}
 				else{
 					noPossessionChangeO << "Pressure, Change in distance between ball and goal, TeamID" << std::endl;
