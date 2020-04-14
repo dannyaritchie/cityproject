@@ -486,12 +486,13 @@ void Game::splitFrames(){
 	}
 	std::cout << "Frame save ratio: " << (homeFrames.size()+awayFrames.size())/frames.size() << std::endl;
 }
-
+/*
 void Game::getScalar(){
 	for (auto frameit = frames.begin();frameit<frames.end();++frameit){
 		(*frameit)->computeScalar(0);
 	}
 }
+*/
 std::vector<Frame*> Game::getFrames(){
     return frames;
 }
@@ -881,7 +882,129 @@ std::vector<std::vector<double>> Game::getVectoredPhaseInformation(std::vector<s
 	}
 	return pressureBallDists;
 }
-					
+std::vector<std::vector<double>> Game::getOptimisedVectoredPhaseInformation(std::vector<std::array<int,2>> startSizes, int lookingLength, int type,int group){
+        //
+        std::vector<Frame*>::iterator frameit = frames.begin();
+        double startBallDistance{0};
+        double endBallDistance{0};
+        double pressure;
+        std::vector<std::vector<double>> pressureBallDists;
+        int noPassPhases{0}, foundPasses{0}, foundPoopy{0};
+        for(auto phaseit = startSizes.begin(); phaseit<startSizes.end();++phaseit){
+                while((*frameit)->getFid()!=(*phaseit)[0]){
+                        std::advance(frameit,1);        
+                }
+		std::vector<Frame*>::iterator saveit = frameit;
+                if(type == 0){
+                        startBallDistance = (*frameit)->getBallDistance();
+                        std::vector<Frame*>::iterator endit = std::next(frameit,lookingLength);
+                        endBallDistance = (*endit)->getBallDistance();
+                }
+                frameit = findLastPassInFuture(frameit, (*phaseit)[1],noPassPhases,foundPasses,foundPoopy);
+		if(frameit != frames.end()){
+			std::vector<double> pressures = (*frameit)->getPressureComponents();
+			std::vector<double> pressureBallDist;
+			pressureBallDist.push_back(1.0*type);
+			pressureBallDist.push_back(1.0*group);
+			pressureBallDist.push_back((endBallDistance-startBallDistance)/100);
+			for(auto i : pressures){        
+				pressureBallDist.push_back(i);  
+			}
+			pressureBallDists.push_back(pressureBallDist);
+		}
+		else{
+			frameit = saveit;
+		}
+
+        }
+        std::cout << "no pass: " << noPassPhases << std::endl << "poopy pass: " << foundPoopy << std::endl << "pass: " << foundPasses << std::endl;
+        return pressureBallDists;       
+}
+std::vector<Frame*>::iterator Game::findFirstPassInFuture(std::vector<Frame*>::iterator frameit, int phaseLength,int& noPassPhases, int& foundPasses, int& foundPoopy){
+        int framesFromStart{0};
+	while(distance((*frameit)->closestPlayerToBall()->getPos(),(*frameit)->getBall()->getPos())>150&&framesFromStart < phaseLength){
+		std::advance(frameit,1);
+		framesFromStart ++;
+	}
+        int closestAttacker = (*frameit)->closestPlayerToBall()->getMappedPid();
+        while( closestAttacker == (*frameit)->closestPlayerToBall()->getMappedPid()&&framesFromStart<phaseLength){
+                framesFromStart ++;             
+                std::advance(frameit,1);        
+        }
+        if (framesFromStart==phaseLength){ 
+                noPassPhases ++;                
+        }
+        else{
+                std::advance(frameit,-1);       
+                framesFromStart -= 1;
+                double distanceToBall = distance((*frameit)->closestPlayerToBall()->getPos(),(*frameit)->getBall()->getPos());
+                bool closer{true};
+                while(closer&&framesFromStart>0){
+                        framesFromStart -=1;
+                        std::advance(frameit,-1);
+                        double tdistanceToBall = distance((*frameit)->closestPlayerToBall()->getPos(),(*frameit)->getBall()->getPos());
+                        if(tdistanceToBall<distanceToBall){
+                                distanceToBall = tdistanceToBall;
+                        }
+                        else{
+				closer = false;
+			}
+                }
+                std::advance(frameit,1);
+                if(distanceToBall < 150){
+                        foundPasses ++;
+                        return frameit;
+                }
+                else{
+                        foundPoopy ++;
+                }
+        }
+        return frames.end();
+}
+std::vector<Frame*>::iterator Game::findLastPassInFuture(std::vector<Frame*>::iterator frameit, int phaseLength,int& noPassPhases, int& foundPasses, int& foundPoopy){
+        int framesFromEnd{0};
+	std::advance(frameit,phaseLength);        
+	while(distance((*frameit)->closestPlayerToBall()->getPos(),(*frameit)->getBall()->getPos())>150&&framesFromEnd < phaseLength){
+		std::advance(frameit,-1);
+		framesFromEnd ++;
+	}
+        int closestAttacker = (*frameit)->closestPlayerToBall()->getMappedPid();
+        while( closestAttacker == (*frameit)->closestPlayerToBall()->getMappedPid()&&framesFromEnd<phaseLength){
+                framesFromEnd ++;             
+		std::advance(frameit,-1);
+        }
+        if (framesFromEnd==phaseLength){ 
+                noPassPhases ++;                
+        }
+        else{
+                std::advance(frameit,-1);       
+                framesFromEnd += 1;
+                double distanceToBall = distance((*frameit)->closestPlayerToBall()->getPos(),(*frameit)->getBall()->getPos());
+                bool closer{true};
+                while(closer&&framesFromEnd<phaseLength){
+                        framesFromEnd +=1;
+                        std::advance(frameit,-1);
+                        double tdistanceToBall = distance((*frameit)->closestPlayerToBall()->getPos(),(*frameit)->getBall()->getPos());
+                        if(tdistanceToBall<distanceToBall){
+                                distanceToBall = tdistanceToBall;
+                        }
+                        else{
+				closer = false;
+			}
+                }
+                std::advance(frameit,-1);
+                if(distanceToBall < 150){
+                        foundPasses ++;
+                        return frameit;
+                }
+                else{
+                        foundPoopy ++;
+                }
+        }
+        return frames.end();
+}
+
+
 
 
 

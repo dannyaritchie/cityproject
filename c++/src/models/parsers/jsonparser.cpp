@@ -56,7 +56,7 @@ void JsonParser::write(std::string filename, std::vector<std::vector<double>> da
 //dataA[0][0] = Pressure, [0][1] = Group, [0][2] is phaseType, 0 is noposchange, 1 is poschange and 2 is framejump;
 	std::ofstream of;
 	of.open(dataDestination + filename);
-	std::vector<std::string> columnTitles = {"Phase Type","Group","Change in D Ball Goal/m","D Ball Nearest A","D Ball Nearest D", "Number unmarked within 20m", "Summed Time within 20m","Summed attacker space within 100m","Summed attacker space within 50m","Summed attacker space within 25m","Summed attacker space within 15m"};
+	std::vector<std::string> columnTitles = {"Phase Type","Group","Change in D Ball Goal/m","A0thDB","A0thDM","A1thDB","A1thDM","A2thDB","A2thDM","A3thDB","A3thDM","A4thDB","A4thDM","A5thDB","A5thDM","D0thDB","D0thDM","D1thDB","D1thDM","D2thDB","D2thDM","D3thDB","D3thDM","D4thDB","D4thDM","D5thDB","D5thDM","A25_2_0","A25_2_1","A25_2_2","A25_2_3"};
 	std::vector<std::string> rowTitles;
 	for(int i = 0; i<dataA.size();i++){
 		rowTitles.push_back(std::to_string(i));
@@ -95,3 +95,4 @@ void JsonParser::write(std::string filename, std::vector<std::vector<double>> da
 	return;
 }
 		
+//Data C std::vector<std::string> columnTitles = {"Phase Type","Group","Change in D Ball Goal/m","Distance Closest A and D","A in 5m of Ball","D in 5m of Ball","A in 15m of Ball","D in 15m of Ball","A in 25m of Ball", "D in 25m of Ball","Free Angle 5 A","Free Angle 5 D","Free Angle 15 A", "Free Angle 15 D"};

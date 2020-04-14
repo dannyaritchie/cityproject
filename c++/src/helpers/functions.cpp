@@ -10,7 +10,7 @@ double distance(double xa, double xb, double ya, double yb){
 	return pow((pow((xa-xb),2)+pow(ya-yb,2)),0.5);
 }
 double distance(std::array<double,2> a, std::array<double,2> b){
-	return pow((pow((a[0]-b[0]),2)+pow(a[1]-a[2],2)),0.5);
+	return pow((pow((a[0]-b[0]),2)+pow(a[1]-b[1],2)),0.5);
 }
 double magnitude(std::array<double,2> vec){
 	return pow(pow(vec[0],2)+pow(vec[1],2),0.5);
