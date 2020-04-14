@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "frame.h"
 #include "../helpers/functions.h"
 #include "game.h"
@@ -120,35 +121,58 @@ double Frame::getVoronoi(double pitchx, double pitchy){
 	return home/away;
 }
 
-void Frame::computeScalar(int posid){
+double Frame::computeScalar(double radius, bool attack, double coveredAngle){
 	//put ball at (0,0)
 	//centred attack
+	std::cout << "in" << std::endl;
 
 	std::vector<std::array<double,2>> centredAttack;
 	std::array<double,2> ballPos = ball->getPos();
 	for(auto playerit = players.begin(); playerit < players.end();++playerit){
-		if ((*playerit)->getTeam()==posid){
-			std::array<double, 2> tpos;
-			for (int i =0; i< 1;i++){
-				tpos[i] = (*playerit)->getPos()[i] - ballPos[i];
+		if ((*playerit)->getTeam()==possession&&attack==true){
+			if(distance((*playerit)->getPos(),ball->getPos())<radius){
+				std::array<double, 2> tpos = (*playerit)->getPos();
+				std::array<double,2> pos;
+				for(int i = 0;i<2;i++){
+					pos[i]=tpos[i]-ballPos[i];
+					centredAttack.push_back(pos);
+				}
 			}
-			centredAttack.push_back(tpos);
+		}
+		if ((*playerit)->getTeam()!=possession&&attack!=true){
+			if(distance((*playerit)->getPos(),ball->getPos())<radius){
+				std::array<double, 2> tpos = (*playerit)->getPos();
+				std::array<double,2> pos;
+				for(int i = 0;i<2;i++){
+					pos[i]=tpos[i]-ballPos[i];
+					centredAttack.push_back(pos);
+				}
+			}
 		}
 	}
 	//transfor to polars
+	std::vector<double> thetas;
 	for(auto playerit = centredAttack.begin(); playerit < centredAttack.end();++playerit){
 		double theta = atan2((*playerit)[1], (*playerit)[0]);
-		double r = pow(pow((*playerit)[0],2)+pow((*playerit)[1],2),0.5);
-		(*playerit)[0] = theta;
-		(*playerit)[1] = r;
+		thetas.push_back(180*theta/3.14 + 180);
+		std::cout << "theta:" << 180*theta/3.14 + 180<< std::endl;
 	}
 	//add gaussian
-	for(int i = 0;i<720;i++){
-		for(auto playerit = centredAttack.begin(); playerit < centredAttack.end();++playerit){
-			anglePotential[i] += exp(-(pow(i/2-(*playerit)[0],2)/(2*pow((*playerit)[1],2))));
+	std::array<int,360> freeAngle;
+	for(int i = 0;i<360;i++){
+		freeAngle[i] = 1;
+		for(auto theta : thetas){
+			if(i>=theta-coveredAngle&&i<=theta+coveredAngle){
+				freeAngle[i]=0;
+			}
 		}
-
 	}
+	int sum{0};
+	for (auto i : freeAngle){
+		sum += i;
+	}
+	std::cout << "sum:" << sum << std::endl;
+	return sum;
 }
 bool Frame::writeScalar(std::ostream & os){
     for(int i=0;i<720;i++){
@@ -425,6 +449,42 @@ double Frame::getPressureB(double closePressure, std::array<double, 7> parameter
 	return pressureRanking;
 	//return meanPressure;
 }
+/*B
+std::vector<double> Frame::getPressureComponents(){
+	std::vector<double> pressureComponents;
+	std::array<double,7> parameters;
+	for(int i =2;i<9;i=i+2){
+		parameters = {-0.1*i,0,0,0,0,0,0};
+		pressureComponents.push_back(getPressureB(0,parameters,1500));
+	}
+	parameters = {0,-0.5,0,0,0,0,0};
+	pressureComponents.push_back(getPressureB(0,parameters,1500));
+	parameters = {0,0.1,0,0,0,0,0};
+	pressureComponents.push_back(getPressureB(0,parameters,1500));
+	parameters = {0,0.5,0,0,0,0,0};
+	pressureComponents.push_back(getPressureB(0,parameters,1500));
+	parameters = {0,1,0,0,0,0,0};
+	pressureComponents.push_back(getPressureB(0,parameters,1500));
+	parameters = {0,0,0.5,0,0,0,0};
+	pressureComponents.push_back(getPressureB(0,parameters,1500));
+	parameters = {0,0,1,0,0,0,0};
+	pressureComponents.push_back(getPressureB(0,parameters,1500));
+	parameters = {0,0,2,0,0,0,0};
+	pressureComponents.push_back(getPressureB(0,parameters,1500));
+	parameters = {0,4,0,0,0,0,0};
+	pressureComponents.push_back(getPressureB(0,parameters,1500));
+	parameters = {0,0,0,0,0,0.5,0};
+	pressureComponents.push_back(getPressureB(0,parameters,1500));
+	parameters = {0,0,0,0,0,1,0};
+	pressureComponents.push_back(getPressureB(0,parameters,1500));
+	parameters = {0,0,0,0,0,2,0};
+	pressureComponents.push_back(getPressureB(0,parameters,1500));
+	parameters = {0,0,0,0,0,0,0};
+	pressureComponents.push_back(getPressureB(0,parameters,1500));
+	return pressureComponents;
+}*/
+
+	/*A
 std::vector<double> Frame::getPressureComponents(){
 	std::vector<double> pressureComponents;
 
@@ -450,7 +510,45 @@ std::vector<double> Frame::getPressureComponents(){
 	pressureComponents.push_back(getPressureB(0, {0,0,0,0,0,1,0}, 1500));
 	
 	return pressureComponents;
+}*/
+/*C
+std::vector<double> Frame::getPressureComponents(){
+	std::vector<double> pressureComponents;
+	pressureComponents.push_back(dDA());
+	for(int i = 500; i < 2501; i=i+1000){
+		pressureComponents.push_back(numberOfPlayersInRadius(i,true));
+		pressureComponents.push_back(numberOfPlayersInRadius(i,false));
+	}
+	pressureComponents.push_back(computeScalar(1500.0,true,5.0));
+	pressureComponents.push_back(computeScalar(1500.0,false,5.0));
+	pressureComponents.push_back(computeScalar(1500.0,true,15.0));
+	pressureComponents.push_back(computeScalar(1500.0,false,15.0));
+	return pressureComponents;
+}*/
+//D
+std::vector<double> Frame::getPressureComponents(){
+	std::vector<double> pressureComponents;
+	std::vector<std::array<double,2>> sortedDM = getMDToClosestNPlayers(true);
+	for (int i = 0; i<6;i++){
+		pressureComponents.push_back(sortedDM[i][0]);
+		pressureComponents.push_back(sortedDM[i][1]);
+	}
+	sortedDM = getMDToClosestNPlayers(false);
+	for (int i = 0; i<6;i++){
+		pressureComponents.push_back(sortedDM[i][0]);
+		pressureComponents.push_back(sortedDM[i][1]);
+	}
+	std::vector<double> sortedTheta = computeScalarCombined(2500, 200, 4);
+	for (int i = 0; i < 4; i ++){
+		pressureComponents.push_back(sortedTheta[i]);
+	}
+//	sortedTheta = computeScalarCombined(2000, 100, 5);
+//	for (int i = 0; i < 4; i ++){
+//		pressureComponents.push_back(sortedTheta[i]);
+//	}
+	return pressureComponents;
 }
+
 	
 double Frame::dBallNearestA(){
 	double d{999999};
@@ -496,5 +594,171 @@ double Frame::summedDistance(double radius){
 	}
 	return summedDistance;
 }
+double Frame::dDA(){
+	std::array<double,2> apos;
+	std::array<double,2> dpos;
+	double minadist = 99999;
+	double minddist = 99999;
+	for(auto p : players){
+		if(p->getTeam()==possession){
+			double tdist = distance(p->getPos(),ball->getPos());
+			if(tdist<minadist){
+				minadist=tdist;
+				apos=p->getPos();
+			}
+		}
+		else{
+			double tdist = distance(p->getPos(),ball->getPos());
+			if(tdist<minddist){
+				minddist=tdist;
+				dpos=p->getPos();
+			}
+		}
+	}
+	return distance(apos,dpos);
+}
+std::vector<double> Frame::getDToClosestNPlayers(bool attacking){
+	std::vector<double> distances;
+	for(auto p : players){
+		if(p->getTeam()==possession && attacking == true){
+			distances.push_back(distance(p->getPos(),ball->getPos()));
+		}
+		if(p->getTeam()!=possession && attacking == false){
+			distances.push_back(distance(p->getPos(),ball->getPos()));
+		}
+	}
+	std::sort(distances.begin(),distances.end());
+	return distances;
+}
+std::vector<std::array<double,2>> Frame::getMDToClosestNPlayers(bool attacking){
+	std::vector<std::array<double,2>> distances;
+	for(auto p : players){
+		if(p->getTeam()==possession && attacking == true){
+			double minDist = 999999;
+			for(auto q : players){
+				if(q->getTeam()!=possession){
+					double tDist = distance(p->getPos(),q->getPos());
+					if (tDist<minDist){
+						minDist=tDist;
+					}
+				}
+			}
+			std::array<double,2> temp = {distance(p->getPos(),ball->getPos()),minDist};
+			distances.push_back(temp);
+		}
+		if(p->getTeam()!=possession && attacking == false){
+			double minDist = 999999;
+			for(auto q : players){
+				if(q->getTeam()==possession){
+					double tDist = distance(p->getPos(),q->getPos());
+					if (tDist<minDist){
+						minDist=tDist;
+					}
+				}
+			}
+			std::array<double,2> temp = {distance(p->getPos(),ball->getPos()),minDist};
+			distances.push_back(temp);
+		}
+	}
+	std::sort(distances.begin(),distances.end(),[](const std::array<double,2>& a, const std::array<double,2>& b){
+			return a[0] < b[0];
+			});
+	return distances;
+}
+
+			
+double Frame::numberOfPlayersInRadius(double radius, bool attacking){
+	double count{0};
+	for(auto p : players){
+		if(p->getTeam()==possession && attacking == true){
+			if(distance(p->getPos(),ball->getPos())<radius){
+				count ++;
+			}
+		}
+		if(p->getTeam()!=possession && attacking == false){
+			if(distance(p->getPos(),ball->getPos())<radius){
+				count ++;
+			}
+		}
+	}
+	return count;
+}
+std::vector<double> Frame::computeScalarCombined(double radius, double markedDist,int number){
+	//put ball at (0,0)
+	//centred attack
+	std::vector<std::array<double,2>> centredAttack;
+	std::vector<std::array<double,2>> centredDefense;
+	std::array<double,2> ballPos = ball->getPos();
+	for(auto playerit = players.begin(); playerit < players.end();++playerit){
+		if ((*playerit)->getTeam()==possession){
+			if(distance((*playerit)->getPos(),ball->getPos())<radius){
+				std::array<double, 2> tpos = (*playerit)->getPos();
+				std::array<double,2> pos;
+				for(int i = 0;i<2;i++){
+					pos[i]=tpos[i]-ballPos[i];
+				}
+				centredAttack.push_back(pos);
+			}
+		}
+		if ((*playerit)->getTeam()!=possession){
+			if(distance((*playerit)->getPos(),ball->getPos())<radius){
+				std::array<double, 2> tpos = (*playerit)->getPos();
+				std::array<double,2> pos;
+				for(int i = 0;i<2;i++){
+					pos[i]=tpos[i]-ballPos[i];
+					centredDefense.push_back(pos);
+				}
+			}
+		}
+	}
+	//transfor to polars
+	std::vector<std::array<double,2>> rthetasA;
+	std::vector<std::array<double,2>> rthetasD;
+	for(auto playerit = centredAttack.begin(); playerit < centredAttack.end();++playerit){
+		double theta = atan2((*playerit)[1], (*playerit)[0]);
+		double r = pow(pow((*playerit)[0],2)+pow((*playerit)[1],2),0.5);
+		std::array<double,2> temp = {r,180*theta/3.14 + 180};
+		rthetasA.push_back(temp);
+	}
+	for(auto playerit = centredDefense.begin(); playerit < centredDefense.end();++playerit){
+		double theta = atan2((*playerit)[1], (*playerit)[0]);
+		double r = pow(pow((*playerit)[0],2)+pow((*playerit)[1],2),0.5);
+		std::array<double,2> temp = {r,180*theta/3.14 + 180};
+		rthetasD.push_back(temp);
+	}
+	std::vector<double> minThetas;
+	for(auto i : rthetasA){
+		double minthet = 180;
+		for(auto j : rthetasD){
+			if (j[0]<i[0]+markedDist){
+				double ttheta = j[1] - i[1];
+				
+				if(ttheta<0){
+					ttheta = ttheta*-1;
+				}
+				if(ttheta>180){
+					ttheta = 360-ttheta;
+				}
+				if(ttheta < minthet){
+					minthet=ttheta;
+				}
+			}
+		}
+		minThetas.push_back(minthet);
+	}
+	std::sort(minThetas.begin(),minThetas.end());
+	std::reverse(minThetas.begin(),minThetas.end());
+	if(minThetas.size()<number){
+		for (int i = 0; i <= number-minThetas.size();i++){
+			minThetas.push_back(-1);
+		}
+	}
+	if(minThetas.size()>number){
+		minThetas.erase(minThetas.begin()+number,minThetas.end());
+	}
+	return minThetas;
+}
+
+
 
 

@@ -95,3 +95,4 @@ void JsonParser::write(std::string filename, std::vector<std::vector<double>> da
 	return;
 }
 		
+//Data C std::vector<std::string> columnTitles = {"Phase Type","Group","Change in D Ball Goal/m","Distance Closest A and D","A in 5m of Ball","D in 5m of Ball","A in 15m of Ball","D in 15m of Ball","A in 25m of Ball", "D in 25m of Ball","Free Angle 5 A","Free Angle 5 D","Free Angle 15 A", "Free Angle 15 D"};

@@ -78,7 +78,7 @@ int main(){
 	bool storeGroups{true}; //if not using groups sais whether teamwill also be stored
 	bool jsonOutput{true};
 	
-	int minDefNum = 3;
+	int minDefNum = 1;
 	double minDefVel = 2;
 	double ballRadius = 2000;
 	int startLookingDistance = 10;
@@ -89,30 +89,31 @@ int main(){
 	int numberOfGames = 10;
 	double closePressure = 0.3;
 	std::string dataDestination = "../data/groupedsplit/all17meanAin20mVBD_R2";
+	
 	//CREATE 2017 GAME VECTOR
 	std::vector<int> midsb;
 	for (auto i = 918893;i<919271;++i){
 			midsb.push_back(i);
 	}
-	std::vector<int> bad2017games = {919068,919059,919050,919187,918899,918902,918913,918922,918967,918901, 918928,918962,918997}; // not sure why bad, error is usually that a player number was not found (i.e) a player presumed to be on pitchwas no longeron pitch. I guess this is possible from a substitution however research into 918901 found a frame where there was only 1 player.
+	std::vector<int> bad2017games = {918986,919068,919059,919050,919187,918899,918902,918911,918913,918922,918967,918901, 918928,918962,918997}; // not sure why bad, error is usually that a player number was not found (i.e) a player presumed to be on pitchwas no longeron pitch. I guess this is possible from a substitution however research into 918901 found a frame where there was only 1 player.
 	//though substitution does seem very unlikely as itshould be handled
 	for (int i : bad2017games){
 		midsb.erase(std::remove(midsb.begin(), midsb.end(), i), midsb.end());
 	}
 	
 	//CREATE 2018 GAME VECTOR
-	/*std::vector<int> midsa;
+	std::vector<int> midsa;
 	for (auto i = 987592; i < 987971; ++i){midsa.push_back(i);}
 
-	std::vector<int> bad2018Games = {987621, 987863, 987872}; // games that cause the program to crash
+	std::vector<int> bad2018Games = {987621, 987765, 987863, 987872,987802,987804,987805}; // games that cause the program to crash
 	for (int i : bad2018Games) {midsa.erase(std::remove(midsa.begin(), midsa.end(), i), midsa.end());}
-	*/
+	
 	//open data files (no groups)	
 //	if(!useGroups){
 		std::ofstream noPossessionChangeO;	
 		std::ofstream possessionChangeO;	
 		std::ofstream frameJumpO;	
-	if(doResults&&!useGroups){
+	if(doResults&&!useGroups&&!jsonOutput){
 		noPossessionChangeO.open(dataDestination + "nopossessionchange.txt");
 		possessionChangeO.open(dataDestination + "possessionchange.txt");
 		frameJumpO.open(dataDestination + "framejump.txt");
@@ -129,7 +130,7 @@ int main(){
 		std::ofstream noPossessionChangeGc;	
 		std::ofstream possessionChangeGc;	
 		std::ofstream frameJumpGc;	
-	if(doResults&&useGroups){
+	if(doResults&&useGroups&&!jsonOutput){
 		noPossessionChangeGa.open(dataDestination + "nopossessionchangeGa.txt");
 		possessionChangeGa.open(dataDestination + "possessionchangeGa.txt");
 		frameJumpGa.open(dataDestination + "framejumpGa.txt");
@@ -147,16 +148,16 @@ int main(){
 	
 	//Load game - specify which year here
 	//FOR 2018
-	//std::string rempatha = "/pc2014-data1/lah/data_msgpk_031219/2018/PremierLeague/";
+	std::string rempatha = "/pc2014-data1/lah/data_msgpk_031219/2018/PremierLeague/";
 	//FOR 2017
 	std::string rempathb= "/pc2014-data1/lah/data_msgpk_031219/2017/PremierLeague/";
 	
 	//set which teams we are interested in
 	//std::vector<int> teamIDs = {43, 14, 35};//for multiple groups this should be all teams	
 	//FOR 2017
-	std::vector<int> teamIDs = {43, 1, 6, 14, 8, 3, 90, 11, 13, 4, 31, 91, 21, 57, 36, 38, 20, 80, 110, 35};//for multiple groups this should be all teams
+	//std::vector<int> teamIDs = {43, 1, 6, 14, 8, 3, 90, 11, 13, 4, 31, 91, 21, 57, 36, 38, 20, 80, 110, 35};//for multiple groups this should be all teams
 	//FOR 2018
-	//std::vector<int> teamIDs = {43, 14, 8, 6, 3, 1, 39, 11, 13, 21, 57, 31, 4, 91, 90, 20,36, 97, 54, 38};
+	std::vector<int> teamIDs = {43, 14, 8, 6, 3, 1, 39, 11, 13, 21, 57, 31, 4, 91, 90, 20,36, 97, 54, 38};
 	//std::vector<int> teamIDs = {43, 14, 38};	
 	//define counters for amount of phase (no groups)
 //	if(!useGroups){
@@ -196,7 +197,7 @@ int main(){
 		groupPhaseSizeTime.resize(groups.size());
 		for(auto i : groupPhaseSizeTime){
 			for(auto j : i){
-			j = 0;
+				j = 0;
 			}
 		}
 //	}
@@ -220,18 +221,18 @@ int main(){
 //	}
 	
 	// comment below depending on wanting a specified number of games vs all games
-	//for(int i = 0; i <numberOfGames;i++){ //for userset number of game
+//	for(int i = 0; i <numberOfGames;i++){ //for userset number of game
 	
-	// FOR 2017
+ /*FOR 2017
 	for (int i = 0;i < midsb.size();i++){ //for all games
-		std::cout << "Match ID: " << midsb[i] << std::endl;
+		std::cout << "Match ID: " << midsb[i] << "," << i <<std::endl;
 		Game * tgame = new Game(midsb[i], rempathb); 
-	
+*/		
 	// FOR 2018
-	/*for (int i = 0; i < midsa.size(); i++){
-		std::cout << "Match ID: " << midsa[i] << std::endl;
-		Game * tgame = new Game(midsa[i], rempatha);*/
-		//
+	for (int i = 0; i < midsa.size(); i++){
+		std::cout << "Match ID: " << midsa[i] << "," << i << std::endl;
+		Game * tgame = new Game(midsa[i], rempatha);
+		
 		//Choose teams that are interesting	
 		int homeID{-1}, awayID{-1};
 		//
@@ -320,12 +321,20 @@ int main(){
 				if(!useGroups){
 					if(storeGroups){
 						std::vector<std::vector<double>> temp;
+						temp = tgame->getOptimisedVectoredPhaseInformation(noPossessionChangePhases,lookingLength,0,awayID);
+						pressureBallDistGN.insert(pressureBallDistGN.end(),temp.begin(),temp.end()); 
+						temp = tgame->getOptimisedVectoredPhaseInformation(possessionChangePhases,lookingLength,1,awayID);
+						pressureBallDistGN.insert(pressureBallDistGN.end(),temp.begin(),temp.end()); 
+						temp = tgame->getOptimisedVectoredPhaseInformation(frameJumpPhases,lookingLength,2,awayID);
+						pressureBallDistGN.insert(pressureBallDistGN.end(),temp.begin(),temp.end()); 
+					/*
 						temp = tgame->getVectoredPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength,0,awayID);
 						pressureBallDistGN.insert(pressureBallDistGN.end(),temp.begin(),temp.end()); 
 						temp = tgame->getVectoredPhaseInformation(possessionChangePhases,startLookingDistance,lookingLength,1,awayID);
 						pressureBallDistGN.insert(pressureBallDistGN.end(),temp.begin(),temp.end()); 
 						temp = tgame->getVectoredPhaseInformation(frameJumpPhases,startLookingDistance,lookingLength,2,awayID);
 						pressureBallDistGN.insert(pressureBallDistGN.end(),temp.begin(),temp.end()); 
+						*/
 						/*std::vector<std::array<double,2>> temp;
 						temp = tgame->getPhaseInformation(noPossessionChangePhases,startLookingDistance,lookingLength, ballRadius,0, closePressure, parameters);
 						std::vector<std::array<double,3>> temdp;
@@ -823,6 +832,7 @@ int main(){
 	}
 
 
+	std::cout << "Done" << std::endl;
 	return 0;
 }
 
