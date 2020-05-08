@@ -88,7 +88,7 @@ int main(){
 	double playerRadius = 1500;
 	int numberOfGames = 10;
 	double closePressure = 0.3;
-	std::string dataDestination = "../data/groupedsplit/all17meanAin20mVBD_R2";
+	std::string dataDestination = "../data/newdata/opt/17all6Last";
 	
 	//CREATE 2017 GAME VECTOR
 	std::vector<int> midsb;
@@ -155,9 +155,9 @@ int main(){
 	//set which teams we are interested in
 	//std::vector<int> teamIDs = {43, 14, 35};//for multiple groups this should be all teams	
 	//FOR 2017
-	//std::vector<int> teamIDs = {43, 1, 6, 14, 8, 3, 90, 11, 13, 4, 31, 91, 21, 57, 36, 38, 20, 80, 110, 35};//for multiple groups this should be all teams
+	std::vector<int> teamIDs = {43, 1, 6, 14, 8, 3, 90, 11, 13, 4, 31, 91, 21, 57, 36, 38, 20, 80, 110, 35};//for multiple groups this should be all teams
 	//FOR 2018
-	std::vector<int> teamIDs = {43, 14, 8, 6, 3, 1, 39, 11, 13, 21, 57, 31, 4, 91, 90, 20,36, 97, 54, 38};
+//	std::vector<int> teamIDs = {43, 14, 8, 6, 3, 1, 39, 11, 13, 21, 57, 31, 4, 91, 90, 20,36, 97, 54, 38};
 	//std::vector<int> teamIDs = {43, 14, 38};	
 	//define counters for amount of phase (no groups)
 //	if(!useGroups){
@@ -223,16 +223,16 @@ int main(){
 	// comment below depending on wanting a specified number of games vs all games
 //	for(int i = 0; i <numberOfGames;i++){ //for userset number of game
 	
- /*FOR 2017
+ //FOR 2017
 	for (int i = 0;i < midsb.size();i++){ //for all games
 		std::cout << "Match ID: " << midsb[i] << "," << i <<std::endl;
 		Game * tgame = new Game(midsb[i], rempathb); 
-*/		
-	// FOR 2018
+		
+	/* FOR 2018
 	for (int i = 0; i < midsa.size(); i++){
 		std::cout << "Match ID: " << midsa[i] << "," << i << std::endl;
 		Game * tgame = new Game(midsa[i], rempatha);
-		
+	*/
 		//Choose teams that are interesting	
 		int homeID{-1}, awayID{-1};
 		//

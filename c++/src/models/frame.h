@@ -39,7 +39,6 @@ public:
 	//for each player find distance to closest opposition player
 	double getVoronoi(double pitchx,double pitchy);
 	//***ANGULAR PASSING***///
-	void computeScalar(double, bool, bool);
     //computes a value for every 0.5 degrees around ball and stores in
     //anglepotential
     //value is sum of gaussians for every ally player i centred on theta i with
@@ -69,6 +68,8 @@ public:
 	std::vector<std::array<double,2>> getMDToClosestNPlayers(bool attacking);
 	std::vector<double> getDToClosestNPlayers(bool attacking);
 	std::vector<double> computeScalarCombined(double radius, double markedDist,int number);
+	double getPressureLDAvA();
+	std::vector<double> getFirstSix();
 };
 struct defenderdistance
 {

@@ -759,6 +759,55 @@ std::vector<double> Frame::computeScalarCombined(double radius, double markedDis
 	return minThetas;
 }
 
+std::vector<double> Frame::getFirstSix(){
+//put ball at (0,0)
+        //centred attack
+        std::vector<std::array<double,2>> centredAttack;
+        std::vector<std::array<double,2>> centredDefense;
+        std::array<double,2> ballPos = ball->getPos();
+        for(auto playerit = players.begin(); playerit < players.end();++playerit){
+                if ((*playerit)->getTeam()==possession){
+			std::array<double, 2> tpos = (*playerit)->getPos();
+			std::array<double,2> pos;
+			for(int i = 0;i<2;i++){
+				pos[i]=tpos[i]-ballPos[i];
+			}
+			centredAttack.push_back(pos);
+		}
+                if ((*playerit)->getTeam()!=possession){
+			std::array<double, 2> tpos = (*playerit)->getPos();
+			std::array<double,2> pos;
+			for(int i = 0;i<2;i++){
+				pos[i]=tpos[i]-ballPos[i];
+				centredDefense.push_back(pos);
+			}
+                }
+        }
+	std::sort(centredAttack.begin(),centredAttack.end(),[](const std::array<double,2>& a, const std::array<double,2>& b){
+			std::array<double,2> ttball = {0,0};
+			return distance(a,ttball) < distance(b,ttball);
+			});
+	std::sort(centredDefense.begin(),centredDefense.end(),[](const std::array<double,2>& a, const std::array<double,2>& b){
+			std::array<double,2> ttball = {0,0};
+			return distance(a,ttball) < distance(b,ttball);
+			});
+	std::vector<double> closestCentred;
+	for(int i = 0; i< 6;i++){
+		closestCentred.push_back(centredAttack[i][0]);
+		closestCentred.push_back(centredAttack[i][1]);
+		closestCentred.push_back(centredDefense[i][0]);
+		closestCentred.push_back(centredDefense[i][1]);
+	}
+	return closestCentred;
+}
 
-
-
+double Frame::getPressureLDAvA(){
+	std::vector<double> pressureComponents;
+	std::vector<std::array<double,2>> sortedDM = getMDToClosestNPlayers(true);
+	for (int i = 0; i<6;i++){
+		pressureComponents.push_back(sortedDM[i][0]);
+		pressureComponents.push_back(sortedDM[i][1]);
+	}
+	double optPressure = pressureComponents[0]*0.6846+pressureComponents[1]*-0.6443+pressureComponents[2]*0.1547+pressureComponents[3]*-0.1639+pressureComponents[4]*0.1089+pressureComponents[5]*-0.1381+pressureComponents[6]*0.0473+pressureComponents[7]*-0.133+pressureComponents[8]*0.0124+pressureComponents[9]*-0.0998 + pressureComponents[10]*-0.0081+pressureComponents[11]*-0.0658;
+	return optPressure;
+}

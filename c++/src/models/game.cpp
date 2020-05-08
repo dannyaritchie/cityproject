@@ -882,6 +882,7 @@ std::vector<std::vector<double>> Game::getVectoredPhaseInformation(std::vector<s
 	}
 	return pressureBallDists;
 }
+
 std::vector<std::vector<double>> Game::getOptimisedVectoredPhaseInformation(std::vector<std::array<int,2>> startSizes, int lookingLength, int type,int group){
         //
         std::vector<Frame*>::iterator frameit = frames.begin();
@@ -902,7 +903,8 @@ std::vector<std::vector<double>> Game::getOptimisedVectoredPhaseInformation(std:
                 }
                 frameit = findLastPassInFuture(frameit, (*phaseit)[1],noPassPhases,foundPasses,foundPoopy);
 		if(frameit != frames.end()){
-			std::vector<double> pressures = (*frameit)->getPressureComponents();
+		//	std::vector<double> pressures = (*frameit)->getPressureComponents();
+			std::vector<double> pressures = (*frameit)->getFirstSix();
 			std::vector<double> pressureBallDist;
 			pressureBallDist.push_back(1.0*type);
 			pressureBallDist.push_back(1.0*group);
@@ -920,6 +922,62 @@ std::vector<std::vector<double>> Game::getOptimisedVectoredPhaseInformation(std:
         std::cout << "no pass: " << noPassPhases << std::endl << "poopy pass: " << foundPoopy << std::endl << "pass: " << foundPasses << std::endl;
         return pressureBallDists;       
 }
+/*
+std::vector<std::vector<double>> Game::getOptimisedVectoredPhaseInformation(std::vector<std::array<int,2>> startSizes, int lookingLength, int type,int group){
+        //
+        std::vector<Frame*>::iterator frameit = frames.begin();
+        double startBallDistance{0};
+        double endBallDistance{0};
+        double pressure;
+        std::vector<std::vector<double>> pressureBallDists;
+	std::vector<int> lowestPressureFrames, highestPressureFrames;
+        for(auto phaseit = startSizes.begin(); phaseit<startSizes.end();++phaseit){
+		int lowestPressureFrame, highestPressureFrame;
+                while((*frameit)->getFid()!=(*phaseit)[0]){
+                        std::advance(frameit,1);        
+                }
+		std::vector<Frame*>::iterator saveit = frameit;
+                if(type == 0){
+                        startBallDistance = (*frameit)->getBallDistance();
+                        std::vector<Frame*>::iterator endit = std::next(frameit,lookingLength);
+                        endBallDistance = (*endit)->getBallDistance();
+                }
+		std::array<double,2> pressures = findFrameHighestPressure(frameit, (*phaseit)[1], lowestPressureFrame, highestPressureFrame);
+		std::vector<double> pressureBallDist;
+		pressureBallDist.push_back(1.0*type);
+		pressureBallDist.push_back(1.0*group);
+		pressureBallDist.push_back((endBallDistance-startBallDistance)/100);
+		pressureBallDist.push_back(pressures[0]);  
+		pressureBallDist.push_back(pressures[1]);  
+		pressureBallDists.push_back(pressureBallDist);
+		lowestPressureFrames.push_back(lowestPressureFrame);
+		highestPressureFrames.push_back(highestPressureFrame);
+        }
+	int meanLow{0};
+	if(lowestPressureFrames.size()>0){
+		for(auto i : lowestPressureFrames){
+			meanLow += i;
+		}
+		meanLow /= lowestPressureFrames.size();
+	}
+	else{
+		meanLow = 0;
+	}
+	int meanHigh{0};
+	if(highestPressureFrames.size()>0){
+		for(auto i : highestPressureFrames){
+			meanHigh += i;
+		}
+		meanHigh /= highestPressureFrames.size();
+	}
+	else{
+		meanHigh = 0;
+	}
+	std::cout << meanLow << "," << meanHigh << " - Low,High frames from start" << std::endl;
+        return pressureBallDists;       
+}
+*/
+
 std::vector<Frame*>::iterator Game::findFirstPassInFuture(std::vector<Frame*>::iterator frameit, int phaseLength,int& noPassPhases, int& foundPasses, int& foundPoopy){
         int framesFromStart{0};
 	while(distance((*frameit)->closestPlayerToBall()->getPos(),(*frameit)->getBall()->getPos())>150&&framesFromStart < phaseLength){
@@ -1003,6 +1061,28 @@ std::vector<Frame*>::iterator Game::findLastPassInFuture(std::vector<Frame*>::it
         }
         return frames.end();
 }
+
+std::array<double,2> Game::findFrameHighestPressure(std::vector<Frame*>::iterator frameit, int phaseLength,int& frameLowNumber, int& frameHighNumber){
+	double currentHighestPressure = (*frameit)->getPressureLDAvA();
+	double currentLowestPressure = currentHighestPressure;
+	frameLowNumber = 0;
+	frameHighNumber = 0;
+	for (int i = 0;i<phaseLength;i++){
+		std::advance(frameit,1);
+		double tempPressure = (*frameit)->getPressureLDAvA();
+		if(tempPressure>currentHighestPressure){
+			frameHighNumber = i+1;
+			currentHighestPressure = tempPressure;
+		}
+		if(tempPressure<currentLowestPressure){
+			frameLowNumber = i+1;
+			currentLowestPressure = tempPressure;
+		}
+	}
+	std::array<double,2> result = {currentLowestPressure,currentHighestPressure};
+	return result;
+}
+
 
 
 

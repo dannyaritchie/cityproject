@@ -62,6 +62,7 @@ class Game {
 		std::vector<std::vector<double>> getOptimisedVectoredPhaseInformation(std::vector<std::array<int,2>> startSizes, int lookingLength, int type,int group);
 		std::vector<Frame*>::iterator findFirstPassInFuture(std::vector<Frame*>::iterator frameit, int phaseLength,int& noPassPhases, int& foundPasses, int& foundPoopy);
 		std::vector<Frame*>::iterator findLastPassInFuture(std::vector<Frame*>::iterator frameit, int phaseLength,int& noPassPhases, int& foundPasses, int& foundPoopy);
+		std::array<double,2> findFrameHighestPressure(std::vector<Frame*>::iterator frameit, int phaseLength,int& frameLowNumber, int& frameHighNumber);
 
 };
 #endif

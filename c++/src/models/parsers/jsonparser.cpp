@@ -57,7 +57,7 @@ void JsonParser::write(std::string filename, std::vector<std::vector<double>> da
 	std::ofstream of;
 	of.open(dataDestination + filename);
 	std::vector<std::string> rowTitles;
-	std::vector<std::string> columnTitles = {"Phase Type","Group","Change in D Ball Goal/m", "V Pressure 0.2", "V Pressure 0.5","V Pressure 1.0", "V Pressure 1.5", "V Pressure 2.0","D Pressure 0.2", "D Pressure 0.5","D Pressure 1.0", "D Pressure 1.5", "D Pressure 2.0","B Pressure 0.2", "B Pressure 0.5", "B Pressure 1.0", "B Pressure 1.5", "B Pressure 2.0", "Base Pressure within 20m", "D Ranked Base Pressure within 20m"};
+	std::vector<std::string> columnTitles = {"Phase Type","Group","Change in D Ball Goal/m","AX0","AY0","DX0","DY0","AX1","AY1","DX1","DY1","AX2","AY2","DX2","DY2","AX3","AY3","DX3","DY3","AX4","AY4","DX4","DY4","AX5","AY5","DX5","DY5"};
 	for(int i = 0; i<dataA.size();i++){
 		rowTitles.push_back(std::to_string(i));
 	}
